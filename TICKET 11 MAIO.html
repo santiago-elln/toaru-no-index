@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório de Chamados — iGreen Energy</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #4caf32;
+    --green-bright: #5ecf43;
+    --green-dark: #2e6b1e;
+    --green-dim: #3a8028;
+    --green-glow: rgba(76,175,50,0.18);
+    --green-line: rgba(76,175,50,0.35);
+    --black: #0a0a0a;
+    --dark: #111111;
+    --dark2: #161616;
+    --dark3: #1c1c1c;
+    --mid: #222222;
+    --card: #181818;
+    --border: rgba(255,255,255,0.07);
+    --border-green: rgba(76,175,50,0.22);
+    --text: #e8e8e8;
+    --text-dim: #9a9a9a;
+    --text-muted: #636363;
+    --white: #ffffff;
+    --warn: #f5a623;
+    --red: #e05252;
+    --red-dim: rgba(224,82,82,0.14);
+    --meta: 3;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(10,10,10,0.97);
+    border-bottom: 1px solid var(--border-green);
+    backdrop-filter: blur(12px);
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .nav-logo {
+    padding: 0 20px;
+    border-right: 1px solid var(--border);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .nav-logo img {
+    height: 28px;
+    mix-blend-mode: lighten;
+    filter: brightness(1.1);
+  }
+
+  .nav-pages {
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex: 1;
+    gap: 0;
+  }
+  .nav-pages::-webkit-scrollbar { display: none; }
+
+  .nav-btn {
+    padding: 0 18px;
+    height: 56px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .2s, background .2s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .nav-btn:hover { color: var(--green-bright); background: rgba(76,175,50,0.06); }
+  .nav-btn.active { color: var(--green-bright); background: rgba(76,175,50,0.1); border-bottom: 2px solid var(--green); }
+
+  .nav-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--green-dim);
+    opacity: 0.7;
+  }
+  .nav-btn.active .nav-num { opacity: 1; color: var(--green-bright); }
+
+  /* ===== PAGES ===== */
+  .page {
+    display: none;
+    min-height: 100vh;
+    padding-top: 56px;
+  }
+  .page.active { display: flex; flex-direction: column; }
+
+  /* ===== COVER ===== */
+  #p0 {
+    background: var(--black);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cover-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 70% 40%, rgba(76,175,50,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 60% at 20% 80%, rgba(76,175,50,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .cover-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border-green) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border-green) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  .cover-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - 56px);
+    padding: 60px 80px;
+    max-width: 1100px;
+  }
+
+  .cover-tag {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cover-tag::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: var(--green);
+  }
+
+  .cover-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 5vw, 68px);
+    font-weight: 800;
+    line-height: 1.05;
+    color: var(--white);
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .cover-title em {
+    color: var(--green);
+    font-style: normal;
+  }
+
+  .cover-sub {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--text-dim);
+    max-width: 500px;
+    line-height: 1.6;
+    margin-bottom: 48px;
+  }
+
+  .cover-stats {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .cover-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-left: 2px solid var(--green);
+    padding-left: 16px;
+  }
+
+  .cover-stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.02em;
+  }
+
+  .cover-stat-lbl {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .cover-period {
+    position: absolute;
+    bottom: 40px;
+    right: 80px;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    letter-spacing: 0.06em;
+  }
+
+  /* ===== GENERIC PAGE ===== */
+  .page-inner {
+    padding: 44px 60px;
+    flex: 1;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .page-header-left {}
+
+  .page-eyebrow {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .page-eyebrow::before {
+    content: '';
+    display: block;
+    width: 16px;
+    height: 1px;
+    background: var(--green);
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 3vw, 34px);
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+
+  .page-badge {
+    background: rgba(76,175,50,0.1);
+    border: 1px solid var(--border-green);
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--green);
+    letter-spacing: 0.05em;
+    align-self: flex-start;
+    white-space: nowrap;
+  }
+
+  /* ===== CARDS ===== */
+  .cards-row {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .cards-3 { grid-template-columns: repeat(3, 1fr); }
+  .cards-4 { grid-template-columns: repeat(4, 1fr); }
+  .cards-2 { grid-template-columns: repeat(2, 1fr); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 22px;
+  }
+
+  .card-label {
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .card-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  .card-green { border-color: var(--border-green); background: rgba(76,175,50,0.06); }
+  .card-green .card-value { color: var(--green-bright); }
+
+  .card-warn { border-color: rgba(245,166,35,0.3); background: rgba(245,166,35,0.06); }
+  .card-warn .card-value { color: var(--warn); }
+
+  .card-red { border-color: rgba(224,82,82,0.3); background: rgba(224,82,82,0.06); }
+  .card-red .card-value { color: var(--red); }
+
+  /* ===== KPI FAMILY CARDS ===== */
+  .family-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-bottom: 28px; }
+
+  .fam-card {
+    border-radius: 10px;
+    padding: 28px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .fam-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .fam-aza { background: rgba(76,175,50,0.08); border: 1px solid rgba(76,175,50,0.25); }
+  .fam-aza::before { background: var(--green); }
+
+  .fam-en { background: rgba(94,207,67,0.1); border: 1px solid rgba(94,207,67,0.3); }
+  .fam-en::before { background: var(--green-bright); }
+
+  .fam-iv { background: rgba(46,107,30,0.12); border: 1px solid rgba(46,107,30,0.4); }
+  .fam-iv::before { background: var(--green-dark); }
+
+  .fam-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .fam-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .fam-pct {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--green);
+  }
+
+  .fam-lbl { font-size: 12px; color: var(--text-muted); }
+
+  /* ===== TABLES ===== */
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background .15s;
+  }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+  tbody td {
+    padding: 10px 14px;
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  td.num {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    text-align: right;
+  }
+
+  td.pct {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: right;
+    font-weight: 500;
+  }
+
+  td.warn-val { color: var(--warn) !important; }
+  td.red-val { color: var(--red) !important; }
+  td.green-val { color: var(--green) !important; }
+
+  tr.total-row { border-top: 1px solid var(--border-green) !important; }
+  tr.total-row td { color: var(--green-bright); font-weight: 600; }
+  tr.total-row td.num { color: var(--green-bright); }
+
+  /* ===== BAR INLINE ===== */
+  .bar-wrap { display: flex; align-items: center; gap: 10px; min-width: 120px; }
+  .bar-track { flex: 1; height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; background: var(--green); transition: width .4s; }
+  .bar-fill.warn { background: var(--warn); }
+  .bar-fill.red { background: var(--red); }
+  .bar-pct { font-size: 11px; color: var(--text-dim); min-width: 38px; text-align: right; }
+
+  /* ===== SECTION TITLE ===== */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 14px;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ===== SLA TREND ===== */
+  .sla-trend {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    padding: 28px 0 8px;
+    position: relative;
+  }
+
+  .sla-trend::before {
+    content: 'META: 3 dias';
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--green);
+  }
+
+  .sla-bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sla-bar-outer {
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 180px;
+  }
+
+  .sla-bar-inner {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    transition: height .5s;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 8px;
+  }
+
+  .sla-bar-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--white);
+  }
+
+  .sla-bar-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  .meta-line {
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    border-top: 2px dashed var(--green);
+    bottom: calc(3/18 * 180px);
+  }
+
+  /* ===== SPLIT LAYOUT ===== */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .split-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  /* ===== ALERT BANNER ===== */
+  .alert-banner {
+    background: rgba(224,82,82,0.08);
+    border: 1px solid rgba(224,82,82,0.25);
+    border-left: 3px solid var(--red);
+    border-radius: 6px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .alert-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(224,82,82,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .alert-text { font-size: 13px; color: var(--text); }
+  .alert-text strong { color: var(--red); }
+
+  /* ===== INSIGHT CARD ===== */
+  .insight-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 22px;
+    display: flex;
+    gap: 16px;
+  }
+
+  .insight-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(76,175,50,0.12);
+    border: 1px solid var(--border-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .insight-body {}
+  .insight-title { font-weight: 600; font-size: 14px; color: var(--white); margin-bottom: 5px; }
+  .insight-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.55; }
+
+  /* ===== STATUS PILLS ===== */
+  .pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .pill-green { background: rgba(76,175,50,0.15); color: var(--green-bright); }
+  .pill-warn { background: rgba(245,166,35,0.15); color: var(--warn); }
+  .pill-red { background: rgba(224,82,82,0.15); color: var(--red); }
+  .pill-blue { background: rgba(80,150,220,0.15); color: #6ab0f5; }
+  .pill-gray { background: rgba(255,255,255,0.07); color: var(--text-dim); }
+  .pill-implementing { background: rgba(76,175,50,0.10); color: var(--green); border: 1px dashed rgba(76,175,50,0.4); }
+
+  /* ===== CONCLUSION BLOCKS ===== */
+  .conclusion-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 26px;
+  }
+  .conclusion-who {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .conclusion-items { display: flex; flex-direction: column; gap: 10px; }
+  .conclusion-item {
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.025);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-style: italic;
+    letter-spacing: 0.02em;
+  }
+
+  /* ===== PENDENTES PAGE ===== */
+  .critical-header {
+    background: var(--red-dim);
+    border: 1px solid rgba(224,82,82,0.3);
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .critical-badge {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    color: var(--red);
+    text-transform: uppercase;
+    padding: 6px 12px;
+    background: rgba(224,82,82,0.12);
+    border: 1px solid rgba(224,82,82,0.3);
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .critical-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+  .critical-desc strong { color: var(--text); }
+
+  /* ===== SEPARATOR ===== */
+  .sep { height: 1px; background: var(--border); margin: 24px 0; }
+
+  /* ===== TOP3 highlights ===== */
+  .top3-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 28px; }
+  .top3-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .top3-rank {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    color: var(--green-dim);
+    text-transform: uppercase;
+  }
+  .top3-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1.3;
+  }
+  .top3-vals {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .top3-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--green-bright);
+    letter-spacing: -0.02em;
+  }
+  .top3-pct {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* ===== DONUT visual ===== */
+  .donut-row { display: flex; align-items: center; gap: 32px; }
+  .donut-legend { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+  .legend-item { display: flex; align-items: center; gap: 10px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-name { font-size: 13px; color: var(--text-dim); flex: 1; }
+  .legend-val { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--white); }
+  .legend-pct { font-size: 11px; color: var(--text-muted); min-width: 40px; text-align: right; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .page-inner { padding: 28px 24px; }
+    .cards-3, .cards-4 { grid-template-columns: repeat(2, 1fr); }
+    .family-cards { grid-template-columns: 1fr; }
+    .split { grid-template-columns: 1fr; }
+    .top3-row { grid-template-columns: 1fr; }
+    .split-3 { grid-template-columns: 1fr; }
+    .cover-inner { padding: 40px 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <img src="data:image/jpeg;base64,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" alt="iGreen Energy" style="height:28px;mix-blend-mode:lighten;">
+  </div>
+  <div class="nav-pages">
+    <button class="nav-btn active" onclick="goTo('p0')"><span class="nav-num">00</span>Capa</button>
+    <button class="nav-btn" onclick="goTo('p1')"><span class="nav-num">01</span>Visão Executiva</button>
+    <button class="nav-btn" onclick="goTo('p2')"><span class="nav-num">02</span>Volume — Abril</button>
+    <button class="nav-btn" onclick="goTo('p3')"><span class="nav-num">03</span>Categorização</button>
+    <button class="nav-btn" onclick="goTo('p4')"><span class="nav-num">04</span>Setor Contratos</button>
+    <button class="nav-btn" onclick="goTo('p5')"><span class="nav-num">05</span>Pendências Críticas</button>
+    <button class="nav-btn" onclick="goTo('p6')"><span class="nav-num">06</span>Oportunidades do Suporte</button>
+    <button class="nav-btn" onclick="goTo('p7')"><span class="nav-num">07</span>Erros por Família</button>
+    <button class="nav-btn" onclick="goTo('p8')"><span class="nav-num">08</span>SLA — Visão Geral</button>
+    <button class="nav-btn" onclick="goTo('p9')"><span class="nav-num">09</span>SLA — Motivo e Família</button>
+    <button class="nav-btn" onclick="goTo('p10')"><span class="nav-num">10</span>SLA — Contratos</button>
+    <button class="nav-btn" onclick="goTo('p11')"><span class="nav-num">11</span>SLA — N2 vs Fornecedoras</button>
+    <button class="nav-btn" onclick="goTo('p12')"><span class="nav-num">12</span>Evolução do Sistema</button>
+    <button class="nav-btn" onclick="goTo('p13')"><span class="nav-num">13</span>Próximos Passos</button>
+  </div>
+</nav>
+
+<!-- ===== P0: CAPA ===== -->
+<div class="page active" id="p0">
+  <div class="cover-bg"></div>
+  <div class="cover-grid"></div>
+  <div class="cover-inner">
+    <div class="cover-tag">Suporte ao Licenciado · iGreen Energy</div>
+    <h1 class="cover-title">Relatório de<br>Chamados &<br><em>Tratativas</em></h1>
+    <p class="cover-sub">Análise do desempenho operacional do sistema de chamados para o período de março a maio, com foco no mês de abril como referência principal.</p>
+    <div class="cover-stats">
+      <div class="cover-stat">
+        <span class="cover-stat-val">7.948</span>
+        <span class="cover-stat-lbl">Chamados Abertos (Mar–Mai)</span>
+      </div>
+      <div class="cover-stat">
+        <span class="cover-stat-val">4.219</span>
+        <span class="cover-stat-lbl">Chamados em Abril</span>
+      </div>
+      <div class="cover-stat">
+        <span class="cover-stat-val">14,8d</span>
+        <span class="cover-stat-lbl">SLA Médio — Abril</span>
+      </div>
+      <div class="cover-stat">
+        <span class="cover-stat-val">4,5%</span>
+        <span class="cover-stat-lbl">Taxa de Report (Geral)</span>
+      </div>
+    </div>
+  </div>
+  <div class="cover-period">Período de referência: MAR – MAI 2025<br>Foco analítico: Abril 2025</div>
+</div>
+
+<!-- ===== P1: VISÃO EXECUTIVA ===== -->
+<div class="page" id="p1">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">Visão Geral</div>
+        <h2 class="page-title">Visão Executiva</h2>
+      </div>
+      <div class="page-badge">Mar – Mai 2025 · 7.948 chamados</div>
+    </div>
+
+    <div class="cards-4">
+      <div class="card card-green">
+        <div class="card-label">Total de Chamados</div>
+        <div class="card-value">7.948</div>
+        <div class="card-sub">Mar: 2.229 · Abr: 4.219 · Mai: 1.500</div>
+      </div>
+      <div class="card card-warn">
+        <div class="card-label">SLA Médio Geral</div>
+        <div class="card-value">14,8d</div>
+        <div class="card-sub">Meta: 3 dias · Excl. Contratos</div>
+      </div>
+      <div class="card card-warn">
+        <div class="card-label">SLA Médio — Contratos</div>
+        <div class="card-value">3,7d</div>
+        <div class="card-sub">Próximo da meta de 3 dias</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Taxa de Report (Geral)</div>
+        <div class="card-value" style="color:var(--text-dim)">4,5%</div>
+        <div class="card-sub">Pico em Abril: 6,2%</div>
+      </div>
+    </div>
+
+    <div class="section-title">Top 3 — Tipos de Chamado (Mar–Mai, excl. Contratos)</div>
+    <div class="top3-row">
+      <div class="top3-card">
+        <div class="top3-rank">🥇 1º lugar</div>
+        <div class="top3-name">Enviar Fatura da Fornecedora</div>
+        <div class="top3-vals">
+          <div class="top3-num">1.607</div>
+          <div class="top3-pct">26,0% do total</div>
+        </div>
+      </div>
+      <div class="top3-card">
+        <div class="top3-rank">🥈 2º lugar</div>
+        <div class="top3-name">Atualização da Fatura</div>
+        <div class="top3-vals">
+          <div class="top3-num">869</div>
+          <div class="top3-pct">14,1% do total</div>
+        </div>
+      </div>
+      <div class="top3-card">
+        <div class="top3-rank">🥉 3º lugar</div>
+        <div class="top3-name">Status de Injeção</div>
+        <div class="top3-vals">
+          <div class="top3-num">652</div>
+          <div class="top3-pct">10,6% do total</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Distribuição Mensal</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th style="text-align:right">Aberturas (N2)</th>
+            <th style="text-align:right">Contratos</th>
+            <th style="text-align:right">Total</th>
+            <th style="text-align:right">% Reportado</th>
+            <th style="text-align:right">SLA Médio (excl. contratos)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Março</strong></td>
+            <td class="num">2.229</td>
+            <td class="num">—</td>
+            <td class="num">2.229</td>
+            <td class="pct green-val">3,3%</td>
+            <td class="num warn-val">21,3d</td>
+          </tr>
+          <tr>
+            <td><strong>Abril</strong></td>
+            <td class="num">2.851</td>
+            <td class="num">1.368</td>
+            <td class="num">4.219</td>
+            <td class="pct warn-val">6,2%</td>
+            <td class="num warn-val">14,8d</td>
+          </tr>
+          <tr>
+            <td><strong>Maio</strong></td>
+            <td class="num">1.104</td>
+            <td class="num">396</td>
+            <td class="num">1.500</td>
+            <td class="pct green-val">1,8%</td>
+            <td class="num green-val">5,0d</td>
+          </tr>
+          <tr class="total-row">
+            <td><strong>Total Geral</strong></td>
+            <td class="num">6.184</td>
+            <td class="num">1.764</td>
+            <td class="num">7.948</td>
+            <td class="pct">4,5%</td>
+            <td class="num">15,3d</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:11.5px;color:var(--text-muted);margin-top:10px;">⚠ Maio com dados parciais. SLA de Contratos disponível apenas com dados complementares.</p>
+  </div>
+</div>
+
+<!-- ===== P2: VOLUME ABRIL POR FAMÍLIA ===== -->
+<div class="page" id="p2">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">Categorização · Abril 2025</div>
+        <h2 class="page-title">Distribuição por Família</h2>
+      </div>
+      <div class="page-badge">4.219 chamados em Abril</div>
+    </div>
+
+    <div class="family-cards">
+      <div class="fam-card fam-aza">
+        <div class="fam-name">AZA</div>
+        <div class="fam-val">995</div>
+        <div class="fam-pct">23,6%</div>
+        <div class="fam-lbl">do volume de Abril</div>
+      </div>
+      <div class="fam-card fam-en">
+        <div class="fam-name">ENERGIZADOS</div>
+        <div class="fam-val">1.781</div>
+        <div class="fam-pct" style="color:var(--green-bright)">42,2%</div>
+        <div class="fam-lbl">do volume de Abril · maior BU</div>
+      </div>
+      <div class="fam-card fam-iv">
+        <div class="fam-name">iVOLT</div>
+        <div class="fam-val">1.443</div>
+        <div class="fam-pct" style="color:#7cdb62">34,2%</div>
+        <div class="fam-lbl">do volume de Abril</div>
+      </div>
+    </div>
+
+    <div class="section-title">Distribuição por Motivo Macro (excl. Contratos)</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Motivo Macro</th>
+            <th style="text-align:right">AZA</th>
+            <th style="text-align:right">ENERGIZADOS</th>
+            <th style="text-align:right">iVOLT</th>
+            <th style="text-align:right">Total</th>
+            <th style="min-width:140px">Distribuição</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fatura da Fornecedora</td>
+            <td class="num">305</td>
+            <td class="num">589</td>
+            <td class="num">368</td>
+            <td class="num">1.262</td>
+            <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:44%"></div></div><span class="bar-pct">44,3%</span></div></td>
+          </tr>
+          <tr>
+            <td>Cadastro & Parametrização</td>
+            <td class="num">263</td>
+            <td class="num">260</td>
+            <td class="num">276</td>
+            <td class="num">799</td>
+            <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:28%"></div></div><span class="bar-pct">28,0%</span></div></td>
+          </tr>
+          <tr>
+            <td>Fatura da Distribuidora</td>
+            <td class="num">36</td>
+            <td class="num">247</td>
+            <td class="num">151</td>
+            <td class="num">434</td>
+            <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:15%"></div></div><span class="bar-pct">15,2%</span></div></td>
+          </tr>
+          <tr>
+            <td>Financeiro & Cobrança</td>
+            <td class="num">44</td>
+            <td class="num">70</td>
+            <td class="num">47</td>
+            <td class="num">161</td>
+            <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:6%"></div></div><span class="bar-pct">5,6%</span></div></td>
+          </tr>
+          <tr>
+            <td>Sol. Gerais (Fornecedoras)</td>
+            <td class="num">11</td>
+            <td class="num">122</td>
+            <td class="num">—</td>
+            <td class="num">133</td>
+            <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div><span class="bar-pct">4,7%</span></div></td>
+          </tr>
+          <tr>
+            <td>DMC</td>
+            <td class="num">—</td>
+            <td class="num">62</td>
+            <td class="num">—</td>
+            <td class="num">62</td>
+            <td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:2%"></div></div><span class="bar-pct">2,2%</span></div></td>
+          </tr>
+          <tr class="total-row">
+            <td><strong>Total (excl. Contratos)</strong></td>
+            <td class="num">659</td>
+            <td class="num">1.350</td>
+            <td class="num">842</td>
+            <td class="num">2.851</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">Contratos (1.368 chamados) tratados separadamente na página 04, pois são roteados a terceiro.</p>
+  </div>
+</div>
+
+<!-- ===== P3: CATEGORIZAÇÃO – TOP MOTIVOS ===== -->
+<div class="page" id="p3">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">Categorização · Abril 2025</div>
+        <h2 class="page-title">Top Motivos de Abertura</h2>
+      </div>
+      <div class="page-badge">Excluindo Setor Contratos</div>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="section-title">Ranking por Tipo — Abril</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Tipo de Chamado</th><th style="text-align:right">Qtd</th><th style="min-width:120px">%</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style="color:var(--text-muted);font-size:12px">1</td><td>Enviar Fatura da Fornecedora</td><td class="num">689</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-pct">24,2%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">2</td><td>Atualização da Fatura</td><td class="num">388</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:56%"></div></div><span class="bar-pct">13,6%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">3</td><td>Desmembramento</td><td class="num">290</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:42%"></div></div><span class="bar-pct">10,2%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">4</td><td>Status de Injeção</td><td class="num">189</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:27%"></div></div><span class="bar-pct">6,6%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">5</td><td>Troca de Fornecedora (n. valid.)</td><td class="num">178</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:26%"></div></div><span class="bar-pct">6,2%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">6</td><td>Alteração / Correção Cadastral</td><td class="num">145</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><span class="bar-pct">5,1%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">7</td><td>Conta Única</td><td class="num">133</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div><span class="bar-pct">4,7%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">8</td><td>Reativação</td><td class="num">125</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div><span class="bar-pct">4,4%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">9</td><td>Cobrança Indevida / Serasa</td><td class="num">115</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="bar-pct">4,0%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">10</td><td>Baixa de Pagamento</td><td class="num">83</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="bar-pct">2,9%</span></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">Concentração por Família — Top 5</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+
+          <div class="card">
+            <div class="card-label" style="margin-bottom:10px">Enviar Fatura da Fornecedora (689)</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div class="legend-item"><div class="legend-dot" style="background:#4caf32"></div><span class="legend-name">AZA</span><div class="bar-track" style="flex:1;margin:0 8px"><div class="bar-fill" style="width:22%"></div></div><span class="legend-pct">22,4%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#5ecf43"></div><span class="legend-name">ENERGIZADOS</span><div class="bar-track" style="flex:1;margin:0 8px"><div class="bar-fill" style="width:51%"></div></div><span class="legend-pct">51,1%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#2e6b1e"></div><span class="legend-name">iVOLT</span><div class="bar-track" style="flex:1;margin:0 8px"><div class="bar-fill" style="width:27%"></div></div><span class="legend-pct">26,6%</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-label" style="margin-bottom:10px">Desmembramento (290) — Concentrado em ENERGIZADOS</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div class="legend-item"><div class="legend-dot" style="background:#4caf32"></div><span class="legend-name">AZA</span><div class="bar-track" style="flex:1;margin:0 8px"><div class="bar-fill" style="width:3%"></div></div><span class="legend-pct">3,4%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#5ecf43"></div><span class="legend-name">ENERGIZADOS</span><div class="bar-track" style="flex:1;margin:0 8px"><div class="bar-fill warn" style="width:59%"></div></div><span class="legend-pct">59,3%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#2e6b1e"></div><span class="legend-name">iVOLT</span><div class="bar-track" style="flex:1;margin:0 8px"><div class="bar-fill" style="width:37%"></div></div><span class="legend-pct">37,2%</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-label" style="margin-bottom:10px">Troca de Fornecedora — n. validado (178) — Concentrado em AZA</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div class="legend-item"><div class="legend-dot" style="background:#4caf32"></div><span class="legend-name">AZA</span><div class="bar-track" style="flex:1;margin:0 8px"><div class="bar-fill warn" style="width:65%"></div></div><span class="legend-pct">64,6%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#5ecf43"></div><span class="legend-name">ENERGIZADOS</span><div class="bar-track" style="flex:1;margin:0 8px"><div class="bar-fill" style="width:8%"></div></div><span class="legend-pct">8,4%</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#2e6b1e"></div><span class="legend-name">iVOLT</span><div class="bar-track" style="flex:1;margin:0 8px"><div class="bar-fill" style="width:27%"></div></div><span class="legend-pct">27,0%</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P4: SETOR CONTRATOS ===== -->
+<div class="page" id="p4">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">Setor Contratos · Abril 2025</div>
+        <h2 class="page-title">Distribuição — Contratos</h2>
+      </div>
+      <div class="page-badge">1.368 chamados · roteamento terceirizado</div>
+    </div>
+
+    <div class="alert-banner">
+      <div class="alert-icon">ℹ</div>
+      <div class="alert-text">Chamados do Setor Contratos são roteados <strong>diretamente a uma equipe terceirizada</strong>, não passando pelas Famílias (AZA, ENERGIZADOS, iVOLT). Por isso, esta análise apresenta apenas a distribuição por tipo.</div>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="section-title">Ranking por Tipo — Abril</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Tipo</th><th style="text-align:right">Qtd</th><th style="min-width:120px">% do total Contratos</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style="color:var(--text-muted);font-size:12px">1</td><td>Revalidação de Reprovados</td><td class="num">489</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-pct">35,7%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">2</td><td>Inclusão de Testemunha</td><td class="num">399</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:82%"></div></div><span class="bar-pct">29,2%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">3</td><td>Atraso de Validação</td><td class="num">140</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:29%"></div></div><span class="bar-pct">10,2%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">4</td><td>Dúvidas Operacionais</td><td class="num">135</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:28%"></div></div><span class="bar-pct">9,9%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">5</td><td>Erro de Validação</td><td class="num">82</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="bar-pct">6,0%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">6</td><td>Duplicidade de Devolutivas</td><td class="num">67</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:14%"></div></div><span class="bar-pct">4,9%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">7</td><td>Ajuste de Média de Consumo</td><td class="num">39</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><span class="bar-pct">2,9%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">8</td><td>Análise p/ Reemissão de Contrato</td><td class="num">8</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:2%"></div></div><span class="bar-pct">0,6%</span></div></td></tr>
+              <tr><td style="color:var(--text-muted);font-size:12px">9</td><td>Cadastro em Lote</td><td class="num">7</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:1%"></div></div><span class="bar-pct">0,5%</span></div></td></tr>
+              <tr class="total-row"><td></td><td><strong>Total</strong></td><td class="num">1.368</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">Contexto no Volume Total</div>
+        <div class="cards-row" style="grid-template-columns:1fr;gap:14px">
+          <div class="card">
+            <div class="card-label">Contratos em Abril</div>
+            <div class="card-value">1.368</div>
+            <div class="card-sub">32,4% do total de aberturas em Abril (4.219)</div>
+          </div>
+          <div class="card card-warn">
+            <div class="card-label">2 tipos dominam o volume</div>
+            <div class="card-value" style="font-size:22px;line-height:1.3">Revalidação + Testemunha</div>
+            <div class="card-sub">888 chamados · 64,9% do total de Contratos</div>
+          </div>
+        </div>
+
+        <div class="section-title">Comparativo Mar–Mai (Contratos)</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Mês</th><th style="text-align:right">Chamados</th><th style="text-align:right">% Reportado</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Março</td><td class="num">—</td><td class="pct" style="color:var(--text-muted)">Sem dados</td></tr>
+              <tr><td>Abril</td><td class="num">1.368</td><td class="pct warn-val">6,9%</td></tr>
+              <tr><td>Maio</td><td class="num">396</td><td class="pct green-val">0,7%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P5: PENDÊNCIAS CRÍTICAS ===== -->
+<div class="page" id="p5">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">Atenção · Criticidade</div>
+        <h2 class="page-title">Chamados Pendentes +30 Dias</h2>
+      </div>
+      <div class="page-badge" style="background:rgba(224,82,82,0.1);border-color:rgba(224,82,82,0.3);color:var(--red)">⚠ Alta Criticidade</div>
+    </div>
+
+    <div class="critical-header">
+      <div class="critical-badge">Ponto de Atenção</div>
+      <div class="critical-desc">
+        Chamados com <strong>mais de 30 dias em aberto</strong> representam um risco direto à experiência do licenciado e à continuidade do atendimento ao cliente final. Cada caso requer análise individualizada e cobrança imediata junto ao responsável da etapa atual.
+      </div>
+    </div>
+
+    <div class="cards-3" style="margin-bottom:28px">
+      <div class="card card-red">
+        <div class="card-label">Critério de Criticidade</div>
+        <div class="card-value" style="font-size:22px">+30 dias</div>
+        <div class="card-sub">10× acima da meta de 3 dias</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Impacto Principal</div>
+        <div class="card-value" style="font-size:20px;color:var(--text-dim)">Fatura Fornecedora</div>
+        <div class="card-sub">Maior SLA e maior volume</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Família com Maior Risco</div>
+        <div class="card-value" style="font-size:20px;color:var(--warn)">ENERGIZADOS</div>
+        <div class="card-sub">SLA médio: 19,5d em Abril</div>
+      </div>
+    </div>
+
+    <div class="section-title">Espaço reservado para dados de pendências por família</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+      <div class="card" style="min-height:160px;display:flex;flex-direction:column;gap:8px">
+        <div class="card-label">AZA — Pendentes +30d</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(255,255,255,0.1);border-radius:6px;color:var(--text-muted);font-size:12px;font-style:italic">
+          Inserir dado manualmente
+        </div>
+      </div>
+      <div class="card" style="min-height:160px;display:flex;flex-direction:column;gap:8px">
+        <div class="card-label">ENERGIZADOS — Pendentes +30d</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(255,255,255,0.1);border-radius:6px;color:var(--text-muted);font-size:12px;font-style:italic">
+          Inserir dado manualmente
+        </div>
+      </div>
+      <div class="card" style="min-height:160px;display:flex;flex-direction:column;gap:8px">
+        <div class="card-label">iVOLT — Pendentes +30d</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(255,255,255,0.1);border-radius:6px;color:var(--text-muted);font-size:12px;font-style:italic">
+          Inserir dado manualmente
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Por que chamados ficam pendentes?</div>
+    <div class="split" style="gap:16px">
+      <div class="insight-card">
+        <div class="insight-icon">⏳</div>
+        <div class="insight-body">
+          <div class="insight-title">Aguardando retorno da Fornecedora</div>
+          <div class="insight-desc">Casos de Fatura da Fornecedora frequentemente dependem de ação externa, sem visibilidade clara do prazo para quem abriu o chamado.</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">📋</div>
+        <div class="insight-body">
+          <div class="insight-title">Documentação incompleta na abertura</div>
+          <div class="insight-desc">Chamados com informações ausentes ou incorretas geram retrabalho e atraso na triagem, contribuindo para o acúmulo de pendências.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P6: OPORTUNIDADES DO SUPORTE ===== -->
+<div class="page" id="p6">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">Reports · Erros · Abril 2025</div>
+        <h2 class="page-title">Oportunidades do Suporte ao Licenciado</h2>
+      </div>
+      <div class="page-badge">262 reports em Abril · 6,2%</div>
+    </div>
+
+    <div class="cards-4" style="margin-bottom:28px">
+      <div class="card card-warn">
+        <div class="card-label">Reports — Abril (N2)</div>
+        <div class="card-value">5,9%</div>
+        <div class="card-sub">168 de 2.851 chamados N2</div>
+      </div>
+      <div class="card card-warn">
+        <div class="card-label">Reports — Abril (Contratos)</div>
+        <div class="card-value">6,9%</div>
+        <div class="card-sub">94 de 1.368 chamados Contratos</div>
+      </div>
+      <div class="card card-green">
+        <div class="card-label">Reports — Março (Total)</div>
+        <div class="card-value">3,3%</div>
+        <div class="card-sub">Menor taxa do período</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Reports — Maio (Total)</div>
+        <div class="card-value" style="color:var(--green)">1,8%</div>
+        <div class="card-sub">Tendência de melhora</div>
+      </div>
+    </div>
+
+    <div class="section-title">Ranking de Motivos de Report — Abril (N2)</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Motivo do Report</th>
+            <th style="text-align:right">Qtd</th>
+            <th style="text-align:right">% dos Reportados</th>
+            <th style="text-align:right">% s/ Total Aberto</th>
+            <th style="min-width:120px">Distribuição</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="color:var(--text-muted);font-size:12px">1</td><td>Setor/Responsável Incorreto</td><td class="num">63</td><td class="pct">24,0%</td><td class="pct">1,5%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div></div></td></tr>
+          <tr><td style="color:var(--text-muted);font-size:12px">2</td><td>Regra de Negócio Não Atendida</td><td class="num">45</td><td class="pct">17,2%</td><td class="pct">1,1%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill red" style="width:71%"></div></div></div></td></tr>
+          <tr><td style="color:var(--text-muted);font-size:12px">3</td><td>Documentação Ausente/Incompleta</td><td class="num">34</td><td class="pct">13,0%</td><td class="pct">0,8%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:54%"></div></div></div></td></tr>
+          <tr><td style="color:var(--text-muted);font-size:12px">4</td><td>Ticket Duplicado/Múltiplos Clientes</td><td class="num">21</td><td class="pct">8,0%</td><td class="pct">0,5%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:33%"></div></div></div></td></tr>
+          <tr><td style="color:var(--text-muted);font-size:12px">5</td><td>Informações Insuficientes/Vazias</td><td class="num">20</td><td class="pct">7,6%</td><td class="pct">0,5%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:32%"></div></div></div></td></tr>
+          <tr><td style="color:var(--text-muted);font-size:12px">6</td><td>Ação Desnecessária/Já Resolvido</td><td class="num">20</td><td class="pct">7,6%</td><td class="pct">0,5%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:32%"></div></div></div></td></tr>
+          <tr><td style="color:var(--text-muted);font-size:12px">7</td><td>Tipo de Solicitação Errado</td><td class="num">19</td><td class="pct">7,3%</td><td class="pct">0,5%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div></div></td></tr>
+          <tr><td style="color:var(--text-muted);font-size:12px">8</td><td>Dados do Cliente Incorretos</td><td class="num">14</td><td class="pct">5,3%</td><td class="pct">0,3%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:22%"></div></div></div></td></tr>
+          <tr><td style="color:var(--text-muted);font-size:12px">9</td><td>Documento/Comprovante Inválido</td><td class="num">8</td><td class="pct">3,1%</td><td class="pct">0,2%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div></div></td></tr>
+          <tr><td style="color:var(--text-muted);font-size:12px">...</td><td>Demais motivos</td><td class="num">18</td><td class="pct">6,9%</td><td class="pct">0,4%</td><td></td></tr>
+          <tr class="total-row"><td></td><td><strong>Total Geral</strong></td><td class="num">262</td><td class="pct">100%</td><td class="pct">6,2%</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">Os 3 primeiros motivos somam 54,2% de todos os reports. Setor/Responsável Incorreto sozinho representa ¼ dos casos.</p>
+  </div>
+</div>
+
+<!-- ===== P7: ERROS POR FAMÍLIA ===== -->
+<div class="page" id="p7">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">Reports por BU · Abril 2025</div>
+        <h2 class="page-title">Erros por Família</h2>
+      </div>
+      <div class="page-badge">N2: 168 reports · Contratos: 94 reports</div>
+    </div>
+
+    <div class="section-title">Distribuição de Reports (N2) por Família</div>
+    <div class="cards-3" style="margin-bottom:22px">
+      <div class="fam-card fam-aza">
+        <div class="fam-name">AZA</div>
+        <div class="fam-val" style="font-size:36px">83</div>
+        <div class="fam-pct">49,4%</div>
+        <div class="fam-lbl">dos reports N2 de Abril</div>
+      </div>
+      <div class="fam-card fam-en">
+        <div class="fam-name">ENERGIZADOS</div>
+        <div class="fam-val" style="font-size:36px">38</div>
+        <div class="fam-pct" style="color:var(--green-bright)">22,6%</div>
+        <div class="fam-lbl">dos reports N2 de Abril</div>
+      </div>
+      <div class="fam-card fam-iv">
+        <div class="fam-name">iVOLT</div>
+        <div class="fam-val" style="font-size:36px">47</div>
+        <div class="fam-pct" style="color:#7cdb62">28,0%</div>
+        <div class="fam-lbl">dos reports N2 de Abril</div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="section-title">Top Erros por Família (N2)</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Motivo do Report</th><th style="text-align:right">AZA</th><th style="text-align:right">ENE.</th><th style="text-align:right">iVOLT</th><th style="text-align:right">Total</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Regra de Negócio Não Atendida</td><td class="num warn-val">21</td><td class="num">7</td><td class="num">6</td><td class="num">34</td></tr>
+              <tr><td>Setor/Responsável Incorreto</td><td class="num">8</td><td class="num warn-val">12</td><td class="num">7</td><td class="num">27</td></tr>
+              <tr><td>Ticket Duplicado/Múlt. Clientes</td><td class="num warn-val">13</td><td class="num">2</td><td class="num">5</td><td class="num">20</td></tr>
+              <tr><td>Informações Insuficientes/Vazias</td><td class="num warn-val">14</td><td class="num">—</td><td class="num">4</td><td class="num">18</td></tr>
+              <tr><td>Tipo de Solicitação Errado</td><td class="num">2</td><td class="num warn-val">13</td><td class="num">1</td><td class="num">16</td></tr>
+              <tr><td>Doc. Ausente/Incompleta</td><td class="num">5</td><td class="num">2</td><td class="num warn-val">6</td><td class="num">13</td></tr>
+              <tr><td>Ação Desnecessária/Já Resolvido</td><td class="num warn-val">8</td><td class="num">—</td><td class="num">5</td><td class="num">13</td></tr>
+              <tr><td>Dados do Cliente Incorretos</td><td class="num">3</td><td class="num">—</td><td class="num warn-val">6</td><td class="num">9</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">Valores em <span style="color:var(--warn)">laranja</span> indicam a família com maior concentração daquele erro.</p>
+      </div>
+
+      <div>
+        <div class="section-title">Top Erros por Família (Contratos)</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Motivo do Report</th><th style="text-align:right">AZA</th><th style="text-align:right">ENE.</th><th style="text-align:right">iVOLT</th><th style="text-align:right">Total</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Setor/Responsável Incorreto</td><td class="num warn-val">15</td><td class="num">7</td><td class="num">14</td><td class="num">36</td></tr>
+              <tr><td>Doc. Ausente/Incompleta</td><td class="num">1</td><td class="num">9</td><td class="num warn-val">11</td><td class="num">21</td></tr>
+              <tr><td>Regra de Negócio Não Atendida</td><td class="num">4</td><td class="num">3</td><td class="num">4</td><td class="num">11</td></tr>
+              <tr><td>Ação Desnecessária/Já Resolvido</td><td class="num">2</td><td class="num">2</td><td class="num warn-val">3</td><td class="num">7</td></tr>
+              <tr><td>Dados do Cliente Incorretos</td><td class="num">2</td><td class="num">2</td><td class="num">1</td><td class="num">5</td></tr>
+              <tr><td>Tipo de Solicitação Errado</td><td class="num">—</td><td class="num">—</td><td class="num warn-val">3</td><td class="num">3</td></tr>
+              <tr><td>Cliente em Validação</td><td class="num">—</td><td class="num warn-val">3</td><td class="num">—</td><td class="num">3</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:16px">
+          <div class="insight-card">
+            <div class="insight-icon">💡</div>
+            <div class="insight-body">
+              <div class="insight-title">Padrão identificado por família</div>
+              <div class="insight-desc"><strong style="color:var(--text)">AZA</strong> concentra erros de regra de negócio e informações insuficientes. <strong style="color:var(--text)">ENERGIZADOS</strong> tem desvios em tipo de solicitação e setor. <strong style="color:var(--text)">iVOLT</strong> apresenta documentação ausente e dados incorretos como principais pontos.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P8: SLA VISÃO GERAL ===== -->
+<div class="page" id="p8">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">SLA · Análise de Prazo</div>
+        <h2 class="page-title">SLA — Visão Geral</h2>
+      </div>
+      <div class="page-badge">Meta: 3 dias · Excl. Contratos</div>
+    </div>
+
+    <div class="section-title">Evolução Semanal do SLA Médio — Abril / Maio</div>
+
+    <div style="position:relative;padding:32px 0 16px;margin-bottom:28px">
+      <div style="position:absolute;top:8px;right:0;font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--green)">META: 3 DIAS</div>
+      <div class="sla-trend">
+        <div class="sla-bar-col">
+          <div class="sla-bar-outer">
+            <div class="meta-line"></div>
+            <div class="sla-bar-inner" style="height:180px;background:linear-gradient(180deg,rgba(224,82,82,0.7),rgba(224,82,82,0.4));border-radius:4px 4px 0 0">
+              <span class="sla-bar-val">18,0d</span>
+            </div>
+          </div>
+          <div class="sla-bar-label">Abr. S2</div>
+        </div>
+        <div class="sla-bar-col">
+          <div class="sla-bar-outer">
+            <div class="meta-line"></div>
+            <div class="sla-bar-inner" style="height:130px;background:linear-gradient(180deg,rgba(224,82,82,0.65),rgba(224,82,82,0.35));border-radius:4px 4px 0 0">
+              <span class="sla-bar-val">13,0d</span>
+            </div>
+          </div>
+          <div class="sla-bar-label">Abr. S3</div>
+        </div>
+        <div class="sla-bar-col">
+          <div class="sla-bar-outer">
+            <div class="meta-line"></div>
+            <div class="sla-bar-inner" style="height:117px;background:linear-gradient(180deg,rgba(245,166,35,0.7),rgba(245,166,35,0.4));border-radius:4px 4px 0 0">
+              <span class="sla-bar-val">11,7d</span>
+            </div>
+          </div>
+          <div class="sla-bar-label">Abr. S4</div>
+        </div>
+        <div class="sla-bar-col">
+          <div class="sla-bar-outer">
+            <div class="meta-line"></div>
+            <div class="sla-bar-inner" style="height:87px;background:linear-gradient(180deg,rgba(245,166,35,0.65),rgba(245,166,35,0.35));border-radius:4px 4px 0 0">
+              <span class="sla-bar-val">8,7d</span>
+            </div>
+          </div>
+          <div class="sla-bar-label">Abr. S5</div>
+        </div>
+        <div class="sla-bar-col">
+          <div class="sla-bar-outer">
+            <div class="meta-line"></div>
+            <div class="sla-bar-inner" style="height:66px;background:linear-gradient(180deg,rgba(76,175,50,0.7),rgba(76,175,50,0.4));border-radius:4px 4px 0 0">
+              <span class="sla-bar-val">6,6d</span>
+            </div>
+          </div>
+          <div class="sla-bar-label">Mai. S1</div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:12px">A linha tracejada representa a meta de 3 dias. A tendência de queda ao longo das semanas é positiva, mas o SLA ainda está acima da meta em todas as semanas.</p>
+    </div>
+
+    <div class="section-title">SLA por Família — Abril (cards)</div>
+    <div class="cards-3">
+      <div class="fam-card fam-aza">
+        <div class="fam-name">AZA</div>
+        <div class="fam-val" style="font-size:40px;color:var(--warn)">9,6d</div>
+        <div style="font-size:11px;color:var(--text-muted)">SLA médio — Abril</div>
+        <div style="margin-top:8px;font-size:12px;color:var(--text-dim)">3,2× acima da meta</div>
+      </div>
+      <div class="fam-card fam-en">
+        <div class="fam-name">ENERGIZADOS</div>
+        <div class="fam-val" style="font-size:40px;color:var(--red)">19,5d</div>
+        <div style="font-size:11px;color:var(--text-muted)">SLA médio — Abril · maior gargalo</div>
+        <div style="margin-top:8px;font-size:12px;color:var(--text-dim)">6,5× acima da meta</div>
+      </div>
+      <div class="fam-card fam-iv">
+        <div class="fam-name">iVOLT</div>
+        <div class="fam-val" style="font-size:40px;color:var(--warn)">11,3d</div>
+        <div style="font-size:11px;color:var(--text-muted)">SLA médio — Abril</div>
+        <div style="margin-top:8px;font-size:12px;color:var(--text-dim)">3,8× acima da meta</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P9: SLA POR MOTIVO E FAMÍLIA ===== -->
+<div class="page" id="p9">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">SLA · Abril 2025</div>
+        <h2 class="page-title">SLA por Motivo Macro e Família</h2>
+      </div>
+      <div class="page-badge">Excluindo Setor Contratos</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Motivo Macro</th>
+            <th style="text-align:right">AZA</th>
+            <th style="text-align:right">ENERGIZADOS</th>
+            <th style="text-align:right">iVOLT</th>
+            <th style="text-align:right">Total Geral</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fatura da Fornecedora</td>
+            <td class="num warn-val">9,1d</td>
+            <td class="num red-val">21,1d</td>
+            <td class="num warn-val">12,4d</td>
+            <td class="num red-val">15,7d</td>
+            <td><span class="pill pill-red">Crítico</span></td>
+          </tr>
+          <tr>
+            <td>Financeiro & Cobrança</td>
+            <td class="num warn-val">13,1d</td>
+            <td class="num red-val">23,5d</td>
+            <td class="num warn-val">14,5d</td>
+            <td class="num red-val">18,0d</td>
+            <td><span class="pill pill-red">Crítico</span></td>
+          </tr>
+          <tr>
+            <td>Sol. Gerais (Fornecedoras)</td>
+            <td class="num warn-val">9,1d</td>
+            <td class="num red-val">27,0d</td>
+            <td class="num" style="color:var(--text-muted)">—</td>
+            <td class="num red-val">25,5d</td>
+            <td><span class="pill pill-red">Crítico</span></td>
+          </tr>
+          <tr>
+            <td>Cadastro & Parametrização</td>
+            <td class="num warn-val">9,4d</td>
+            <td class="num red-val">21,4d</td>
+            <td class="num warn-val">10,4d</td>
+            <td class="num red-val">13,6d</td>
+            <td><span class="pill pill-warn">Alto</span></td>
+          </tr>
+          <tr>
+            <td>DMC</td>
+            <td class="num" style="color:var(--text-muted)">—</td>
+            <td class="num warn-val">14,8d</td>
+            <td class="num" style="color:var(--text-muted)">—</td>
+            <td class="num warn-val">14,8d</td>
+            <td><span class="pill pill-warn">Alto</span></td>
+          </tr>
+          <tr>
+            <td>Fatura da Distribuidora</td>
+            <td class="num warn-val">11,5d</td>
+            <td class="num warn-val">9,9d</td>
+            <td class="num warn-val">9,1d</td>
+            <td class="num warn-val">9,8d</td>
+            <td><span class="pill pill-warn">Alto</span></td>
+          </tr>
+          <tr class="total-row">
+            <td><strong>Total Geral (excl. Contratos)</strong></td>
+            <td class="num">9,6d</td>
+            <td class="num">19,5d</td>
+            <td class="num">11,3d</td>
+            <td class="num">14,8d</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Destaques de Concentração</div>
+    <div class="split" style="gap:14px">
+      <div class="alert-banner" style="margin-bottom:0">
+        <div class="alert-icon">🔴</div>
+        <div class="alert-text"><strong>ENERGIZADOS</strong> apresenta SLA significativamente maior em todos os motivos macro. O caso mais crítico é <strong>Sol. Gerais (Fornecedoras): 27,0 dias</strong> — 9× acima da meta.</div>
+      </div>
+      <div class="alert-banner" style="margin-bottom:0;background:rgba(245,166,35,0.06);border-color:rgba(245,166,35,0.25);border-left-color:var(--warn)">
+        <div class="alert-icon" style="background:rgba(245,166,35,0.12)">⚠</div>
+        <div class="alert-text"><strong>AZA e iVOLT</strong> têm SLAs mais controlados, mas ainda distantes da meta. O motivo <strong>Financeiro & Cobrança</strong> é o mais problemático para AZA (13,1d) e iVOLT (14,5d).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P10: SLA CONTRATOS ===== -->
+<div class="page" id="p10">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">SLA · Setor Contratos</div>
+        <h2 class="page-title">SLA — Setor Contratos</h2>
+      </div>
+      <div class="page-badge">SLA Médio Geral: 3,7 dias</div>
+    </div>
+
+    <div class="cards-3" style="margin-bottom:24px">
+      <div class="card card-green">
+        <div class="card-label">SLA Médio Total — Contratos</div>
+        <div class="card-value">3,7d</div>
+        <div class="card-sub">Próximo da meta de 3 dias</div>
+      </div>
+      <div class="card card-red">
+        <div class="card-label">Maior Desvio — Reprovar Cadastro</div>
+        <div class="card-value">14,1d</div>
+        <div class="card-sub">4,7× acima da meta · volume baixo (1 caso em Abr.)</div>
+      </div>
+      <div class="card card-warn">
+        <div class="card-label">2º Maior Desvio — Cadastro em Lote</div>
+        <div class="card-value">10,8d</div>
+        <div class="card-sub">7 chamados em Abril</div>
+      </div>
+    </div>
+
+    <div class="section-title">SLA por Tipo — Contratos (Geral Mar–Mai)</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo de Chamado</th>
+            <th style="text-align:right">SLA Médio</th>
+            <th>vs. Meta (3d)</th>
+            <th style="min-width:160px">Barra</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Reprovar Cadastro</td><td class="num red-val">14,1d</td><td><span class="pill pill-red">+11,1d</span></td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div></div></td></tr>
+          <tr><td>Cadastro em Lote</td><td class="num red-val">10,8d</td><td><span class="pill pill-red">+7,8d</span></td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill red" style="width:77%"></div></div></div></td></tr>
+          <tr><td>Erro de Validação</td><td class="num warn-val">7,9d</td><td><span class="pill pill-warn">+4,9d</span></td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:56%"></div></div></div></td></tr>
+          <tr><td>Ajuste de Média de Consumo</td><td class="num warn-val">6,5d</td><td><span class="pill pill-warn">+3,5d</span></td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:46%"></div></div></div></td></tr>
+          <tr><td>Análise p/ Reemissão de Contrato</td><td class="num warn-val">5,3d</td><td><span class="pill pill-warn">+2,3d</span></td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:38%"></div></div></div></td></tr>
+          <tr><td>Dúvidas Operacionais</td><td class="num warn-val">4,8d</td><td><span class="pill pill-warn">+1,8d</span></td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:34%"></div></div></div></td></tr>
+          <tr><td>Revalidação de Reprovados</td><td class="num warn-val">4,0d</td><td><span class="pill pill-warn">+1,0d</span></td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:28%"></div></div></div></td></tr>
+          <tr><td>Atraso de Validação</td><td class="num" style="color:var(--text)">2,6d</td><td><span class="pill pill-green">Na meta</span></td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div></div></td></tr>
+          <tr><td>Inclusão de Testemunha</td><td class="num green-val">2,4d</td><td><span class="pill pill-green">Na meta</span></td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div></div></td></tr>
+          <tr><td>Duplicidade de Devolutivas</td><td class="num green-val">2,3d</td><td><span class="pill pill-green">Na meta</span></td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:16%"></div></div></div></td></tr>
+          <tr class="total-row"><td><strong>Total Geral</strong></td><td class="num">3,7d</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P11: SLA N2 VS FORNECEDORAS ===== -->
+<div class="page" id="p11">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">SLA · Diagnóstico</div>
+        <h2 class="page-title">Onde está o gargalo?</h2>
+      </div>
+      <div class="page-badge">N2 vs. Fornecedoras — Abril</div>
+    </div>
+
+    <div class="cards-3" style="margin-bottom:28px">
+      <div class="card card-red">
+        <div class="card-label">SLA Médio — N2 / Relacionamentos</div>
+        <div class="card-value">12,6d</div>
+        <div class="card-sub">Tempo médio com a equipe interna N2</div>
+      </div>
+      <div class="card card-green">
+        <div class="card-label">SLA Médio — Fornecedoras</div>
+        <div class="card-value">1,9d</div>
+        <div class="card-sub">Tempo médio de resposta das fornecedoras</div>
+      </div>
+      <div class="card card-warn">
+        <div class="card-label">SLA Total — Abril</div>
+        <div class="card-value">14,8d</div>
+        <div class="card-sub">N2 representa ~85% do tempo total</div>
+      </div>
+    </div>
+
+    <div class="alert-banner">
+      <div class="alert-icon">⚡</div>
+      <div class="alert-text">O gargalo principal de SLA está no <strong>N2 / Relacionamentos</strong>, não nas fornecedoras. As fornecedoras respondem em média em 1,9 dias — dentro da meta. Exceções: ATUA (16,5d), GV (7,0d), THOPEN (3,6d).</div>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="section-title">SLA N2 vs. Fornecedoras por Motivo Macro</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Motivo Macro</th><th style="text-align:right">N2 (dias)</th><th style="text-align:right">Fornec. (dias)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Sol. Gerais (Forn.)</td><td class="num red-val">25,5d</td><td class="num green-val">0,1d</td></tr>
+              <tr><td>Financeiro & Cobrança</td><td class="num red-val">15,3d</td><td class="num warn-val">2,3d</td></tr>
+              <tr><td>DMC</td><td class="num warn-val">14,7d</td><td class="num green-val">0,02d</td></tr>
+              <tr><td>Fatura da Fornecedora</td><td class="num warn-val">13,1d</td><td class="num warn-val">2,4d</td></tr>
+              <tr><td>Cadastro & Param.</td><td class="num warn-val">11,0d</td><td class="num warn-val">1,9d</td></tr>
+              <tr><td>Fatura da Distribuidora</td><td class="num warn-val">8,3d</td><td class="num warn-val">1,5d</td></tr>
+              <tr class="total-row"><td><strong>Total</strong></td><td class="num">12,6d</td><td class="num">1,9d</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">SLA por Fornecedora — Abril (Top desvios)</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Fornecedora</th><th style="text-align:right">SLA Médio</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>ATUA</strong></td><td class="num red-val">16,5d</td><td><span class="pill pill-red">Crítico</span></td></tr>
+              <tr><td><strong>GV</strong></td><td class="num red-val">7,0d</td><td><span class="pill pill-red">Crítico</span></td></tr>
+              <tr><td>THOPEN</td><td class="num warn-val">3,6d</td><td><span class="pill pill-warn">Acima meta</span></td></tr>
+              <tr><td>GEDISA</td><td class="num warn-val">3,6d</td><td><span class="pill pill-warn">Acima meta</span></td></tr>
+              <tr><td>SUNNE</td><td class="num warn-val">2,8d</td><td><span class="pill pill-warn">Próximo</span></td></tr>
+              <tr><td>VANTAGE</td><td class="num warn-val">2,3d</td><td><span class="pill pill-warn">Próximo</span></td></tr>
+              <tr><td>ULTRA</td><td class="num green-val">1,9d</td><td><span class="pill pill-green">Na meta</span></td></tr>
+              <tr><td>SOLATIO</td><td class="num green-val">1,8d</td><td><span class="pill pill-green">Na meta</span></td></tr>
+              <tr><td>EDP, FIT, COMERC…</td><td class="num green-val">&lt;1d</td><td><span class="pill pill-green">Na meta</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P12: EVOLUÇÃO DO SISTEMA ===== -->
+<div class="page" id="p12">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">Sistema de Chamados · Desenvolvimento</div>
+        <h2 class="page-title">Evolução do Sistema</h2>
+      </div>
+      <div class="page-badge">Insights para o Time de Dev</div>
+    </div>
+
+    <div class="section-title">Em Implementação</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px">
+      <div class="insight-card">
+        <div class="insight-icon">✅</div>
+        <div class="insight-body">
+          <div class="insight-title">Divisão de SLA por Departamento</div>
+          <div class="insight-desc">Separação do SLA por setor de origem e destino (interno/externo) já está em implementação, permitindo imputação mais precisa do tempo em cada etapa.</div>
+          <div style="margin-top:8px"><span class="pill pill-implementing">Em implementação</span></div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">✅</div>
+        <div class="insight-body">
+          <div class="insight-title">Validação de Dados e Documentação</div>
+          <div class="insight-desc">Validações na abertura do chamado — campos obrigatórios, documentação mínima e pré-triagem — já estão em desenvolvimento, visando reduzir reports por informações ausentes.</div>
+          <div style="margin-top:8px"><span class="pill pill-implementing">Em implementação</span></div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">✅</div>
+        <div class="insight-body">
+          <div class="insight-title">Verificação de Duplicidade</div>
+          <div class="insight-desc">Sistema de detecção automática de chamados duplicados (por cliente e assunto) em desenvolvimento. Ticket Duplicado representa 8% dos reports em Abril.</div>
+          <div style="margin-top:8px"><span class="pill pill-implementing">Em implementação</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Oportunidades Identificadas</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+      <div class="insight-card">
+        <div class="insight-icon">👁</div>
+        <div class="insight-body">
+          <div class="insight-title">Visibilidade do Chamado para Quem Abriu</div>
+          <div class="insight-desc">A cobrança de SLA já existe para o time de Relacionamentos (N2), mas <strong style="color:var(--text)">quem abriu o chamado não consegue acompanhar a pendência com facilidade</strong>. Uma visão de andamento — mesmo simplificada — reduziria acionamentos duplicados e aumentaria a confiança no processo.</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">📊</div>
+        <div class="insight-body">
+          <div class="insight-title">Proporção de Reports por Agente</div>
+          <div class="insight-desc">Atualmente, o sistema não exibe a <strong style="color:var(--text)">proporção entre chamados reportados e abertos por agente</strong>. Considerando as diretrizes éticas da empresa, uma métrica anonimizada de qualidade por equipe (sem ranking nominal) apoiaria a gestão de treinamento e identificação de necessidades.</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">🔔</div>
+        <div class="insight-body">
+          <div class="insight-title">Alertas para Chamados com Fornecedora</div>
+          <div class="insight-desc">Quando um chamado é encaminhado para fornecedora e não recebe retorno, não há sinalização automática ao solicitante. Um alerta de prazo excedido para casos externos melhoraria o acompanhamento de casos como ATUA (SLA 16,5d) e GV (7,0d).</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon">🏷</div>
+        <div class="insight-body">
+          <div class="insight-title">Asseguramento de Continuidade ao Cliente Final</div>
+          <div class="insight-desc">Para chamados com SLA prolongado, uma comunicação proativa ao licenciado sobre o status do caso — gerada automaticamente pelo sistema em marcos de prazo — reduziria a percepção de abandono e o volume de acionamentos.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P13: PRÓXIMOS PASSOS ===== -->
+<div class="page" id="p13">
+  <div class="page-inner">
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-eyebrow">Conclusão</div>
+        <h2 class="page-title">Próximos Passos</h2>
+      </div>
+      <div class="page-badge">Estrutura por parte interessada</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+
+      <div class="conclusion-block">
+        <div class="conclusion-who">🏢 Gestão do Departamento</div>
+        <div class="conclusion-items">
+          <div class="conclusion-item">Inserir insight manualmente</div>
+          <div class="conclusion-item">Inserir insight manualmente</div>
+          <div class="conclusion-item">Inserir insight manualmente</div>
+          <div class="conclusion-item">Inserir insight manualmente</div>
+        </div>
+      </div>
+
+      <div class="conclusion-block">
+        <div class="conclusion-who">👥 Responsáveis de Família (BU)</div>
+        <div class="conclusion-items">
+          <div class="conclusion-item">Inserir insight manualmente</div>
+          <div class="conclusion-item">Inserir insight manualmente</div>
+          <div class="conclusion-item">Inserir insight manualmente</div>
+          <div class="conclusion-item">Inserir insight manualmente</div>
+        </div>
+      </div>
+
+      <div class="conclusion-block">
+        <div class="conclusion-who">⚙ Time de Desenvolvimento</div>
+        <div class="conclusion-items">
+          <div class="conclusion-item">Inserir insight manualmente</div>
+          <div class="conclusion-item">Inserir insight manualmente</div>
+          <div class="conclusion-item">Inserir insight manualmente</div>
+          <div class="conclusion-item">Inserir insight manualmente</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sep"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.15em;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Referência</div>
+        <div style="font-size:13px;color:var(--text-dim)">Dados exportados do sistema interno de chamados · Período: Março–Maio 2025 · Foco analítico: Abril 2025</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="data:image/jpeg;base64,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" alt="iGreen Energy" style="height:22px;mix-blend-mode:lighten;opacity:0.6">
+        <div style="font-size:11px;color:var(--text-muted)">iGreen Energy · Suporte ao Licenciado</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function goTo(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+
+  const pages = ['p0','p1','p2','p3','p4','p5','p6','p7','p8','p9','p10','p11','p12','p13'];
+  const idx = pages.indexOf(id);
+  document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
