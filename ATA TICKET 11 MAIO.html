@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ata de Reunião — Melhoria de Processos de Ticket · 15/05/2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-900: #0f3d22;
+    --green-700: #1a5c38;
+    --green-500: #2e8b57;
+    --green-200: #c6e8d4;
+    --green-50:  #f0faf4;
+    --amber-600: #b45309;
+    --amber-50:  #fffbeb;
+    --red-700:   #b91c1c;
+    --red-50:    #fef2f2;
+    --blue-700:  #1d4ed8;
+    --blue-50:   #eff6ff;
+    --violet-700:#6d28d9;
+    --violet-50: #f5f3ff;
+    --gray-800:  #1c1c1c;
+    --gray-500:  #6b7280;
+    --gray-300:  #d1d5db;
+    --gray-100:  #f4f6f5;
+    --white:     #ffffff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @media print {
+    body { background: white; }
+    .page { box-shadow: none; max-width: 100%; }
+    .no-print { display: none; }
+  }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 14px;
+    color: var(--gray-800);
+    background: #e8ede9;
+    min-height: 100vh;
+    padding: 40px 20px;
+    line-height: 1.6;
+  }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    background: var(--white);
+    box-shadow: 0 4px 40px rgba(0,0,0,0.12);
+  }
+
+  /* ── HEADER ── */
+  .doc-header {
+    background: var(--green-700);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 0;
+    position: relative;
+  }
+  .header-top {
+    padding: 32px 48px 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .header-left {
+    flex: 1;
+  }
+  .header-logo {
+    height: 52px;
+    width: auto;
+    flex-shrink: 0;
+    filter: brightness(0) invert(1);
+    opacity: 0.92;
+  }
+  .header-label {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--green-200);
+    margin-bottom: 8px;
+  }
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 30px;
+    color: var(--white);
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .header-subtitle {
+    font-size: 14px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.80);
+    font-style: italic;
+  }
+  .header-meta {
+    background: var(--green-900);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 14px 48px;
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .meta-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green-200);
+  }
+  .meta-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  /* ── BODY ── */
+  .doc-body {
+    padding: 44px 48px 60px;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    margin-bottom: 40px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--green-200);
+  }
+  .section-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--green-200);
+    line-height: 1;
+    min-width: 36px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--green-700);
+    line-height: 1.2;
+  }
+
+  .subsection {
+    margin-bottom: 22px;
+  }
+  .subsection-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--green-500);
+    margin-bottom: 10px;
+    padding-left: 12px;
+    border-left: 3px solid var(--green-500);
+  }
+
+  p.body-text {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--gray-800);
+    margin-bottom: 10px;
+  }
+
+  ul.item-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  ul.item-list li {
+    font-size: 13.5px;
+    line-height: 1.6;
+    padding-left: 18px;
+    position: relative;
+    color: var(--gray-800);
+  }
+  ul.item-list li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 9px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green-500);
+  }
+  ul.item-list.sub li {
+    padding-left: 32px;
+    font-size: 13px;
+    color: #444;
+  }
+  ul.item-list.sub li::before {
+    left: 14px;
+    width: 5px; height: 5px;
+    background: none;
+    border: 1.5px solid var(--green-500);
+  }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .callout-icon {
+    font-size: 14px;
+    line-height: 1.4;
+    flex-shrink: 0;
+    width: 20px;
+    text-align: center;
+  }
+  .callout.warn  { background: var(--amber-50); border-left: 3px solid var(--amber-600); color: #78350f; }
+  .callout.info  { background: var(--blue-50);  border-left: 3px solid var(--blue-700);  color: #1e3a8a; }
+  .callout.ok    { background: var(--green-50); border-left: 3px solid var(--green-500); color: var(--green-700); }
+  .callout.note  { background: var(--gray-100); border-left: 3px solid var(--gray-300);  color: #374151; }
+  .callout-icon.warn-ico  { color: var(--amber-600); }
+  .callout-icon.info-ico  { color: var(--blue-700); }
+  .callout-icon.ok-ico    { color: var(--green-500); }
+  .callout-icon.note-ico  { color: var(--gray-500); }
+
+  /* ── ACTION TABLE ── */
+  .action-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 6px;
+  }
+  .action-table thead tr {
+    background: var(--green-700);
+    color: var(--white);
+  }
+  .action-table thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .action-table tbody tr {
+    border-bottom: 1px solid var(--gray-300);
+  }
+  .action-table tbody tr:nth-child(odd) {
+    background: var(--gray-100);
+  }
+  .action-table tbody tr:nth-child(even) {
+    background: var(--white);
+  }
+  .action-table tbody td {
+    padding: 10px 14px;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .action-table td.desc {
+    width: 46%;
+    font-weight: 400;
+  }
+  .action-table td.owner {
+    width: 16%;
+    font-weight: 600;
+    color: var(--blue-700);
+  }
+  .action-table td.deadline {
+    width: 14%;
+    font-weight: 600;
+    color: var(--red-700);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .badge.pendente     { background: #fee2e2; color: var(--red-700); }
+  .badge.em-andamento { background: #fef3c7; color: var(--amber-600); }
+  .badge.hoje         { background: var(--violet-50); color: var(--violet-700); }
+  .badge.concluido    { background: var(--green-50); color: var(--green-700); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--gray-300);
+    margin: 30px 0;
+  }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    border-top: 2px solid var(--green-200);
+    padding: 16px 48px;
+    background: var(--green-50);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .footer-text {
+    font-size: 11px;
+    color: var(--gray-500);
+    font-style: italic;
+  }
+  .footer-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--green-700);
+    background: var(--green-200);
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  /* ── PRINT BUTTON ── */
+  .print-bar {
+    max-width: 860px;
+    margin: 0 auto 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .btn-print {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--green-700);
+    color: white;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+  }
+  .btn-print:hover { background: var(--green-900); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="doc-header">
+    <div class="header-top">
+      <div class="header-left">
+        <div class="header-label">Ata de Reunião &mdash; Uso Interno</div>
+        <h1 class="header-title">Melhoria de Processos de Ticket</h1>
+        <p class="header-subtitle">Segunda Reunião &mdash; Relacionamentos e Suporte ao Licenciado</p>
+      </div>
+      <img class="header-logo" src="../Quality/quality-monitoring/assets/images/logo-full-clear.png" alt="iGreen Energy">
+    </div>
+    <div class="header-meta">
+      <div class="meta-item">
+        <span class="meta-label">Data</span>
+        <span class="meta-value">15 de maio de 2026</span>
+      </div>
+      <!-- <div class="meta-item">
+        <span class="meta-label">Edição</span>
+        <span class="meta-value">2.ª Reunião</span>
+      </div> -->
+      <div class="meta-item">
+        <span class="meta-label">Áreas</span>
+        <span class="meta-value">Relacionamentos / Suporte ao Licenciado</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="doc-body">
+
+    <!-- 1. GAPS PROCESSUAIS -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-number">1</span>
+        <h2 class="section-title">GAPs Processuais Discutidos</h2>
+      </div>
+      <!-- <p class="body-text">Os seguintes gaps foram levantados como prioridade para análise e encaminhamento:</p> -->
+      <ul class="item-list">
+        <li>Mapear e propor soluções para contato com fornecedoras cujo SLA de tratativas excede o proposto.</li>
+        <li>Identificar gargalos de tratativa após o repasse de solicitações para a equipe de Operações.</li>
+      </ul>
+    </section>
+
+    <!-- 2. PROPOSTAS DE MELHORIA -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-number">2</span>
+        <h2 class="section-title">Propostas de Melhoria</h2>
+      </div>
+
+      <div class="subsection">
+        <p class="subsection-title">2.1 &mdash; Em Desenvolvimento</p>
+        <p class="body-text"><strong>Separação e categorização do SLA de tratativas por fase da esteira de resolução</strong></p>
+        <ul class="item-list">
+          <li>Permitirá identificar gaps de tempo de resposta para N2, Fornecedoras, Contratos e Operações.</li>
+          <li>Previsão de entrega: até o fim de <strong>maio de 2026</strong>.</li>
+        </ul>
+      </div>
+
+      <div class="subsection">
+        <p class="subsection-title">2.2 &mdash; Em Elaboração</p>
+        <p class="body-text"><strong>Ajuste para melhorar a definição do setor de tratativa do Ticket (atualmente definido por título)</strong></p>
+        <ul class="item-list">
+          <li>Revisar para padrão de formulário, viabilizando regras distintas por fornecedora.</li>
+          <li>Ou seleção em cascata, priorizando encaminhamentos internos.</li>
+        </ul>
+        <div class="callout warn">
+          <span class="callout-icon warn-ico">❗</span>
+          <span>Requer mapeamento amplo e completo de quais solicitações são tratadas por ticket e sob quais condições.<br><strong>Sem previsão de entrega no momento.</strong></span>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="subsection-title">2.3 &mdash; Ajustes Finais</p>
+        <p class="body-text"><strong>Acesso para visualização de faturamento na plataforma Hidra</strong></p>
+        <ul class="item-list">
+          <li>Acesso único disponibilizado pela parceira &mdash; sem rastreamento completo disponível.</li>
+          <li><strong>Objetivo:</strong> ampliar a autonomia nas tratativas de faturamento e reduzir o SLA de fornecedoras como a GV, das quais se aguardava o envio de faturas para análise.</li>
+        </ul>
+
+        <p class="body-text" style="margin-top:14px;"><strong>Padronização de áudio para notificação ao Licenciado &mdash; segundas vias de boleto sem layout iGreen (Cérebro)</strong></p>
+        <ul class="item-list">
+          <li>Disponibilizado em 14/05/2026; ainda pendente de liberação pelo Analista de Operações.</li>
+          <li>Será viabilizado para tratar os casos antes que sigam para N2.</li>
+        </ul>
+        <div class="callout ok">
+          <span class="callout-icon ok-ico">✅</span>
+          <span><strong>Status:</strong> Em andamento.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. SUGESTÕES DO SUPORTE AO LICENCIADO -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-number">3</span>
+        <h2 class="section-title">Sugestões do Suporte ao Licenciado</h2>
+      </div>
+      <ul class="item-list">
+        <li>Disparo proativo ao Licenciado sobre tickets após mudanças de status específicas, e periodicamente quando houver violação de SLA &mdash; + melhorias no modelo de disparo atual.</li>
+        <li>Utilização da aplicação da Agnes Angelim para criação de scripts padrão para determinados tipos de ticket, reforçada pelas regras de validação de anexo já existentes.</li>
+        <li>
+          Definição de padrões de qualidade para informações completas, tanto na abertura quanto no retorno de Tickets &mdash; reduz o SLA de Relacionamentos e melhora a experiência do Licenciado.
+          <div class="callout note" style="margin-top:8px;">
+            <span class="callout-icon note-ico">[  ]</span>
+            <span><strong>Status:</strong> Pendente com Relacionamentos.</span>
+          </div>
+        </li>
+        <li>Inclusão e manutenção constante do POP das três famílias na plataforma oficial da iGreen.</li>
+        <li>Alinhamento do processo de triagem das solicitações &mdash; especialmente de faturas &mdash; pelo Analista de Operações, com intuito de reduzir os tickets de faturamento que chegam ao N2 sem verificação adequada do real status.</li>
+      </ul>
+    </section>
+
+    <!-- 4. PONTOS TRAZIDOS POR RELACIONAMENTOS -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-number">4</span>
+        <h2 class="section-title">Pontos Trazidos por Relacionamentos</h2>
+      </div>
+
+      <div class="subsection">
+        <p class="subsection-title">Penalização sobre cotas</p>
+        <p class="body-text">Revisão da penalização (sobre cotas) com base em erros cometidos em Ticket.</p>
+        <div class="callout warn">
+          <span class="callout-icon warn-ico">⚠️</span>
+          <span>Requer análise da gravidade do erro: impacto à experiência do cliente/Licenciado e capacidade de resolução do N2.</span>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <p class="subsection-title">Melhorias nos processos de tratativa relacionadas a faturamento</p>
+        <p class="body-text">Acesso ao novo sistema de faturamento, que deverá reduzir significativamente o SLA da fornecedora GV.</p>
+      </div>
+
+      <div class="subsection">
+        <p class="subsection-title">Gaps de comunicação na abertura de Tickets</p>
+        <p class="body-text">Foram identificadas situações em que há incompreensão quanto ao propósito da abertura de Ticket. Casos citados:</p>
+        <ul class="item-list">
+          <li>Alteração de desconto antes do cliente começar a gerar boleto &mdash; relacionado a problemas no novo link da Conexão Green.</li>
+          <li>Envio e atualização de fatura &mdash; levou à proposta de triagem pelo Analista de Operações.</li>
+          <li>Setor incorreto; títulos utilizados de forma inapropriada.</li>
+          <li>Ticket duplicado &mdash; requer redução urgente; o sistema já exibe aviso de duplicata no momento da abertura.</li>
+          <li>Informações incompletas &mdash; levou à proposta de padronização e melhoria dos campos obrigatórios.</li>
+        </ul>
+        <div class="callout info">
+          <span class="callout-icon info-ico">❗</span>
+          <span>A intenção não é que todos os tickets sejam revisados antes de seguir ao N2, mas sim que o máximo possível de casos passe por uma pré-triagem e seja, se possível, resolvido internamente no Suporte ao Licenciado.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. PLANO DE AÇÃO -->
+    <section class="section">
+      <div class="section-header">
+        <span class="section-number">5</span>
+        <h2 class="section-title">Encaminhamentos e Plano de Ação</h2>
+      </div>
+
+      <table class="action-table">
+        <thead>
+          <tr>
+            <th class="desc">Descrição</th>
+            <th class="owner">Responsável</th>
+            <th class="deadline">Prazo</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="desc">Divisão do SLA por fase da esteira de resolução</td>
+            <td class="owner">Leonardo</td>
+            <td class="deadline">Mai/2026</td>
+            <td><span class="badge em-andamento">Em andamento</span></td>
+          </tr>
+          <tr>
+            <td class="desc">Reestruturação do envio do Ticket para o setor correto</td>
+            <td class="owner">Leonardo</td>
+            <td class="deadline">Nec. ser cobrado</td>
+            <td><span class="badge pendente">Pendente</span></td>
+          </tr>
+          <tr>
+            <td class="desc">Inclusão de mais categorias de Report de Ticket</td>
+            <td class="owner">Leonardo</td>
+            <td class="deadline">Nec. ser cobrado</td>
+            <td><span class="badge hoje">Aguardando Resposta</span></td>
+          </tr>
+          <tr>
+            <td class="desc">Inclusão de novos materiais no POP</td>
+            <td class="owner">Relacionamentos</td>
+            <td class="deadline">Nec. ser cobrado</td>
+            <td><span class="badge pendente">Pendente</span></td>
+          </tr>
+          <tr>
+            <td class="desc">Continuidade dos treinamentos quinzenais</td>
+            <td class="owner">Suporte ao Licenciado</td>
+            <td class="deadline">18/Mai/2026</td>
+            <td><span class="badge em-andamento">Agendado</span></td>
+          </tr>
+          <tr>
+            <td class="desc">Aumento da presença do Analista de Operações na triagem e tratativa de tickets (foco em faturamento) &mdash; treinamento agendado em 15/05</td>
+            <td class="owner">Guilherme</td>
+            <td class="deadline">15/Mai/2026</td>
+            <td><span class="badge em-andamento">Agendado</span></td>
+          </tr>
+          <tr>
+            <td class="desc">Ataque coordenado aos tickets em estado crítico (mais de 30 dias em aberto) &mdash; cobrar previsão</td>
+            <td class="owner">Relacionamentos</td>
+            <td class="deadline">Nec. ser cobrado</td>
+            <td><span class="badge pendente">Pendente</span></td>
+          </tr>
+          <tr>
+            <td class="desc">Definição de scripts padrão, validação de campos e informações mínimas na abertura de Ticket &mdash; versão simplificada possível ainda hoje</td>
+            <td class="owner">Relacionamentos</td>
+            <td class="deadline">15/Mai/2026</td>
+            <td><span class="badge hoje">Aguardando Resposta</span></td>
+          </tr>
+          <tr>
+            <td class="desc">Novos mecanismos de comunicação e notificação do cliente e Licenciado (Licenciado deve receber atualizações prioritariamente) &mdash; requer projeto</td>
+            <td class="owner">Ellian + Projetos</td>
+            <td class="deadline">1.ª sem. Jun/2026</td>
+            <td><span class="badge pendente">Pendente</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="doc-footer">
+    <span class="footer-text">Gerado em 15/05/2026 &mdash; Uso interno. Não distribuir externamente sem autorização.</span>
+    <span class="footer-badge">iGreen &mdash; Confidencial</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
