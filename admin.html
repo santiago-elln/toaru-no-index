@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — A Certain Index</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --green:        #4caf32;
+      --green-bright: #5ecf43;
+      --green-glow:   rgba(76,175,50,0.11);
+      --green-border: rgba(76,175,50,0.28);
+      --black:  #0a0a0a;
+      --card:   #181818;
+      --border: rgba(255,255,255,0.08);
+      --text:       #e8e8e8;
+      --text-dim:   #9a9a9a;
+      --text-muted: #636363;
+      --red:     #e05252;
+      --red-dim: rgba(224,82,82,0.11);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--black); color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10,10,10,0.97);
+      border-bottom: 1px solid var(--green-border);
+      height: 56px; display: flex; align-items: center;
+      padding: 0 24px; gap: 12px;
+    }
+
+    .nav-back {
+      font-size: 14px; color: var(--text-dim);
+      text-decoration: none; transition: color 0.15s;
+    }
+    .nav-back:hover { color: var(--text); }
+
+    .nav-sep { width: 1px; height: 18px; background: var(--border); }
+
+    .nav-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 15px;
+    }
+
+    .nav-user { margin-left: auto; font-size: 13px; color: var(--text-muted); }
+
+    .nav-logout {
+      padding: 5px 14px; border-radius: 6px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-dim); font-size: 13px; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; transition: all 0.18s;
+    }
+    .nav-logout:hover { border-color: rgba(224,82,82,0.4); color: var(--red); }
+
+    main { max-width: 760px; margin: 0 auto; padding: 88px 24px 96px; }
+
+    /* ── LOGIN ── */
+    .login-wrap {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 75vh;
+    }
+
+    .login-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 44px;
+      width: 100%; max-width: 420px;
+    }
+
+    .login-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px; font-weight: 800; margin-bottom: 6px;
+    }
+
+    .login-sub { font-size: 14px; color: var(--text-dim); margin-bottom: 30px; }
+
+    /* ── FORM ELEMENTS ── */
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+
+    label { font-size: 13px; font-weight: 500; color: var(--text-dim); }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 14px;
+      width: 100%; outline: none; transition: border-color 0.18s, background 0.18s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--green-border);
+      background: var(--green-glow);
+    }
+
+    textarea { resize: vertical; min-height: 82px; }
+    select option { background: #1a1a1a; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .field-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-family: monospace; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 10px 20px; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; border: none; transition: all 0.18s;
+    }
+
+    .btn-primary { background: var(--green); color: #fff; width: 100%; }
+    .btn-primary:hover:not(:disabled) { background: var(--green-bright); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-danger {
+      padding: 5px 12px; border-radius: 6px;
+      background: transparent; border: 1px solid rgba(224,82,82,0.3);
+      color: var(--red); font-size: 13px; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; transition: all 0.18s;
+    }
+    .btn-danger:hover { background: var(--red-dim); }
+
+    /* ── ALERTS ── */
+    .alert {
+      padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; margin-bottom: 16px;
+    }
+    .alert-error   { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,82,82,0.22); }
+    .alert-success { background: var(--green-glow); color: var(--green); border: 1px solid var(--green-border); }
+
+    /* ── UPLOAD AREA ── */
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px; font-weight: 700; margin-bottom: 18px;
+    }
+
+    .upload-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 30px; margin-bottom: 44px;
+    }
+
+    .dropzone {
+      border: 2px dashed rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 40px 24px;
+      text-align: center; cursor: pointer; margin-bottom: 22px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--green-border); background: var(--green-glow);
+    }
+
+    .dropzone input { display: none; }
+    .dropzone-icon  { font-size: 30px; margin-bottom: 10px; }
+    .dropzone-text  { font-size: 14px; color: var(--text-dim); }
+    .dropzone-hint  { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .dropzone-file  { font-size: 13px; color: var(--green); margin-top: 8px; font-weight: 600; }
+
+    /* ── PROGRESS ── */
+    .progress-wrap {
+      height: 3px; background: var(--border);
+      border-radius: 2px; margin-top: 14px;
+      overflow: hidden; display: none;
+    }
+    .progress-bar {
+      height: 100%; background: var(--green);
+      width: 0%; border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    /* ── PAGES LIST ── */
+    .pages-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .page-item {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 18px;
+      display: flex; align-items: center; gap: 14px;
+    }
+
+    .page-item-info { flex: 1; min-width: 0; }
+
+    .page-item-title {
+      font-weight: 600; font-size: 14px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .page-item-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+    .page-item-cat {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.07em;
+      text-transform: uppercase; flex-shrink: 0;
+      padding: 2px 9px; border-radius: 4px;
+      background: var(--green-glow); color: var(--green);
+      border: 1px solid var(--green-border);
+    }
+
+    /* ── TOGGLE ── */
+    .toggle-wrap { display: flex; align-items: center; flex-shrink: 0; }
+
+    .toggle {
+      appearance: none; -webkit-appearance: none;
+      width: 36px; height: 20px; border-radius: 10px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.12);
+      cursor: pointer; position: relative; transition: all 0.2s;
+    }
+    .toggle::after {
+      content: ''; position: absolute;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #fff; top: 2px; left: 2px; transition: left 0.2s;
+    }
+    .toggle:checked { background: var(--green); border-color: var(--green); }
+    .toggle:checked::after { left: 18px; }
+
+    .empty-list { font-size: 14px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<!-- Barra de navegação (só aparece logado) -->
+<nav id="mainNav" style="display:none">
+  <a href="index.html" class="nav-back">← Índice</a>
+  <div class="nav-sep"></div>
+  <span class="nav-title">Admin</span>
+  <span class="nav-user" id="navUser"></span>
+  <button class="nav-logout" onclick="logout()">Sair</button>
+</nav>
+
+<main>
+  <!-- LOGIN -->
+  <div class="login-wrap" id="loginSection">
+    <div class="login-card">
+      <div class="login-title">Acesso Admin</div>
+      <div class="login-sub">Entre com sua conta iGreen para gerenciar documentos.</div>
+      <div id="loginAlert"></div>
+      <div class="form-group">
+        <label for="loginEmail">E-mail</label>
+        <input type="email" id="loginEmail" placeholder="seu@igreenenergy.com.br" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">Senha</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" onclick="login()">Entrar</button>
+    </div>
+  </div>
+
+  <!-- PAINEL ADMIN -->
+  <div id="adminSection" style="display:none">
+
+    <!-- Upload -->
+    <div class="section-title">Enviar novo documento</div>
+    <div class="upload-card">
+
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".html,text/html" onchange="onFileSelect(event)">
+        <div class="dropzone-icon">📄</div>
+        <div class="dropzone-text">Clique ou arraste um arquivo HTML</div>
+        <div class="dropzone-hint">Apenas arquivos .html · máx. 10 MB</div>
+        <div class="dropzone-file" id="selectedFileName"></div>
+      </div>
+
+      <div id="uploadAlert"></div>
+
+      <div class="form-group">
+        <label for="upTitle">Título <span style="color:var(--red)">*</span></label>
+        <input type="text" id="upTitle" placeholder="Ex: Relatório de Chamados — Maio 2026">
+      </div>
+
+      <div class="form-group">
+        <label for="upDesc">Descrição</label>
+        <textarea id="upDesc" placeholder="Breve descrição do conteúdo do documento…"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="upCategory">Categoria</label>
+          <select id="upCategory">
+            <option value="">— Selecione —</option>
+            <option>Relatório</option>
+            <option>Ticket</option>
+            <option>Ata</option>
+            <option>Processo</option>
+            <option>Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="upTags">Tags</label>
+          <input type="text" id="upTags" placeholder="suporte, N2, melhoria">
+          <div class="field-hint">Separadas por vírgula</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="upSlug">Slug (URL)</label>
+        <input type="text" id="upSlug" placeholder="gerado automaticamente pelo nome do arquivo">
+        <div class="field-hint" id="slugPreview"></div>
+      </div>
+
+      <div class="progress-wrap" id="progressWrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <button class="btn btn-primary" id="uploadBtn" onclick="uploadPage()" style="margin-top:18px">
+        Publicar documento
+      </button>
+    </div>
+
+    <!-- Lista -->
+    <div class="section-title">Documentos publicados</div>
+    <div class="pages-list" id="pagesList">
+      <p class="empty-list">Carregando…</p>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  const SUPABASE_URL = 'https://zxgscwoozgqghnfoduii.supabase.co'
+  const SUPABASE_KEY = 'sb_publishable_ODMuXRDKARvr7HYL2NzFWQ_tfNYZOzr'
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+  let selectedFile = null
+
+  // ── AUTH ──────────────────────────────────────────────
+  client.auth.onAuthStateChange((_event, session) => {
+    session ? showAdmin(session.user) : showLogin()
+  })
+
+  async function login() {
+    const email    = document.getElementById('loginEmail').value.trim()
+    const password = document.getElementById('loginPassword').value
+    setAlert('loginAlert', '')
+    const { error } = await client.auth.signInWithPassword({ email, password })
+    if (error) setAlert('loginAlert', error.message, 'error')
+  }
+
+  async function logout() {
+    await client.auth.signOut()
+  }
+
+  function showLogin() {
+    document.getElementById('loginSection').style.display  = 'flex'
+    document.getElementById('adminSection').style.display  = 'none'
+    document.getElementById('mainNav').style.display       = 'none'
+  }
+
+  function showAdmin(user) {
+    document.getElementById('loginSection').style.display  = 'none'
+    document.getElementById('adminSection').style.display  = 'block'
+    document.getElementById('mainNav').style.display       = 'flex'
+    document.getElementById('navUser').textContent         = user.email
+    loadPagesList()
+  }
+
+  // ── FILE SELECT ───────────────────────────────────────
+  function onFileSelect(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    selectedFile = file
+    document.getElementById('selectedFileName').textContent = `✓ ${file.name}`
+    const autoSlug = slugify(file.name.replace(/\.html?$/i, ''))
+    document.getElementById('upSlug').value = autoSlug
+    updateSlugPreview()
+  }
+
+  // Drag & drop
+  const dz = document.getElementById('dropzone')
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over') })
+  dz.addEventListener('dragleave', ()  => dz.classList.remove('drag-over'))
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag-over')
+    const file = e.dataTransfer.files[0]
+    if (file && /\.html?$/i.test(file.name)) {
+      selectedFile = file
+      document.getElementById('fileInput').files = e.dataTransfer.files
+      document.getElementById('selectedFileName').textContent = `✓ ${file.name}`
+      document.getElementById('upSlug').value = slugify(file.name.replace(/\.html?$/i, ''))
+      updateSlugPreview()
+    }
+  })
+
+  document.getElementById('upSlug').addEventListener('input', updateSlugPreview)
+
+  function updateSlugPreview() {
+    const slug = document.getElementById('upSlug').value.trim()
+    document.getElementById('slugPreview').textContent = slug
+      ? `→ page.html?slug=${slug}`
+      : ''
+  }
+
+  function slugify(str) {
+    return str
+      .toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  }
+
+  // ── UPLOAD ────────────────────────────────────────────
+  async function uploadPage() {
+    const title    = document.getElementById('upTitle').value.trim()
+    const slug     = document.getElementById('upSlug').value.trim()
+    const desc     = document.getElementById('upDesc').value.trim()
+    const category = document.getElementById('upCategory').value
+    const tags     = document.getElementById('upTags').value
+      .split(',').map(t => t.trim()).filter(Boolean)
+
+    if (!selectedFile) return setAlert('uploadAlert', 'Selecione um arquivo HTML.', 'error')
+    if (!title)        return setAlert('uploadAlert', 'O título é obrigatório.', 'error')
+    if (!slug)         return setAlert('uploadAlert', 'O slug é obrigatório.', 'error')
+
+    setAlert('uploadAlert', '')
+
+    const btn = document.getElementById('uploadBtn')
+    btn.disabled = true
+    btn.textContent = 'Enviando…'
+
+    const pw = document.getElementById('progressWrap')
+    const pb = document.getElementById('progressBar')
+    pw.style.display = 'block'
+    pb.style.width   = '20%'
+
+    const storagePath = `${slug}.html`
+
+    // 1. Upload do arquivo para o Storage
+    const { error: storErr } = await client.storage
+      .from('pages')
+      .upload(storagePath, selectedFile, {
+        upsert: true,
+        contentType: 'text/html; charset=utf-8',
+      })
+
+    if (storErr) {
+      setAlert('uploadAlert', `Erro no upload: ${storErr.message}`, 'error')
+      reset(btn); return
+    }
+
+    pb.style.width = '65%'
+
+    // 2. Inserir metadados na tabela pages
+    const { error: dbErr } = await client.from('pages').upsert({
+      slug,
+      title,
+      description:  desc     || null,
+      category:     category || null,
+      tags,
+      storage_path: storagePath,
+      file_size:    selectedFile.size,
+      published:    true,
+    }, { onConflict: 'slug' })
+
+    pb.style.width = '100%'
+
+    if (dbErr) {
+      setAlert('uploadAlert', `Erro ao salvar metadados: ${dbErr.message}`, 'error')
+    } else {
+      setAlert('uploadAlert', `"${title}" publicado com sucesso!`, 'success')
+      resetForm()
+      loadPagesList()
+    }
+
+    reset(btn)
+    setTimeout(() => { pw.style.display = 'none'; pb.style.width = '0%' }, 900)
+  }
+
+  function reset(btn) {
+    btn.disabled = false
+    btn.textContent = 'Publicar documento'
+  }
+
+  function resetForm() {
+    selectedFile = null
+    document.getElementById('fileInput').value       = ''
+    document.getElementById('selectedFileName').textContent = ''
+    document.getElementById('upTitle').value         = ''
+    document.getElementById('upDesc').value          = ''
+    document.getElementById('upCategory').value      = ''
+    document.getElementById('upTags').value          = ''
+    document.getElementById('upSlug').value          = ''
+    document.getElementById('slugPreview').textContent = ''
+  }
+
+  // ── LISTA DE PÁGINAS ──────────────────────────────────
+  async function loadPagesList() {
+    const list = document.getElementById('pagesList')
+
+    const { data, error } = await client
+      .from('pages')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) { list.innerHTML = `<p class="empty-list">Erro: ${error.message}</p>`; return }
+    if (!data.length) { list.innerHTML = '<p class="empty-list">Nenhum documento ainda. Faça o primeiro upload acima.</p>'; return }
+
+    list.innerHTML = data.map(p => `
+      <div class="page-item" id="pi-${p.id}">
+        <div class="page-item-info">
+          <div class="page-item-title">${p.title}</div>
+          <div class="page-item-meta">
+            <code style="font-size:11px">${p.slug}</code>
+            &nbsp;·&nbsp;
+            ${new Date(p.created_at).toLocaleDateString('pt-BR')}
+            &nbsp;·&nbsp;
+            ${p.file_size ? (p.file_size / 1024).toFixed(1) + ' KB' : '—'}
+          </div>
+        </div>
+        ${p.category ? `<span class="page-item-cat">${p.category}</span>` : ''}
+        <div class="toggle-wrap" title="${p.published ? 'Publicado' : 'Oculto'}">
+          <input type="checkbox" class="toggle" ${p.published ? 'checked' : ''}
+            onchange="togglePublished('${p.id}', this.checked)">
+        </div>
+        <button class="btn-danger" onclick="deletePage('${p.id}','${p.storage_path}',this)">Excluir</button>
+      </div>
+    `).join('')
+  }
+
+  async function togglePublished(id, published) {
+    await client.from('pages').update({ published }).eq('id', id)
+  }
+
+  async function deletePage(id, storagePath, btn) {
+    const item  = document.getElementById(`pi-${id}`)
+    const title = item.querySelector('.page-item-title').textContent
+    if (!confirm(`Excluir "${title}"?\n\nEsta ação também remove o arquivo do storage e não pode ser desfeita.`)) return
+
+    btn.disabled = true
+
+    await client.storage.from('pages').remove([storagePath])
+    await client.from('pages').delete().eq('id', id)
+
+    item.style.opacity  = '0'
+    item.style.height   = `${item.offsetHeight}px`
+    item.style.overflow = 'hidden'
+    item.style.transition = 'opacity 0.2s, height 0.3s, padding 0.3s, margin 0.3s'
+    requestAnimationFrame(() => {
+      item.style.opacity = '0'
+      item.style.height  = '0'
+      item.style.paddingTop = '0'
+      item.style.paddingBottom = '0'
+      item.style.marginTop = '0'
+    })
+    setTimeout(() => item.remove(), 350)
+  }
+
+  // ── UTILS ────────────────────────────────────────────
+  function setAlert(id, msg, type = 'error') {
+    const el = document.getElementById(id)
+    el.innerHTML = msg ? `<div class="alert alert-${type}">${msg}</div>` : ''
+  }
+</script>
+</body>
+</html>
