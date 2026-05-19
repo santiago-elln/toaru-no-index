@@ -36,8 +36,9 @@ function loadEnv() {
 }
 
 const env = loadEnv()
-const SUPABASE_URL = env.VITE_SUPABASE_URL || ''
-const SUPABASE_KEY = env.VITE_SUPABASE_PUBLIC_KEY || ''
+const SUPABASE_URL = env.VITE_SUPABASE_URL        || ''
+const SUPABASE_KEY = env.VITE_SUPABASE_PUBLIC_KEY  || ''
+const ADMIN_EMAIL  = env.ADMIN_EMAIL               || ''
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   console.warn('⚠️  VITE_SUPABASE_URL ou VITE_SUPABASE_PUBLIC_KEY ausentes no .env — placeholders não serão substituídos.')
@@ -158,8 +159,9 @@ const server = http.createServer((req, res) => {
   if (ext === '.html') {
     let content = fs.readFileSync(filePath, 'utf8')
     content = content
-      .replace(/__SUPABASE_URL__/g, SUPABASE_URL)
-      .replace(/__SUPABASE_KEY__/g, SUPABASE_KEY)
+      .replace(/__SUPABASE_URL__/g,  SUPABASE_URL)
+      .replace(/__SUPABASE_KEY__/g,  SUPABASE_KEY)
+      .replace(/__ADMIN_EMAIL__/g,   ADMIN_EMAIL)
     res.writeHead(200, { 'Content-Type': mime })
     res.end(content)
     return

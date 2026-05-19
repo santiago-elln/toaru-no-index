@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Carregando… — A Certain Index</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -166,7 +167,7 @@
       // Modo produção: Supabase
       const { data: row, error } = await client
         .from('pages')
-        .select('title, category, storage_path, created_at')
+        .select('id, title, category, storage_path, created_at')
         .eq('slug', slug)
         .eq('published', true)
         .single()
@@ -203,7 +204,19 @@
       if (dlErr) { showError(); return }
 
       viewer.srcdoc = await blob.text()
+      logAccess(data)
     }
+  }
+
+  async function logAccess(data) {
+    const { data: { session } } = await client.auth.getSession()
+    if (!session) return
+    await client.from('access_logs').insert({
+      page_id:    data.id,
+      page_slug:  slug,
+      page_title: data.title,
+      user_email: session.user.email,
+    })
   }
 
   load()

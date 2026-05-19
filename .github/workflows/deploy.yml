@@ -32,9 +32,11 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_PUBLIC_KEY }}
+          ADMIN_EMAIL:  ${{ secrets.ADMIN_EMAIL }}
         run: |
-          sed -i "s|__SUPABASE_URL__|$SUPABASE_URL|g" index.html page.html admin.html login.html
-          sed -i "s|__SUPABASE_KEY__|$SUPABASE_KEY|g" index.html page.html admin.html login.html
+          sed -i "s|__SUPABASE_URL__|$SUPABASE_URL|g" index.html page.html admin.html login.html analytics.html
+          sed -i "s|__SUPABASE_KEY__|$SUPABASE_KEY|g" index.html page.html admin.html login.html analytics.html
+          sed -i "s|__ADMIN_EMAIL__|$ADMIN_EMAIL|g"   admin.html analytics.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

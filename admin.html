@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — A Certain Index</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -251,6 +252,7 @@
   <a href="index.html" class="nav-back">← Índice</a>
   <div class="nav-sep"></div>
   <span class="nav-title">Admin</span>
+  <a href="analytics.html" style="font-size:13px;color:var(--text-muted);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-muted)'">Analytics →</a>
   <span class="nav-user" id="navUser"></span>
   <button class="nav-logout" onclick="logout()">Sair</button>
 </nav>
@@ -320,6 +322,17 @@
         </div>
       </div>
 
+      <div class="form-row">
+        <div class="form-group">
+          <label for="upAuthorName">Autor</label>
+          <input type="text" id="upAuthorName" placeholder="Nome do autor">
+        </div>
+        <div class="form-group">
+          <label for="upAuthorEmail">E-mail do autor</label>
+          <input type="email" id="upAuthorEmail" placeholder="autor@igreenenergy.com.br">
+        </div>
+      </div>
+
       <div class="form-group">
         <label for="upSlug">Slug (URL)</label>
         <input type="text" id="upSlug" placeholder="gerado automaticamente pelo nome do arquivo">
@@ -349,11 +362,20 @@
   const SUPABASE_KEY = '__SUPABASE_KEY__'
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
+  const ADMIN_EMAIL = '__ADMIN_EMAIL__'
+
   let selectedFile = null
 
   // ── AUTH ──────────────────────────────────────────────
   client.auth.onAuthStateChange((_event, session) => {
-    session ? showAdmin(session.user) : showLogin()
+    if (!session) { showLogin(); return }
+    if (session.user.email !== ADMIN_EMAIL) {
+      client.auth.signOut()
+      showLogin()
+      setAlert('loginAlert', 'Acesso negado. Esta área é restrita ao administrador do sistema.', 'error')
+      return
+    }
+    showAdmin(session.user)
   })
 
   async function loginWithMicrosoft() {
@@ -438,12 +460,14 @@
 
   // ── UPLOAD ────────────────────────────────────────────
   async function uploadPage() {
-    const title    = document.getElementById('upTitle').value.trim()
-    const slug     = document.getElementById('upSlug').value.trim()
-    const desc     = document.getElementById('upDesc').value.trim()
-    const category = document.getElementById('upCategory').value
-    const tags     = document.getElementById('upTags').value
+    const title       = document.getElementById('upTitle').value.trim()
+    const slug        = document.getElementById('upSlug').value.trim()
+    const desc        = document.getElementById('upDesc').value.trim()
+    const category    = document.getElementById('upCategory').value
+    const tags        = document.getElementById('upTags').value
       .split(',').map(t => t.trim()).filter(Boolean)
+    const authorName  = document.getElementById('upAuthorName').value.trim()
+    const authorEmail = document.getElementById('upAuthorEmail').value.trim()
 
     if (!selectedFile) return setAlert('uploadAlert', 'Selecione um arquivo HTML.', 'error')
     if (!title)        return setAlert('uploadAlert', 'O título é obrigatório.', 'error')
@@ -481,9 +505,11 @@
     const { error: dbErr } = await client.from('pages').upsert({
       slug,
       title,
-      description:  desc     || null,
-      category:     category || null,
+      description:  desc        || null,
+      category:     category    || null,
       tags,
+      author_name:  authorName  || null,
+      author_email: authorEmail || null,
       storage_path: storagePath,
       file_size:    selectedFile.size,
       published:    true,
@@ -513,10 +539,12 @@
     document.getElementById('fileInput').value       = ''
     document.getElementById('selectedFileName').textContent = ''
     document.getElementById('upTitle').value         = ''
-    document.getElementById('upDesc').value          = ''
-    document.getElementById('upCategory').value      = ''
-    document.getElementById('upTags').value          = ''
-    document.getElementById('upSlug').value          = ''
+    document.getElementById('upDesc').value            = ''
+    document.getElementById('upCategory').value        = ''
+    document.getElementById('upTags').value            = ''
+    document.getElementById('upAuthorName').value      = ''
+    document.getElementById('upAuthorEmail').value     = ''
+    document.getElementById('upSlug').value            = ''
     document.getElementById('slugPreview').textContent = ''
   }
 
@@ -537,7 +565,8 @@
         <div class="page-item-info">
           <div class="page-item-title">${p.title}</div>
           <div class="page-item-meta">
-            <code style="font-size:11px">${p.slug}</code>
+            ${p.author_name ? `<span style="margin-right:8px">${p.author_name}</span>·` : ''}
+            <code style="font-size:11px;margin-left:${p.author_name ? '8px' : '0'}">${p.slug}</code>
             &nbsp;·&nbsp;
             ${new Date(p.created_at).toLocaleDateString('pt-BR')}
             &nbsp;·&nbsp;
