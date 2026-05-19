@@ -21,6 +21,28 @@ const PORT      = 3000
 const ROOT      = __dirname
 const PAGES_DIR = path.join(ROOT, 'pages')
 
+// ── Lê .env e expõe valores para injetar nos HTMLs ──────────────────────────
+function loadEnv() {
+  const envPath = path.join(ROOT, '.env')
+  if (!fs.existsSync(envPath)) return {}
+  return Object.fromEntries(
+    fs.readFileSync(envPath, 'utf8')
+      .split('\n')
+      .filter(l => l.trim() && !l.startsWith('#'))
+      .map(l => l.split('=').map(s => s.trim()))
+      .filter(([k]) => k)
+      .map(([k, ...v]) => [k, v.join('=').replace(/^["']|["']$/g, '')])
+  )
+}
+
+const env = loadEnv()
+const SUPABASE_URL = env.VITE_SUPABASE_URL || ''
+const SUPABASE_KEY = env.VITE_SUPABASE_PUBLIC_KEY || ''
+
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.warn('⚠️  VITE_SUPABASE_URL ou VITE_SUPABASE_PUBLIC_KEY ausentes no .env — placeholders não serão substituídos.')
+}
+
 // ── Metadados manuais (mesmo objeto do seed.js) ─────────────────────────────
 // Se um arquivo não estiver aqui, o título será o nome do arquivo.
 const METADATA = {
@@ -131,6 +153,17 @@ const server = http.createServer((req, res) => {
 
   const ext  = path.extname(filePath).toLowerCase()
   const mime = MIME_TYPES[ext] || 'application/octet-stream'
+
+  // Injeta variáveis de ambiente nos HTMLs (substitui placeholders do build)
+  if (ext === '.html') {
+    let content = fs.readFileSync(filePath, 'utf8')
+    content = content
+      .replace(/__SUPABASE_URL__/g, SUPABASE_URL)
+      .replace(/__SUPABASE_KEY__/g, SUPABASE_KEY)
+    res.writeHead(200, { 'Content-Type': mime })
+    res.end(content)
+    return
+  }
 
   res.writeHead(200, { 'Content-Type': mime })
   fs.createReadStream(filePath).pipe(res)

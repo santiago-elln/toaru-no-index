@@ -25,8 +25,29 @@ const fs   = require('fs')
 const path = require('path')
 const { createClient } = require('@supabase/supabase-js')
 
-const SUPABASE_URL     = 'https://zxgscwoozgqghnfoduii.supabase.co'
-const SUPABASE_ANON    = 'sb_publishable_ODMuXRDKARvr7HYL2NzFWQ_tfNYZOzr'
+// Lê variáveis do .env sem dependências externas
+function loadEnv() {
+  const envPath = path.join(__dirname, '.env')
+  if (!fs.existsSync(envPath)) return {}
+  return Object.fromEntries(
+    fs.readFileSync(envPath, 'utf8')
+      .split('\n')
+      .filter(l => l.trim() && !l.startsWith('#'))
+      .map(l => l.split('=').map(s => s.trim()))
+      .filter(([k]) => k)
+      .map(([k, ...v]) => [k, v.join('=').replace(/^["']|["']$/g, '')])
+  )
+}
+
+const env = loadEnv()
+
+const SUPABASE_URL  = env.VITE_SUPABASE_URL
+const SUPABASE_ANON = env.VITE_SUPABASE_PUBLIC_KEY
+
+if (!SUPABASE_URL || !SUPABASE_ANON) {
+  console.error('❌  VITE_SUPABASE_URL ou VITE_SUPABASE_PUBLIC_KEY não encontrados no .env')
+  process.exit(1)
+}
 
 // ── Lê argumentos de linha de comando ───────────────────────────────────────
 const args = Object.fromEntries(

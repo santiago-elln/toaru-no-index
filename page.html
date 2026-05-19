@@ -126,13 +126,23 @@
 </div>
 
 <script>
-  const SUPABASE_URL = 'https://zxgscwoozgqghnfoduii.supabase.co'
-  const SUPABASE_KEY = 'sb_publishable_ODMuXRDKARvr7HYL2NzFWQ_tfNYZOzr'
-  const client  = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  const SUPABASE_URL = '__SUPABASE_URL__'
+  const SUPABASE_KEY = '__SUPABASE_KEY__'
+  const client   = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
   const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname)
 
   const params = new URLSearchParams(location.search)
   const slug   = params.get('slug')
+
+  async function checkAuth() {
+    if (IS_LOCAL) return true
+    const { data: { session } } = await client.auth.getSession()
+    if (!session) {
+      location.replace(`login.html?next=${encodeURIComponent(location.pathname + location.search)}`)
+      return false
+    }
+    return true
+  }
 
   function showError() {
     document.getElementById('errorState').style.display = 'flex'
@@ -140,6 +150,7 @@
   }
 
   async function load() {
+    if (!await checkAuth()) return
     if (!slug) { showError(); return }
 
     let data

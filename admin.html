@@ -224,6 +224,24 @@
     .toggle:checked::after { left: 18px; }
 
     .empty-list { font-size: 14px; color: var(--text-muted); }
+
+    /* ── Botão Microsoft ── */
+    .btn-microsoft {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; width: 100%;
+      padding: 12px 20px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-microsoft:hover:not(:disabled) {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.22);
+    }
+    .btn-microsoft:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -242,17 +260,17 @@
   <div class="login-wrap" id="loginSection">
     <div class="login-card">
       <div class="login-title">Acesso Admin</div>
-      <div class="login-sub">Entre com sua conta iGreen para gerenciar documentos.</div>
+      <div class="login-sub">Entre com sua conta corporativa iGreen para gerenciar documentos.</div>
       <div id="loginAlert"></div>
-      <div class="form-group">
-        <label for="loginEmail">E-mail</label>
-        <input type="email" id="loginEmail" placeholder="seu@igreenenergy.com.br" autocomplete="email">
-      </div>
-      <div class="form-group">
-        <label for="loginPassword">Senha</label>
-        <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
-      </div>
-      <button class="btn btn-primary" onclick="login()">Entrar</button>
+      <button class="btn-microsoft" id="loginBtn" onclick="loginWithMicrosoft()">
+        <svg width="20" height="20" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+          <rect x="1"  y="1"  width="9" height="9" fill="#f25022"/>
+          <rect x="11" y="1"  width="9" height="9" fill="#7fba00"/>
+          <rect x="1"  y="11" width="9" height="9" fill="#00a4ef"/>
+          <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+        </svg>
+        Entrar com Microsoft
+      </button>
     </div>
   </div>
 
@@ -327,8 +345,8 @@
 </main>
 
 <script>
-  const SUPABASE_URL = 'https://zxgscwoozgqghnfoduii.supabase.co'
-  const SUPABASE_KEY = 'sb_publishable_ODMuXRDKARvr7HYL2NzFWQ_tfNYZOzr'
+  const SUPABASE_URL = '__SUPABASE_URL__'
+  const SUPABASE_KEY = '__SUPABASE_KEY__'
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
   let selectedFile = null
@@ -338,12 +356,22 @@
     session ? showAdmin(session.user) : showLogin()
   })
 
-  async function login() {
-    const email    = document.getElementById('loginEmail').value.trim()
-    const password = document.getElementById('loginPassword').value
+  async function loginWithMicrosoft() {
+    const btn = document.getElementById('loginBtn')
+    btn.disabled = true
     setAlert('loginAlert', '')
-    const { error } = await client.auth.signInWithPassword({ email, password })
-    if (error) setAlert('loginAlert', error.message, 'error')
+
+    const redirectTo = location.href.replace(/\/[^/]*(\?.*)?$/, '/') + 'admin.html'
+
+    const { error } = await client.auth.signInWithOAuth({
+      provider: 'azure',
+      options: { scopes: 'email profile openid', redirectTo }
+    })
+
+    if (error) {
+      setAlert('loginAlert', error.message, 'error')
+      btn.disabled = false
+    }
   }
 
   async function logout() {

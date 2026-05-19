@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar — A Certain Index</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a0a0a;
+      color: #e8e8e8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: #181818;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    .logo-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #4caf32;
+      box-shadow: 0 0 16px rgba(76,175,50,0.5);
+      margin-bottom: 28px;
+    }
+
+    .brand {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: #636363; margin-bottom: 32px;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px; font-weight: 800;
+      text-align: center; margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px; color: #9a9a9a;
+      text-align: center; line-height: 1.6;
+      margin-bottom: 36px;
+    }
+
+    /* Botão Microsoft */
+    .btn-microsoft {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: #e8e8e8;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .btn-microsoft:hover:not(:disabled) {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.22);
+    }
+
+    .btn-microsoft:disabled {
+      opacity: 0.5; cursor: not-allowed;
+    }
+
+    /* Logo Microsoft (SVG inline) */
+    .ms-logo {
+      width: 20px; height: 20px; flex-shrink: 0;
+    }
+
+    .alert {
+      margin-top: 16px; width: 100%;
+      padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; text-align: center;
+      background: rgba(224,82,82,0.11);
+      color: #e05252;
+      border: 1px solid rgba(224,82,82,0.22);
+    }
+
+    .footer-note {
+      margin-top: 28px;
+      font-size: 12px; color: #636363;
+      text-align: center; line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo-dot"></div>
+  <div class="brand">A Certain Index</div>
+
+  <h1>Acesso restrito</h1>
+  <p class="subtitle">Este portal é exclusivo para colaboradores iGreen Energy. Entre com sua conta corporativa Microsoft.</p>
+
+  <button class="btn-microsoft" id="loginBtn" onclick="loginWithMicrosoft()">
+    <!-- Microsoft logo SVG -->
+    <svg class="ms-logo" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1"  y="1"  width="9" height="9" fill="#f25022"/>
+      <rect x="11" y="1"  width="9" height="9" fill="#7fba00"/>
+      <rect x="1"  y="11" width="9" height="9" fill="#00a4ef"/>
+      <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+    </svg>
+    Entrar com Microsoft
+  </button>
+
+  <div id="alertMsg" style="display:none" class="alert"></div>
+
+  <p class="footer-note">
+    Apenas contas <strong>@igreenenergy.com.br</strong> são aceitas.<br>
+    Problemas? Fale com o administrador do sistema.
+  </p>
+</div>
+
+<script>
+  const SUPABASE_URL = '__SUPABASE_URL__'
+  const SUPABASE_KEY = '__SUPABASE_KEY__'
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+  // URL para onde voltar após o login (passada como ?next=...)
+  const nextUrl = new URLSearchParams(location.search).get('next') || 'index.html'
+
+  // Se já tiver sessão ativa, redireciona direto
+  client.auth.getSession().then(({ data: { session } }) => {
+    if (session) redirect()
+  })
+
+  // Captura o callback do OAuth (Supabase redireciona de volta aqui)
+  client.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) redirect()
+  })
+
+  function redirect() {
+    // Evita redirecionar para fora do site
+    const safe = nextUrl.startsWith('http') ? 'index.html' : nextUrl
+    location.replace(safe)
+  }
+
+  async function loginWithMicrosoft() {
+    const btn = document.getElementById('loginBtn')
+    btn.disabled = true
+    btn.childNodes[2].textContent = ' Redirecionando…'
+    hideAlert()
+
+    // Monta a URL de retorno apontando para esta mesma página
+    // para que o onAuthStateChange capture a sessão e redirecione
+    const redirectTo = location.href.replace(/\/[^/]*(\?.*)?$/, '/') + 'login.html'
+      + (nextUrl !== 'index.html' ? `?next=${encodeURIComponent(nextUrl)}` : '')
+
+    const { error } = await client.auth.signInWithOAuth({
+      provider: 'azure',
+      options: {
+        scopes: 'email profile openid',
+        redirectTo,
+      }
+    })
+
+    if (error) {
+      showAlert(error.message)
+      btn.disabled = false
+      btn.childNodes[2].textContent = ' Entrar com Microsoft'
+    }
+  }
+
+  function showAlert(msg) {
+    const el = document.getElementById('alertMsg')
+    el.textContent = msg
+    el.style.display = 'block'
+  }
+
+  function hideAlert() {
+    document.getElementById('alertMsg').style.display = 'none'
+  }
+</script>
+</body>
+</html>
