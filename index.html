@@ -494,47 +494,45 @@
 
   const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname)
 
-  // ── Auth guard ────────────────────────────────────────────────────────────
-  function showModal()  { document.getElementById('loginModal').classList.add('visible') }
-  function hideModal()  { document.getElementById('loginModal').classList.remove('visible') }
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  function showModal() { document.getElementById('loginModal').classList.add('visible') }
+  function hideModal() { document.getElementById('loginModal').classList.remove('visible') }
 
   async function loginWithMicrosoft() {
     const btn = document.getElementById('modalLoginBtn')
     btn.disabled = true
     document.getElementById('modalAlert').style.display = 'none'
 
-    const redirectTo = location.href.split('?')[0]
-
     const { error } = await client.auth.signInWithOAuth({
       provider: 'azure',
-      options: { scopes: 'email profile openid', redirectTo }
+      options: {
+        scopes: 'email profile openid',
+        redirectTo: location.href.split('?')[0].split('#')[0],
+      }
     })
 
     if (error) {
-      const alert = document.getElementById('modalAlert')
-      alert.textContent = error.message
-      alert.style.display = 'block'
+      const el = document.getElementById('modalAlert')
+      el.textContent = error.message
+      el.style.display = 'block'
       btn.disabled = false
     }
   }
 
-  // Fecha modal após OAuth callback
+  // onAuthStateChange com INITIAL_SESSION garante que o token OAuth
+  // do redirect já foi processado antes de decidir mostrar o modal.
   client.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      hideModal()
-      loadPages()
+    if (event === 'INITIAL_SESSION') {
+      if (session || IS_LOCAL) { hideModal(); loadPagesData() }
+      else showModal()
+    } else if (event === 'SIGNED_IN') {
+      hideModal(); loadPagesData()
+    } else if (event === 'SIGNED_OUT') {
+      showModal()
     }
   })
 
-  async function checkAuth() {
-    if (IS_LOCAL) return true
-    const { data: { session } } = await client.auth.getSession()
-    if (!session) { showModal(); return false }
-    return true
-  }
-
-  async function loadPages() {
-    if (!await checkAuth()) return
+  async function loadPagesData() {
     let data, error
 
     if (IS_LOCAL) {
@@ -567,8 +565,6 @@
 
   // Inicializa filtro "Todos"
   document.querySelector('[data-cat=""]').addEventListener('click', () => setFilter(''))
-
-  loadPages()
 </script>
 </body>
 </html>
