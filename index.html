@@ -237,9 +237,118 @@
       text-align: center;
       color: var(--text-muted); font-size: 12px;
     }
+
+    /* ── MODAL DE LOGIN ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-overlay.visible {
+      opacity: 1; pointer-events: all;
+    }
+
+    .modal-card {
+      background: #181818;
+      border: 1px solid rgba(76,175,50,0.25);
+      border-radius: 16px;
+      padding: 44px 40px;
+      width: 100%; max-width: 400px;
+      display: flex; flex-direction: column; align-items: center;
+      transform: translateY(12px);
+      transition: transform 0.25s;
+    }
+
+    .modal-overlay.visible .modal-card {
+      transform: translateY(0);
+    }
+
+    .modal-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 14px rgba(76,175,50,0.5);
+      margin-bottom: 24px;
+    }
+
+    .modal-brand {
+      font-family: 'Syne', sans-serif;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 28px;
+    }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px; font-weight: 800;
+      text-align: center; margin-bottom: 8px;
+    }
+
+    .modal-sub {
+      font-size: 14px; color: var(--text-dim);
+      text-align: center; line-height: 1.65;
+      margin-bottom: 32px;
+    }
+
+    .btn-microsoft {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; width: 100%;
+      padding: 12px 20px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-microsoft:hover:not(:disabled) {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .btn-microsoft:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .modal-note {
+      margin-top: 20px;
+      font-size: 12px; color: var(--text-muted);
+      text-align: center; line-height: 1.6;
+    }
+
+    .modal-alert {
+      margin-top: 14px; width: 100%;
+      padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; text-align: center;
+      background: rgba(224,82,82,0.11); color: #e05252;
+      border: 1px solid rgba(224,82,82,0.22);
+      display: none;
+    }
   </style>
 </head>
 <body>
+
+<!-- Modal de login -->
+<div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-card">
+    <div class="modal-dot"></div>
+    <div class="modal-brand">A Certain Index</div>
+    <h2 class="modal-title" id="modalTitle">Acesso restrito</h2>
+    <p class="modal-sub">Este portal é exclusivo para colaboradores iGreen Energy. Entre com sua conta corporativa Microsoft.</p>
+    <button class="btn-microsoft" id="modalLoginBtn" onclick="loginWithMicrosoft()">
+      <svg width="20" height="20" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+        <rect x="1"  y="1"  width="9" height="9" fill="#f25022"/>
+        <rect x="11" y="1"  width="9" height="9" fill="#7fba00"/>
+        <rect x="1"  y="11" width="9" height="9" fill="#00a4ef"/>
+        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+      </svg>
+      Entrar com Microsoft
+    </button>
+    <div class="modal-alert" id="modalAlert"></div>
+    <p class="modal-note">Apenas contas <strong>@igreenenergy.com.br</strong> são aceitas.</p>
+  </div>
+</div>
 
 <nav>
   <a href="/" class="nav-brand">
@@ -386,13 +495,41 @@
   const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname)
 
   // ── Auth guard ────────────────────────────────────────────────────────────
+  function showModal()  { document.getElementById('loginModal').classList.add('visible') }
+  function hideModal()  { document.getElementById('loginModal').classList.remove('visible') }
+
+  async function loginWithMicrosoft() {
+    const btn = document.getElementById('modalLoginBtn')
+    btn.disabled = true
+    document.getElementById('modalAlert').style.display = 'none'
+
+    const redirectTo = location.href.split('?')[0]
+
+    const { error } = await client.auth.signInWithOAuth({
+      provider: 'azure',
+      options: { scopes: 'email profile openid', redirectTo }
+    })
+
+    if (error) {
+      const alert = document.getElementById('modalAlert')
+      alert.textContent = error.message
+      alert.style.display = 'block'
+      btn.disabled = false
+    }
+  }
+
+  // Fecha modal após OAuth callback
+  client.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      hideModal()
+      loadPages()
+    }
+  })
+
   async function checkAuth() {
     if (IS_LOCAL) return true
     const { data: { session } } = await client.auth.getSession()
-    if (!session) {
-      location.replace(`login.html?next=${encodeURIComponent(location.pathname + location.search)}`)
-      return false
-    }
+    if (!session) { showModal(); return false }
     return true
   }
 
