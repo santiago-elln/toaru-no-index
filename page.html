@@ -187,13 +187,23 @@
     document.getElementById('topDate').textContent = new Date(data.created_at)
       .toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
 
-    // Local: serve o arquivo direto da pasta /pages via dev-server
-    // Produção: carrega do Supabase Storage
-    const fileUrl = IS_LOCAL
-      ? `/pages/${data.storage_path}`
-      : `${SUPABASE_URL}/storage/v1/object/public/pages/${data.storage_path}`
+    const viewer = document.getElementById('viewer')
 
-    document.getElementById('viewer').src = fileUrl
+    if (IS_LOCAL) {
+      // Dev: carrega direto via src (mesma origem)
+      viewer.src = `/pages/${data.storage_path}`
+    } else {
+      // Produção: Supabase Storage retorna X-Frame-Options: SAMEORIGIN,
+      // que bloqueia iframe cross-origin. Solução: buscar o HTML
+      // autenticado e injetar via srcdoc (sem restrição de origem).
+      const { data: blob, error: dlErr } = await client.storage
+        .from('pages')
+        .download(data.storage_path)
+
+      if (dlErr) { showError(); return }
+
+      viewer.srcdoc = await blob.text()
+    }
   }
 
   load()
