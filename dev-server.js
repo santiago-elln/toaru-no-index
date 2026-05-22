@@ -138,6 +138,9 @@ const server = http.createServer((req, res) => {
   // ── Arquivos estáticos ───────────────────────────────────────────────────
   let reqPath = url.pathname === '/' ? '/index.html' : url.pathname
 
+  // Decodifica %C3%81 → Á etc. para que nomes com acentos/espaços sejam encontrados no disco
+  try { reqPath = decodeURIComponent(reqPath) } catch { /* mantém original se inválido */ }
+
   // Segurança: impede path traversal fora da raiz
   const filePath = path.normalize(path.join(ROOT, reqPath))
   if (!filePath.startsWith(ROOT + path.sep) && filePath !== ROOT) {
