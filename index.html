@@ -36,7 +36,6 @@
 
 <nav>
   <a href="/toaru-no-index/index.html" class="nav-brand">
-  <a href="/toaru-no-index/index.html" class="nav-brand">
     <span class="nav-dot"></span>
     A Certain Document Index
   </a>
@@ -44,77 +43,111 @@
   <a href="admin.html" class="nav-admin">↑ Admin</a>
 </nav>
 
-<main>
-  <section class="hero">
-    <div class="hero-eyebrow">iGreen Energy · Documentação</div>
-    <h1>Negócios & BI<br><em>Conexão Green</em></h1>
-    <blockquote style="
-      margin-top: 4px;
-      padding-left: 16px;
-      border-left: 2px solid var(--green);
-      font-size: 15px;
-      font-style: italic;
-      color: var(--text-dim);
-      max-width: 520px;
-      line-height: 1.7;
-    ">
-      "Nós precisamos evoluir, criar formas melhores para ver informações, melhores que no próprio Excel"
-      <cite style="display:block;margin-top:8px;font-style:normal;font-size:12px;color:var(--text-muted);letter-spacing:0.04em">
-        — Amanda Durante, CEO
-      </cite>
-    </blockquote>
-  </section>
+<div class="app-layout">
 
-  <div class="filters-wrap">
-    <div class="filter-row" id="filterBar">
-      <span class="filter-label">Categoria</span>
-      <button class="filter-btn active" data-cat="">Todos</button>
-    </div>
-    <div class="filter-row" id="tagBar" style="display:none">
-      <span class="filter-label">Tag</span>
-      <button class="tag-btn active" data-tag="">Todas</button>
-    </div>
-    <div class="filter-row" id="dateRow">
-      <span class="filter-label">Período</span>
-      <button class="date-trigger" id="calendarToggle" aria-haspopup="dialog" aria-expanded="false">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-        <span id="rangeDisplay">Qualquer data</span>
-        <button class="date-trigger-clear" id="dateClear" title="Limpar filtro de data">✕</button>
-      </button>
-    </div>
-  </div>
+  <!-- ── LEFT: main content ── -->
+  <div class="main-col">
 
-  <section class="grid-wrap">
-    <div class="grid-count" id="gridCount"></div>
-    <div class="grid" id="grid">
-      <!-- Skeletons enquanto carrega -->
-      <div class="skeleton-card">
-        <div class="sk" style="width:60px;height:18px"></div>
-        <div class="sk" style="width:85%;height:22px"></div>
-        <div class="sk" style="width:100%;height:14px"></div>
-        <div class="sk" style="width:90%;height:14px"></div>
-        <div class="sk" style="width:70%;height:14px"></div>
+    <section class="hero">
+      <div class="hero-eyebrow">iGreen Energy · Documentação</div>
+      <h1>Negócios & BI<br><em>Conexão Green</em></h1>
+      <blockquote class="hero-quote">
+        "Nós precisamos evoluir, criar formas melhores para ver informações, melhores que no próprio Excel"
+        <cite>— Amanda Durante, CEO</cite>
+      </blockquote>
+    </section>
+
+    <section class="dash-section">
+      <div class="dash-hd">
+        <h2 class="dash-title">Dashboards</h2>
+        <span class="dash-badge">Em breve</span>
       </div>
-      <div class="skeleton-card">
-        <div class="sk" style="width:60px;height:18px"></div>
-        <div class="sk" style="width:80%;height:22px"></div>
-        <div class="sk" style="width:100%;height:14px"></div>
-        <div class="sk" style="width:95%;height:14px"></div>
-        <div class="sk" style="width:60%;height:14px"></div>
+      <div class="dash-grid" id="dashGrid">
+        <!-- placeholder cards — layout preview -->
+        <div class="dash-card dash-card--soon">
+          <div class="dash-thumb">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </div>
+          <div class="dash-card-body">
+            <div class="dash-card-title">Dashboard de Vendas</div>
+            <div class="dash-card-desc">KPIs comerciais, pipeline e acompanhamento de metas em tempo real.</div>
+          </div>
+        </div>
+        <div class="dash-card dash-card--soon">
+          <div class="dash-thumb">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="dash-card-body">
+            <div class="dash-card-title">Painel de Operações</div>
+            <div class="dash-card-desc">Monitoramento operacional e indicadores de desempenho de projetos.</div>
+          </div>
+        </div>
       </div>
-      <div class="skeleton-card">
-        <div class="sk" style="width:60px;height:18px"></div>
-        <div class="sk" style="width:90%;height:22px"></div>
-        <div class="sk" style="width:100%;height:14px"></div>
-        <div class="sk" style="width:80%;height:14px"></div>
-        <div class="sk" style="width:55%;height:14px"></div>
+    </section>
+
+  </div><!-- /main-col -->
+
+  <!-- ── RIGHT: sidebar ── -->
+  <aside class="sidebar">
+
+    <div class="sidebar-hd">
+      <span class="sidebar-title">Apresentações</span>
+      <span id="gridCount" class="sidebar-count"></span>
+    </div>
+
+    <div class="sidebar-filters">
+      <div class="filter-row" id="filterBar">
+        <span class="filter-label">Categoria</span>
+        <button class="filter-btn active" data-cat="">Todos</button>
+      </div>
+      <div class="filter-row" id="tagBar" style="display:none">
+        <span class="filter-label">Tag</span>
+        <button class="tag-btn active" data-tag="">Todas</button>
+      </div>
+      <div class="filter-row" id="dateRow">
+        <span class="filter-label">Período</span>
+        <button class="date-trigger" id="calendarToggle" aria-haspopup="dialog" aria-expanded="false">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span id="rangeDisplay">Qualquer data</span>
+          <button class="date-trigger-clear" id="dateClear" title="Limpar filtro de data">✕</button>
+        </button>
       </div>
     </div>
-  </section>
-</main>
+
+    <div class="sidebar-list">
+      <div class="grid" id="grid">
+        <div class="skeleton-card">
+          <div class="sk" style="width:60px;height:16px"></div>
+          <div class="sk" style="width:85%;height:20px"></div>
+          <div class="sk" style="width:100%;height:13px"></div>
+          <div class="sk" style="width:75%;height:13px"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="sk" style="width:60px;height:16px"></div>
+          <div class="sk" style="width:80%;height:20px"></div>
+          <div class="sk" style="width:100%;height:13px"></div>
+          <div class="sk" style="width:65%;height:13px"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="sk" style="width:60px;height:16px"></div>
+          <div class="sk" style="width:90%;height:20px"></div>
+          <div class="sk" style="width:100%;height:13px"></div>
+          <div class="sk" style="width:80%;height:13px"></div>
+        </div>
+      </div>
+    </div>
+
+  </aside><!-- /sidebar -->
+
+</div><!-- /app-layout -->
 
 <footer>
   <img src="assets/footericon.png" alt="iGreen Energy" style="height:28px;mix-blend-mode:lighten;opacity:0.7;display:block;margin:0 auto 10px;">
@@ -156,7 +189,7 @@
 
   function renderCards(pages) {
     gridCount.textContent = pages.length
-      ? `${pages.length} documento${pages.length !== 1 ? 's' : ''}`
+      ? `${pages.length} doc${pages.length !== 1 ? 's' : ''}`
       : ''
 
     if (!pages.length) {
@@ -205,7 +238,6 @@
     const filterBar = document.getElementById('filterBar')
     const tagBar    = document.getElementById('tagBar')
 
-    // Categorias — remove anteriores mantendo "Todos"
     filterBar.querySelectorAll('[data-cat]:not([data-cat=""])').forEach(b => b.remove())
     const cats = [...new Set(pages.map(p => p.category).filter(Boolean))]
     cats.forEach(cat => {
@@ -217,7 +249,6 @@
       filterBar.appendChild(btn)
     })
 
-    // Tags — remove anteriores mantendo "Todas"
     tagBar.querySelectorAll('[data-tag]:not([data-tag=""])').forEach(b => b.remove())
     const tags = [...new Set(pages.flatMap(p => p.tags || []).filter(Boolean))].sort()
     if (tags.length) {
@@ -295,7 +326,6 @@
     let data, error
 
     if (IS_LOCAL) {
-      // Modo desenvolvimento: API local do dev-server.js
       try {
         const res = await fetch('/api/pages')
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -304,7 +334,6 @@
         error = e
       }
     } else {
-      // Modo produção: Supabase
       ;({ data, error } = await client
         .from('pages')
         .select('*')
@@ -322,7 +351,6 @@
     renderCards(data)
   }
 
-  // Inicializa botões fixos "Todos" e "Todas"
   document.querySelector('[data-cat=""]').addEventListener('click', () => setCategory(''))
   document.querySelector('[data-tag=""]').addEventListener('click', () => setTag(''))
 
@@ -448,6 +476,17 @@
       content.style.top = top + 'px'; content.style.left = left + 'px'
     }
 
+    function syncCancelBtn() {
+      const btn = document.getElementById('calCancel')
+      if (!btn) return
+      if (startDate && endDate) {
+        btn.textContent = 'Limpar filtro'
+        btn.classList.add('visible')
+      } else {
+        btn.classList.remove('visible')
+      }
+    }
+
     function openModal() {
       pendingStart = startDate; pendingEnd = endDate
       selecting = false; hoverDate = null
@@ -481,7 +520,14 @@
           document.getElementById('calendarToggle').classList.add('active')
           closeModal(); applyFilters()
         })
-        document.getElementById('calCancel').addEventListener('click', closeModal)
+        document.getElementById('calCancel').addEventListener('click', () => {
+          startDate = null; endDate = null
+          pendingStart = null; pendingEnd = null
+          activeDateFrom = ''; activeDateTo = ''
+          document.getElementById('rangeDisplay').textContent = 'Qualquer data'
+          document.getElementById('calendarToggle').classList.remove('active')
+          closeModal(); applyFilters()
+        })
         document.getElementById('calModalClose').addEventListener('click', closeModal)
         modal.addEventListener('click', e => { if (e.target === modal) closeModal() })
         document.addEventListener('keydown', e => {
@@ -496,6 +542,7 @@
       positionModal()
       modal.classList.add('open')
       document.getElementById('calendarToggle').setAttribute('aria-expanded','true')
+      syncCancelBtn()
       render()
     }
 

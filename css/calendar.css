@@ -126,12 +126,14 @@
 .btn-cal-cancel {
   padding: .45rem 1.1rem;
   background: none; color: var(--text-muted);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 8px; font-size: .8rem; cursor: pointer;
+  border: none; border-radius: 8px;
+  font-size: .8rem; cursor: pointer;
   font-family: 'DM Sans', sans-serif;
-  transition: color .2s, border-color .2s;
+  transition: color .2s, background .2s;
+  opacity: 0; pointer-events: none;
 }
-.btn-cal-cancel:hover { color: var(--text); border-color: rgba(255,255,255,.22); }
+.btn-cal-cancel.visible { opacity: 1; pointer-events: auto; }
+.btn-cal-cancel:hover { color: var(--text); background: rgba(255,255,255,.06); }
 
 @media (max-width: 540px) {
   .cal-modal-content { width: calc(100vw - 32px); }
