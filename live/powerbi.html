@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — iGreen Energy</title>
+  <link rel="icon" type="image/png" href="../assets/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="../css/page.css">
+</head>
+<body>
+
+<div class="layout">
+
+  <div class="topbar">
+    <a href="../index.html" class="back-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Início
+    </a>
+    <div class="topbar-sep"></div>
+    <span class="topbar-cat">Power BI</span>
+    <div class="topbar-sep"></div>
+    <span class="topbar-title" id="topTitle">Dashboard</span>
+  </div>
+
+  <iframe id="viewer" src="about:blank" allowfullscreen allow="fullscreen"></iframe>
+
+  <div class="error" id="errorState">
+    <div class="error-code" id="errorCode">401</div>
+    <h2 id="errorTitle">Acesso negado</h2>
+    <p id="errorMsg">Você precisa estar autenticado para ver este dashboard.</p>
+    <a href="../index.html">← Voltar ao índice</a>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL = '__SUPABASE_URL__'
+  const SUPABASE_KEY = '__SUPABASE_KEY__'
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+  const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname)
+
+  const params   = new URLSearchParams(location.search)
+  const embedUrl = params.get('url')
+  const title    = params.get('title') || 'Dashboard'
+
+  document.getElementById('topTitle').textContent = title
+  document.title = `${title} — iGreen Energy`
+
+  function showError(code, heading, msg) {
+    document.getElementById('viewer').style.display = 'none'
+    document.getElementById('errorCode').textContent  = code
+    document.getElementById('errorTitle').textContent = heading
+    document.getElementById('errorMsg').textContent   = msg
+    document.getElementById('errorState').style.display = 'flex'
+  }
+
+  function loadDashboard() {
+    if (!embedUrl) {
+      showError('400', 'URL não informada', 'Nenhum relatório foi especificado para este dashboard.')
+      return
+    }
+    document.getElementById('viewer').src = decodeURIComponent(embedUrl)
+  }
+
+  // Verifica sessão antes de carregar — reaproveita o mesmo SSO Microsoft
+  // já ativo no restante da aplicação.
+  client.auth.onAuthStateChange((event, session) => {
+    if (event === 'INITIAL_SESSION') {
+      if (session || IS_LOCAL) loadDashboard()
+      else showError('401', 'Acesso negado', 'Você precisa estar autenticado para ver este dashboard.')
+    } else if (event === 'SIGNED_OUT') {
+      showError('401', 'Acesso negado', 'Sessão encerrada. Volte ao índice para fazer login.')
+    }
+  })
+</script>
+
+</body>
+</html>

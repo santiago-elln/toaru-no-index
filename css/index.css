@@ -269,6 +269,14 @@ nav {
   cursor: default;
 }
 
+.dash-card:not(.dash-card--soon) .dash-thumb {
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.dash-card:not(.dash-card--soon) .dash-thumb:hover {
+  background: rgba(255,255,255,0.045);
+}
+
 .dash-thumb {
   width: 100%;
   aspect-ratio: 16 / 9;

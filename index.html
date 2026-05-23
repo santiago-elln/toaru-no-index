@@ -63,6 +63,12 @@
         <span class="dash-badge">Em breve</span>
       </div>
       <div class="dash-grid" id="dashGrid">
+        <!--
+          Card format for real dashboards:
+            Local:   <div class="dash-card" data-type="local"   data-target="slug-do-arquivo">
+            Power BI:<div class="dash-card" data-type="powerbi" data-target="https://app.powerbi.com/reportEmbed?reportId=...&groupId=...&autoAuth=true&ctid=...">
+        -->
+
         <!-- placeholder cards — layout preview -->
         <div class="dash-card dash-card--soon">
           <div class="dash-thumb">
@@ -350,6 +356,26 @@
     buildFilters(data)
     renderCards(data)
   }
+
+  // ── Dashboard routing ───────────────────────────────────────────────────────
+  document.getElementById('dashGrid').addEventListener('click', e => {
+    const thumb = e.target.closest('.dash-thumb')
+    if (!thumb) return
+    const card = thumb.closest('.dash-card')
+    if (!card || card.classList.contains('dash-card--soon')) return
+
+    const type   = card.dataset.type
+    const target = card.dataset.target
+    if (!type || !target) return
+
+    const title = encodeURIComponent(card.querySelector('.dash-card-title')?.textContent || 'Dashboard')
+
+    if (type === 'local') {
+      location.href = `live/${target}.html`
+    } else if (type === 'powerbi') {
+      location.href = `live/powerbi.html?url=${encodeURIComponent(target)}&title=${title}`
+    }
+  })
 
   document.querySelector('[data-cat=""]').addEventListener('click', () => setCategory(''))
   document.querySelector('[data-tag=""]').addEventListener('click', () => setTag(''))

@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disparos — iGreen Energy</title>
+  <link rel="icon" type="image/png" href="../assets/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="../css/page.css">
+  <style>
+    html, body { overflow: hidden; }
+
+    .layout { display: flex; flex-direction: column; height: 100vh; }
+
+    /* ── CONTENT AREA ── */
+    .dash-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px 32px;
+      scrollbar-width: thin;
+      scrollbar-color: transparent transparent;
+    }
+    .dash-body::-webkit-scrollbar { width: 1px; }
+    .dash-body::-webkit-scrollbar-thumb { background: transparent; }
+
+    /* ── KPI ROW ── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr 2fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .kpi-card {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 110px;
+    }
+
+    .kpi-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .kpi-stack .kpi-card { min-height: 0; flex: 1; }
+
+    .kpi-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: #555;
+    }
+
+    .kpi-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #e8e8e8;
+      line-height: 1;
+    }
+    .kpi-value.accent { color: #4caf32; }
+
+    .kpi-sub {
+      font-size: 11px;
+      color: #555;
+      margin-top: 2px;
+    }
+
+    /* ── CHART CARD ── */
+    .chart-card {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 110px;
+    }
+
+    .chart-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #555;
+    }
+
+    .legend-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-dot.sig  { background: #4caf32; }
+    .legend-dot.docs { background: #888; }
+    .legend-dot.mass { background: #c0392b; }
+
+    .chart-totals {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      text-align: right;
+    }
+
+    .chart-total-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #444;
+    }
+
+    .chart-total-row {
+      font-size: 11px;
+      color: #777;
+    }
+    .chart-total-row span { color: #bbb; font-weight: 600; }
+
+    /* ── BAR CHART ── */
+    .bar-chart-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .bar-track-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 16px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 3px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .bar-seg {
+      height: 100%;
+      transition: width 0.5s ease;
+    }
+    .bar-seg.sig  { background: rgba(76,175,50,0.75); }
+    .bar-seg.docs { background: rgba(120,120,120,0.5); }
+    .bar-seg.mass { background: rgba(192,57,43,0.7); }
+
+    .bar-date {
+      font-size: 9px;
+      color: #444;
+      width: 36px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    /* ── FILTER + CONTEXT SECTION ── */
+    .filter-context-wrap { display: flex; flex-direction: column; gap: 10px; }
+
+    .mirror-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 2px 2px;
+    }
+
+    .mirror-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .mirror-label input[type="checkbox"] { display: none; }
+
+    .mirror-ui {
+      width: 30px;
+      height: 17px;
+      border-radius: 9px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+      flex-shrink: 0;
+      transition: background .2s, border-color .2s;
+    }
+    .mirror-ui::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      background: #444;
+      transition: transform .2s, background .2s;
+    }
+    .mirror-label input:checked ~ .mirror-ui {
+      background: rgba(76,175,50,0.18);
+      border-color: rgba(76,175,50,0.4);
+    }
+    .mirror-label input:checked ~ .mirror-ui::after {
+      transform: translateX(13px);
+      background: #4caf32;
+    }
+
+    .mirror-text {
+      font-size: 11px;
+      font-weight: 600;
+      color: #444;
+      transition: color .15s;
+    }
+    .mirror-label:hover .mirror-text { color: #777; }
+    .mirror-label input:checked ~ .mirror-text { color: #4caf32; }
+
+    .mirror-hint {
+      font-size: 10px;
+      color: #2e2e2e;
+      font-style: italic;
+    }
+
+    /* ── FILTER PANELS ── */
+    .filter-panels-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .filter-panel {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0;
+    }
+
+    .filter-panel-side {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #333;
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding-right: 16px;
+    }
+
+    .filter-divider {
+      width: 1px;
+      height: 28px;
+      background: rgba(255,255,255,0.06);
+      flex-shrink: 0;
+      margin: 0 16px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .filter-group.slider-group {
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 140px;
+    }
+    .filter-group.slider-group .filter-group-label { white-space: nowrap; }
+    .filter-group.slider-group .fu-slider { flex: 1; }
+
+    .filter-group-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #444;
+    }
+
+    .pill-group { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .pill-input { display: none; }
+
+    .pill-label {
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      color: #555;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color .15s, color .15s, background .15s;
+      user-select: none;
+    }
+    .pill-label:hover {
+      border-color: rgba(76,175,50,0.3);
+      color: #999;
+    }
+    .pill-input:checked + .pill-label {
+      background: rgba(76,175,50,0.12);
+      border-color: rgba(76,175,50,0.45);
+      color: #4caf32;
+    }
+
+    /* ── FOLLOW-UP SLIDER ── */
+    .slider-val {
+      font-size: 14px;
+      font-weight: 800;
+      font-family: 'Syne', sans-serif;
+      color: #4caf32;
+      min-width: 14px;
+      text-align: right;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    input[type="range"].fu-slider {
+      -webkit-appearance: none;
+      height: 2px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.07);
+      outline: none;
+      cursor: pointer;
+      display: block;
+    }
+    input[type="range"].fu-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #4caf32;
+      cursor: pointer;
+      border: 2px solid #0f0f0f;
+      box-shadow: 0 0 0 1px rgba(76,175,50,0.35);
+    }
+    input[type="range"].fu-slider::-moz-range-thumb {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #4caf32;
+      cursor: pointer;
+      border: 2px solid #0f0f0f;
+      box-sizing: border-box;
+    }
+
+    /* ── CONTEXT PANELS ROW ── */
+    .context-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .context-card {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .context-card-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: #4caf32;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .ctx-progress-wrap { display: flex; flex-direction: column; gap: 6px; }
+
+    .ctx-progress-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .ctx-progress-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #444;
+    }
+
+    .ctx-progress-pct {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      color: #4caf32;
+      line-height: 1;
+    }
+
+    .ctx-progress-bar {
+      height: 5px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .ctx-progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, #3a8a25, #4caf32);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.6s ease;
+    }
+
+    .ctx-progress-sub {
+      font-size: 10px;
+      color: #383838;
+    }
+
+    /* ── STATS GRID ── */
+    .ctx-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .ctx-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.018);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
+    }
+
+    .ctx-stat--wide { grid-column: 1 / -1; }
+
+    .ctx-stat-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: #383838;
+    }
+
+    .ctx-stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #aaa;
+      line-height: 1;
+    }
+
+    .ctx-stat-value--warn { color: #c96060; }
+
+    /* ── QUALITY BLOCK ── */
+    .quality-block {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .quality-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: #4caf32;
+    }
+
+    .quality-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .quality-col-title {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #444;
+      margin-bottom: 10px;
+    }
+
+    /* Scatter chart */
+    .scatter-wrap {
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      overflow: hidden;
+      background: rgba(0,0,0,0.18);
+    }
+
+    .scatter-svg { width: 100%; display: block; }
+
+    .scatter-legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .scatter-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #3a3a3a;
+    }
+
+    .scatter-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Reasons list */
+    .reasons-list {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .reason-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .reason-rank {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      color: #2e2e2e;
+      width: 16px;
+      flex-shrink: 0;
+      padding-top: 1px;
+      text-align: right;
+    }
+
+    .reason-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .reason-text {
+      font-size: 11px;
+      color: #777;
+      line-height: 1.35;
+    }
+
+    .reason-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .reason-bar-track {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .reason-bar {
+      height: 100%;
+      background: rgba(255,255,255,0.11);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    .reason-pct {
+      font-size: 10px;
+      font-weight: 700;
+      color: #3a3a3a;
+      min-width: 28px;
+      text-align: right;
+    }
+
+    /* ── AUTH ERROR OVERLAY ── */
+    #authError {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-align: center;
+      padding: 40px;
+    }
+    #authError.visible { display: flex; }
+
+    .err-code {
+      font-family: 'Syne', sans-serif;
+      font-size: 72px;
+      font-weight: 800;
+      color: rgba(76,175,50,0.18);
+      line-height: 1;
+    }
+    #authError h2 { font-size: 20px; color: #e8e8e8; }
+    #authError p  { font-size: 14px; color: #555; }
+    #authError a  {
+      display: inline-block; margin-top: 8px;
+      padding: 8px 20px; border-radius: 8px;
+      background: rgba(76,175,50,0.10);
+      border: 1px solid rgba(76,175,50,0.25);
+      color: #4caf32; font-size: 14px; text-decoration: none;
+      transition: background 0.2s;
+    }
+    #authError a:hover { background: rgba(76,175,50,0.2); }
+
+    /* ── SKELETON ── */
+    @keyframes shimmer {
+      0%   { opacity: 0.4; }
+      50%  { opacity: 0.1; }
+      100% { opacity: 0.4; }
+    }
+    .skeleton {
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      animation: shimmer 1.6s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a href="../index.html" class="back-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Início
+    </a>
+    <div class="topbar-sep"></div>
+    <span class="topbar-cat">Operações</span>
+    <div class="topbar-sep"></div>
+    <span class="topbar-title">Disparos &amp; Recuperação</span>
+  </div>
+
+  <!-- AUTH ERROR (hidden until needed) -->
+  <div id="authError">
+    <div class="err-code" id="errCode">401</div>
+    <h2 id="errTitle">Acesso negado</h2>
+    <p id="errMsg">Você precisa estar autenticado para ver este dashboard.</p>
+    <a href="../index.html">← Voltar ao índice</a>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="dash-body" id="dashBody" style="display:none">
+
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+
+      <div class="kpi-card">
+        <span class="kpi-label">Conversão após resposta</span>
+        <span class="kpi-value accent" id="kpiConvRate">—</span>
+        <span class="kpi-sub">leads que responderam e fecharam</span>
+      </div>
+
+      <div class="kpi-stack">
+        <div class="kpi-card">
+          <span class="kpi-label">Contratos assinados</span>
+          <span class="kpi-value" id="kpiSigned">—</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-label">Receita recuperada</span>
+          <span class="kpi-value" id="kpiRevenue">—</span>
+          <span class="kpi-sub">em kWh contratados</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <span class="kpi-label">Tempo médio de fechamento</span>
+        <span class="kpi-value" id="kpiClosingTime">—</span>
+        <span class="kpi-sub">após primeiro contato</span>
+      </div>
+
+      <div class="kpi-card">
+        <span class="kpi-label">Tempo médio 1ª resposta</span>
+        <span class="kpi-value" id="kpiReplyTime">—</span>
+        <span class="kpi-sub">após disparo</span>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="kpi-label" style="margin-bottom:8px">Respostas ao longo do tempo</div>
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-dot sig"></span>Assinaturas pendentes</div>
+              <div class="legend-item"><span class="legend-dot docs"></span>Documentos pendentes</div>
+              <div class="legend-item"><span class="legend-dot mass"></span>Datas de disparo</div>
+            </div>
+          </div>
+          <div class="chart-totals">
+            <div class="chart-total-label">Total de mensagens enviadas</div>
+            <div class="chart-total-row">Assinaturas: <span id="totalSig">—</span></div>
+            <div class="chart-total-row">Documentos: <span id="totalDocs">—</span></div>
+          </div>
+        </div>
+        <div class="bar-chart-wrap" id="barChart"></div>
+      </div>
+
+    </div><!-- /kpi-row -->
+
+    <!-- FILTER + CONTEXT SECTION -->
+    <div class="filter-context-wrap">
+
+      <!-- Mirror toggle -->
+      <div class="mirror-row">
+        <label class="mirror-label" for="mirrorToggle">
+          <input type="checkbox" id="mirrorToggle">
+          <span class="mirror-ui"></span>
+          <span class="mirror-text">Espelhar filtros</span>
+        </label>
+        <span class="mirror-hint">Quando ativo, ambos os contextos usam os mesmos filtros</span>
+      </div>
+
+      <!-- Filter panels (2-col splits into 1-col when mirrored) -->
+      <div class="filter-panels-row" id="filterPanelsRow">
+
+        <!-- Sig panel (doubles as shared panel when mirrored) -->
+        <div class="filter-panel" id="panelSig">
+          <span class="filter-panel-side" id="panelSigLabel">Assinaturas</span>
+          <span class="filter-divider"></span>
+
+          <div class="filter-group">
+            <div class="filter-group-label">Método de contato</div>
+            <div class="pill-group">
+              <input type="checkbox" class="pill-input" id="sig-wa" data-panel="sig" checked>
+              <label class="pill-label" for="sig-wa">WhatsApp</label>
+              <input type="checkbox" class="pill-input" id="sig-call" data-panel="sig" checked>
+              <label class="pill-label" for="sig-call">Ligação</label>
+            </div>
+          </div>
+
+          <span class="filter-divider"></span>
+
+          <div class="filter-group">
+            <div class="filter-group-label">Origem do contato</div>
+            <div class="pill-group">
+              <input type="checkbox" class="pill-input" id="sig-lebes" data-panel="sig" checked>
+              <label class="pill-label" for="sig-lebes">Licença Lebes</label>
+              <input type="checkbox" class="pill-input" id="sig-acionistas" data-panel="sig" checked>
+              <label class="pill-label" for="sig-acionistas">Acionistas</label>
+            </div>
+          </div>
+
+          <span class="filter-divider"></span>
+
+          <div class="filter-group slider-group">
+            <span class="filter-group-label">Follow-ups mín.</span>
+            <input type="range" class="fu-slider" id="sig-fu" data-panel="sig"
+                   min="0" max="5" step="1" value="0">
+            <span class="slider-val" id="sig-fu-val">0</span>
+          </div>
+        </div><!-- /panelSig -->
+
+        <!-- Docs panel (hidden when mirrored) -->
+        <div class="filter-panel" id="panelDocs">
+          <span class="filter-panel-side">Documentos</span>
+          <span class="filter-divider"></span>
+
+          <div class="filter-group">
+            <div class="filter-group-label">Método de contato</div>
+            <div class="pill-group">
+              <input type="checkbox" class="pill-input" id="docs-wa" data-panel="docs" checked>
+              <label class="pill-label" for="docs-wa">WhatsApp</label>
+              <input type="checkbox" class="pill-input" id="docs-call" data-panel="docs" checked>
+              <label class="pill-label" for="docs-call">Ligação</label>
+            </div>
+          </div>
+
+          <span class="filter-divider"></span>
+
+          <div class="filter-group">
+            <div class="filter-group-label">Origem do contato</div>
+            <div class="pill-group">
+              <input type="checkbox" class="pill-input" id="docs-lebes" data-panel="docs" checked>
+              <label class="pill-label" for="docs-lebes">Licença Lebes</label>
+              <input type="checkbox" class="pill-input" id="docs-acionistas" data-panel="docs" checked>
+              <label class="pill-label" for="docs-acionistas">Acionistas</label>
+            </div>
+          </div>
+
+          <span class="filter-divider"></span>
+
+          <div class="filter-group slider-group">
+            <span class="filter-group-label">Follow-ups mín.</span>
+            <input type="range" class="fu-slider" id="docs-fu" data-panel="docs"
+                   min="0" max="5" step="1" value="0">
+            <span class="slider-val" id="docs-fu-val">0</span>
+          </div>
+        </div><!-- /panelDocs -->
+
+      </div><!-- /filterPanelsRow -->
+
+      <!-- Context cards -->
+      <div class="context-row">
+
+        <div class="context-card">
+          <div class="context-card-title">Contexto — Assinaturas pendentes</div>
+
+          <div class="ctx-progress-wrap">
+            <div class="ctx-progress-header">
+              <span class="ctx-progress-label">Exploração da base</span>
+              <span class="ctx-progress-pct" id="sig-pct">—</span>
+            </div>
+            <div class="ctx-progress-bar">
+              <div class="ctx-progress-fill" id="sig-fill"></div>
+            </div>
+            <span class="ctx-progress-sub" id="sig-reach">— / — clientes contactados</span>
+          </div>
+
+          <div class="ctx-stats">
+            <div class="ctx-stat">
+              <span class="ctx-stat-label">Conv. média por agente</span>
+              <span class="ctx-stat-value" id="sig-conv-agent">—</span>
+            </div>
+            <div class="ctx-stat">
+              <span class="ctx-stat-label">Total de conversões</span>
+              <span class="ctx-stat-value" id="sig-conv-total">—</span>
+            </div>
+            <div class="ctx-stat">
+              <span class="ctx-stat-label">Contatos realizados</span>
+              <span class="ctx-stat-value" id="sig-contacts">—</span>
+            </div>
+            <div class="ctx-stat">
+              <span class="ctx-stat-label">Respostas recebidas</span>
+              <span class="ctx-stat-value" id="sig-replies">—</span>
+            </div>
+            <div class="ctx-stat ctx-stat--wide">
+              <span class="ctx-stat-label">Opt-out</span>
+              <span class="ctx-stat-value ctx-stat-value--warn" id="sig-optout">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="context-card">
+          <div class="context-card-title">Contexto — Documentos pendentes</div>
+
+          <div class="ctx-progress-wrap">
+            <div class="ctx-progress-header">
+              <span class="ctx-progress-label">Exploração da base</span>
+              <span class="ctx-progress-pct" id="docs-pct">—</span>
+            </div>
+            <div class="ctx-progress-bar">
+              <div class="ctx-progress-fill" id="docs-fill"></div>
+            </div>
+            <span class="ctx-progress-sub" id="docs-reach">— / — clientes contactados</span>
+          </div>
+
+          <div class="ctx-stats">
+            <div class="ctx-stat">
+              <span class="ctx-stat-label">Conv. média por agente</span>
+              <span class="ctx-stat-value" id="docs-conv-agent">—</span>
+            </div>
+            <div class="ctx-stat">
+              <span class="ctx-stat-label">Total de conversões</span>
+              <span class="ctx-stat-value" id="docs-conv-total">—</span>
+            </div>
+            <div class="ctx-stat">
+              <span class="ctx-stat-label">Contatos realizados</span>
+              <span class="ctx-stat-value" id="docs-contacts">—</span>
+            </div>
+            <div class="ctx-stat">
+              <span class="ctx-stat-label">Respostas recebidas</span>
+              <span class="ctx-stat-value" id="docs-replies">—</span>
+            </div>
+            <div class="ctx-stat ctx-stat--wide">
+              <span class="ctx-stat-label">Opt-out</span>
+              <span class="ctx-stat-value ctx-stat-value--warn" id="docs-optout">—</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /filter-context-wrap -->
+
+    <!-- QUALITY BLOCK -->
+    <div class="quality-block">
+      <span class="quality-title">Qualidade</span>
+
+      <div class="quality-cols">
+
+        <!-- Left: scatter chart -->
+        <div>
+          <div class="quality-col-title">Dispersão de respostas por horário</div>
+          <div class="scatter-wrap">
+            <svg class="scatter-svg" id="scatterChart"
+                 viewBox="0 0 500 180" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+          <div class="scatter-legend">
+            <span class="scatter-legend-item">
+              <span class="scatter-dot" style="background:#c0392b"></span>
+              Respostas recebidas
+            </span>
+            <span class="scatter-legend-item">
+              <span class="scatter-dot" style="background:#4caf32"></span>
+              Respostas enviadas
+            </span>
+          </div>
+        </div>
+
+        <!-- Right: top reasons -->
+        <div>
+          <div class="quality-col-title">Principais motivos de não conversão</div>
+          <div class="reasons-list" id="reasonsList"></div>
+        </div>
+
+      </div>
+    </div><!-- /quality-block -->
+
+  </div><!-- /dash-body -->
+
+</div><!-- /layout -->
+
+<script>
+  const SUPABASE_URL = '__SUPABASE_URL__'
+  const SUPABASE_KEY = '__SUPABASE_KEY__'
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+  const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname)
+
+  // ── AUTH GATE ────────────────────────────────────────────────────────────
+  client.auth.onAuthStateChange((event, session) => {
+    if (event === 'INITIAL_SESSION') {
+      if (session || IS_LOCAL) initDashboard(session)
+      else showAuthError('401', 'Acesso negado', 'Você precisa estar autenticado para ver este dashboard.')
+    } else if (event === 'SIGNED_OUT') {
+      showAuthError('401', 'Acesso negado', 'Sessão encerrada. Volte ao índice para fazer login.')
+    }
+  })
+
+  function showAuthError(code, title, msg) {
+    document.getElementById('dashBody').style.display = 'none'
+    document.getElementById('errCode').textContent    = code
+    document.getElementById('errTitle').textContent   = title
+    document.getElementById('errMsg').textContent     = msg
+    document.getElementById('authError').classList.add('visible')
+  }
+
+  // ── DASHBOARD INIT ────────────────────────────────────────────────────────
+  async function initDashboard(session) {
+    document.getElementById('dashBody').style.display = 'block'
+    setupFilters()
+    await Promise.all([loadKPIs(), loadChart(), loadQuality()])
+  }
+
+  // ── FILTER STATE ──────────────────────────────────────────────────────────
+  function getPanelState(prefix) {
+    return {
+      wa:         document.getElementById(`${prefix}-wa`).checked,
+      call:       document.getElementById(`${prefix}-call`).checked,
+      lebes:      document.getElementById(`${prefix}-lebes`).checked,
+      acionistas: document.getElementById(`${prefix}-acionistas`).checked,
+      followups:  parseInt(document.getElementById(`${prefix}-fu`).value, 10),
+    }
+  }
+
+  function getCombinedFilter() {
+    const mirrored = document.getElementById('mirrorToggle').checked
+    const sig  = getPanelState('sig')
+    const docs = mirrored ? sig : getPanelState('docs')
+
+    const combined = {
+      wa:         sig.wa         || docs.wa,
+      call:       sig.call       || docs.call,
+      lebes:      sig.lebes      || docs.lebes,
+      acionistas: sig.acionistas || docs.acionistas,
+      followups:  Math.max(sig.followups, docs.followups),
+    }
+
+    return { sig, docs, combined }
+  }
+
+  function onFilterChange() {
+    const { sig, docs, combined } = getCombinedFilter()
+    // TODO: pass to data loaders once tables are defined
+    // loadContextSig(sig)
+    // loadContextDocs(docs)
+    // loadKPIs(combined)
+    // loadChart(combined)
+    console.debug('Filter update:', { sig, docs, combined })
+  }
+
+  function updateSliderFill(slider) {
+    const pct = (parseInt(slider.value, 10) / parseInt(slider.max, 10)) * 100
+    slider.style.background =
+      `linear-gradient(to right, rgba(76,175,50,0.65) ${pct}%, rgba(255,255,255,0.07) ${pct}%)`
+  }
+
+  function setupFilters() {
+    // Pill checkboxes
+    document.querySelectorAll('.pill-input').forEach(input => {
+      input.addEventListener('change', onFilterChange)
+    })
+
+    // Sliders
+    document.querySelectorAll('.fu-slider').forEach(slider => {
+      updateSliderFill(slider)
+      slider.addEventListener('input', () => {
+        updateSliderFill(slider)
+        const prefix = slider.dataset.panel
+        document.getElementById(`${prefix}-fu-val`).textContent = slider.value
+        onFilterChange()
+      })
+    })
+
+    // Mirror toggle
+    document.getElementById('mirrorToggle').addEventListener('change', function () {
+      const mirrored = this.checked
+      document.getElementById('filterPanelsRow').classList.toggle('mirrored', mirrored)
+      document.getElementById('panelDocs').style.display = mirrored ? 'none' : ''
+      document.getElementById('panelSigLabel').textContent = mirrored ? 'Ambos os lados' : 'Assinaturas'
+      onFilterChange()
+    })
+  }
+
+  // ── KPI LOADER ────────────────────────────────────────────────────────────
+  async function loadKPIs() {
+    // TODO: replace with real Supabase queries once tables are defined
+    // const { data } = await client.from('disparos_kpis').select('*').single()
+    const mock = { convRate: null, signed: null, revenue: null, closingTime: null, replyTime: null }
+
+    setText('kpiConvRate',    fmt(mock.convRate,    v => `${v}%`))
+    setText('kpiSigned',      fmt(mock.signed,      v => String(v)))
+    setText('kpiRevenue',     fmt(mock.revenue,     v => `${v} kWh`))
+    setText('kpiClosingTime', fmt(mock.closingTime, v => `${v}d`))
+    setText('kpiReplyTime',   fmt(mock.replyTime,   v => `${v}h`))
+  }
+
+  // ── CHART LOADER ──────────────────────────────────────────────────────────
+  async function loadChart() {
+    // TODO: const { data } = await client.from('disparos_respostas').select('*').order('date')
+    setText('totalSig',  '—')
+    setText('totalDocs', '—')
+    renderBarChart([])
+  }
+
+  // ── BAR CHART RENDERER ────────────────────────────────────────────────────
+  // rows: [{ date: string, sig: number, docs: number, isMassDate: bool }]
+  function renderBarChart(rows) {
+    const wrap = document.getElementById('barChart')
+    wrap.innerHTML = ''
+
+    if (!rows.length) {
+      wrap.innerHTML = '<div style="color:#2f2f2f;font-size:11px;font-style:italic;text-align:center;padding:12px 0">Sem dados</div>'
+      return
+    }
+
+    const maxSig  = Math.max(...rows.map(r => r.sig  ?? 0), 1)
+    const maxDocs = Math.max(...rows.map(r => r.docs ?? 0), 1)
+
+    for (const row of rows) {
+      const sigPct  = ((row.sig  ?? 0) / maxSig  * 100).toFixed(1)
+      const docsPct = ((row.docs ?? 0) / maxDocs * 100).toFixed(1)
+      const div = document.createElement('div')
+      div.className = 'bar-track-row'
+      div.innerHTML = `
+        <span class="bar-date">${row.date}</span>
+        <div class="bar-track">
+          ${row.isMassDate
+            ? '<div class="bar-seg mass" style="width:100%"></div>'
+            : `<div class="bar-seg sig"  style="width:${sigPct}%"></div>
+               <div class="bar-seg docs" style="width:${docsPct}%"></div>`}
+        </div>`
+      wrap.appendChild(div)
+    }
+  }
+
+  // ── QUALITY LOADERS ───────────────────────────────────────────────────────
+  async function loadQuality() {
+    // TODO: const { data: interactions } = await client
+    //   .from('disparos_interacoes').select('date, hour, type').order('date')
+    // TODO: const { data: reasons } = await client
+    //   .from('disparos_motivos').select('motivo, contagem').order('contagem', { ascending: false }).limit(6)
+
+    renderScatterChart([])
+    renderReasons([])
+  }
+
+  // points: [{ date: 'YYYY-MM-DD', hour: 0-23, type: 'reply'|'response' }]
+  function renderScatterChart(points) {
+    const svg = document.getElementById('scatterChart')
+    const W = 500, H = 180
+    const PAD = { top: 10, right: 10, bottom: 22, left: 26 }
+    const innerW = W - PAD.left - PAD.right
+    const innerH = H - PAD.top - PAD.bottom
+    const HOUR_MIN = 7, HOUR_MAX = 21
+
+    const allDates = [...new Set(points.map(p => p.date))].sort()
+    const dateCount = allDates.length
+
+    const xScale = d => {
+      const i = allDates.indexOf(d)
+      return PAD.left + (dateCount > 1 ? (i / (dateCount - 1)) * innerW : innerW / 2)
+    }
+    const yScale = h => PAD.top + ((h - HOUR_MIN) / (HOUR_MAX - HOUR_MIN)) * innerH
+
+    let out = ''
+
+    // Horizontal grid + hour labels
+    for (let h = HOUR_MIN; h <= HOUR_MAX; h += 2) {
+      const y = yScale(h).toFixed(1)
+      out += `<line x1="${PAD.left}" y1="${y}" x2="${W - PAD.right}" y2="${y}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>`
+      out += `<text x="${PAD.left - 4}" y="${(+y + 3).toFixed(1)}" text-anchor="end" font-size="7" fill="#2e2e2e">${h}h</text>`
+    }
+
+    // Date labels (max ~7)
+    if (dateCount) {
+      const step = Math.max(1, Math.ceil(dateCount / 7))
+      allDates.forEach((date, i) => {
+        if (i % step !== 0 && i !== dateCount - 1) return
+        const x = xScale(date).toFixed(1)
+        out += `<text x="${x}" y="${H - PAD.bottom + 12}" text-anchor="middle" font-size="7" fill="#2e2e2e">${date.slice(5).replace('-', '/')}</text>`
+      })
+    }
+
+    // Dots — replies behind, responses in front
+    for (const p of points.filter(p => p.type === 'reply')) {
+      out += `<circle cx="${xScale(p.date).toFixed(1)}" cy="${yScale(p.hour).toFixed(1)}" r="3.5" fill="rgba(192,57,43,0.65)"/>`
+    }
+    for (const p of points.filter(p => p.type === 'response')) {
+      out += `<circle cx="${xScale(p.date).toFixed(1)}" cy="${yScale(p.hour).toFixed(1)}" r="3.5" fill="rgba(76,175,50,0.7)"/>`
+    }
+
+    if (!points.length) {
+      out += `<text x="${W / 2}" y="${H / 2}" text-anchor="middle" font-size="10" fill="#242424" font-style="italic">Sem dados</text>`
+    }
+
+    svg.innerHTML = out
+  }
+
+  // reasons: [{ text: string, pct: number }] sorted desc
+  function renderReasons(reasons) {
+    const list = document.getElementById('reasonsList')
+    if (!reasons.length) {
+      list.innerHTML = '<div style="color:#242424;font-size:11px;font-style:italic;text-align:center;padding:20px 0">Sem dados</div>'
+      return
+    }
+    list.innerHTML = reasons.map((r, i) => `
+      <div class="reason-item">
+        <span class="reason-rank">${i + 1}</span>
+        <div class="reason-body">
+          <div class="reason-text">${r.text}</div>
+          <div class="reason-bar-wrap">
+            <div class="reason-bar-track">
+              <div class="reason-bar" style="width:${r.pct}%"></div>
+            </div>
+            <span class="reason-pct">${r.pct}%</span>
+          </div>
+        </div>
+      </div>`).join('')
+  }
+
+  // ── UTILS ─────────────────────────────────────────────────────────────────
+  function setText(id, val) {
+    const el = document.getElementById(id)
+    if (el) el.textContent = val
+  }
+
+  function fmt(val, fn) {
+    return val == null ? '—' : fn(val)
+  }
+</script>
+
+</body>
+</html>
