@@ -27,7 +27,7 @@
     /* ── KPI ROW ── */
     .kpi-row {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr 2fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: 14px;
       margin-bottom: 16px;
     }
@@ -83,6 +83,7 @@
       flex-direction: column;
       gap: 12px;
       min-height: 110px;
+      grid-column: 1 / -1;
     }
 
     .chart-card-header {
@@ -695,30 +696,32 @@
         <span class="kpi-sub">leads que responderam e fecharam</span>
       </div>
 
-      <div class="kpi-stack">
-        <div class="kpi-card">
-          <span class="kpi-label">Contratos assinados</span>
-          <span class="kpi-value" id="kpiSigned">—</span>
-        </div>
-        <div class="kpi-card">
+      <div class="kpi-card">
+        <span class="kpi-label">Contratos assinados</span>
+        <span class="kpi-value" id="kpiSigned">—</span>
+      </div>
+
+      <div class="kpi-card">
           <span class="kpi-label">Receita recuperada</span>
           <span class="kpi-value" id="kpiRevenue">—</span>
           <span class="kpi-sub">em kWh contratados</span>
+      </div>
+
+      <div class="kpi-stack">
+        <div class="kpi-card">
+          <span class="kpi-label">Tempo médio 1ª resposta</span>
+          <span class="kpi-value" id="kpiReplyTime">—</span>
+          <span class="kpi-sub">após disparo</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-label">Tempo médio de fechamento</span>
+            <span class="kpi-value" id="kpiClosingTime">—</span>
+            <span class="kpi-sub">após primeiro contato</span>
         </div>
       </div>
 
-      <div class="kpi-card">
-        <span class="kpi-label">Tempo médio de fechamento</span>
-        <span class="kpi-value" id="kpiClosingTime">—</span>
-        <span class="kpi-sub">após primeiro contato</span>
-      </div>
-
-      <div class="kpi-card">
-        <span class="kpi-label">Tempo médio 1ª resposta</span>
-        <span class="kpi-value" id="kpiReplyTime">—</span>
-        <span class="kpi-sub">após disparo</span>
-      </div>
-
+    </div>
+    <div class="kpi-row">
       <div class="chart-card">
         <div class="chart-card-header">
           <div>
@@ -737,8 +740,7 @@
         </div>
         <div class="bar-chart-wrap" id="barChart"></div>
       </div>
-
-    </div><!-- /kpi-row -->
+    </div>
 
     <!-- FILTER + CONTEXT SECTION -->
     <div class="filter-context-wrap">
@@ -746,7 +748,7 @@
       <!-- Mirror toggle -->
       <div class="mirror-row">
         <label class="mirror-label" for="mirrorToggle">
-          <input type="checkbox" id="mirrorToggle">
+          <input type="checkbox" id="mirrorToggle" checked>
           <span class="mirror-ui"></span>
           <span class="mirror-text">Espelhar filtros</span>
         </label>
@@ -758,19 +760,7 @@
 
         <!-- Sig panel (doubles as shared panel when mirrored) -->
         <div class="filter-panel" id="panelSig">
-          <span class="filter-panel-side" id="panelSigLabel">Assinaturas</span>
-          <span class="filter-divider"></span>
-
-          <div class="filter-group">
-            <div class="filter-group-label">Método de contato</div>
-            <div class="pill-group">
-              <input type="checkbox" class="pill-input" id="sig-wa" data-panel="sig" checked>
-              <label class="pill-label" for="sig-wa">WhatsApp</label>
-              <input type="checkbox" class="pill-input" id="sig-call" data-panel="sig" checked>
-              <label class="pill-label" for="sig-call">Ligação</label>
-            </div>
-          </div>
-
+          <span class="filter-panel-side" id="panelSigLabel">Ambos os lados</span>
           <span class="filter-divider"></span>
 
           <div class="filter-group">
@@ -794,20 +784,8 @@
         </div><!-- /panelSig -->
 
         <!-- Docs panel (hidden when mirrored) -->
-        <div class="filter-panel" id="panelDocs">
+        <div class="filter-panel" id="panelDocs" style="display:none">
           <span class="filter-panel-side">Documentos</span>
-          <span class="filter-divider"></span>
-
-          <div class="filter-group">
-            <div class="filter-group-label">Método de contato</div>
-            <div class="pill-group">
-              <input type="checkbox" class="pill-input" id="docs-wa" data-panel="docs" checked>
-              <label class="pill-label" for="docs-wa">WhatsApp</label>
-              <input type="checkbox" class="pill-input" id="docs-call" data-panel="docs" checked>
-              <label class="pill-label" for="docs-call">Ligação</label>
-            </div>
-          </div>
-
           <span class="filter-divider"></span>
 
           <div class="filter-group">
@@ -988,8 +966,6 @@
   // ── FILTER STATE ──────────────────────────────────────────────────────────
   function getPanelState(prefix) {
     return {
-      wa:         document.getElementById(`${prefix}-wa`).checked,
-      call:       document.getElementById(`${prefix}-call`).checked,
       lebes:      document.getElementById(`${prefix}-lebes`).checked,
       acionistas: document.getElementById(`${prefix}-acionistas`).checked,
       followups:  parseInt(document.getElementById(`${prefix}-fu`).value, 10),
@@ -1002,8 +978,6 @@
     const docs = mirrored ? sig : getPanelState('docs')
 
     const combined = {
-      wa:         sig.wa         || docs.wa,
-      call:       sig.call       || docs.call,
       lebes:      sig.lebes      || docs.lebes,
       acionistas: sig.acionistas || docs.acionistas,
       followups:  Math.max(sig.followups, docs.followups),
