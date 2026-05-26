@@ -47,17 +47,26 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 // ── Metadados manuais (mesmo objeto do seed.js) ─────────────────────────────
 // Se um arquivo não estiver aqui, o título será o nome do arquivo.
 const METADATA = {
-  'TICKET 11 MAIO v3': {
-    title:       'Relatório de Chamados — 11 Maio',
-    description: 'Relatório detalhado de chamados de suporte técnico referente ao ticket de 11 de maio.',
-    category:    'Ticket',
-    tags:        ['suporte', 'chamados', 'maio'],
+  'Dashboard MAY 13th FEELINGS': {
+    title:        'Dashboard de Sentimentos — 13 Maio',
+    description:  'Análise de sentimento e percepção dos atendimentos realizados em 13 de maio.',
+    category:     'Relatório',
+    tags:         ['sentimentos', 'atendimento', 'maio'],
+    analyst_only: true,
   },
-  'ATA TICKET 11 MAIO': {
-    title:       'Ata de Reunião — Ticket 11 Maio',
-    description: 'Ata da reunião de alinhamento sobre melhoria de processos de ticket de 15/05/2026.',
-    category:    'Ata',
-    tags:        ['reunião', 'processos', 'melhoria'],
+  'TICKET 11 MAIO v3': {
+    title:        'Relatório de Chamados — 11 Maio',
+    description:  'Relatório detalhado de chamados de suporte técnico referente ao ticket de 11 de maio.',
+    category:     'Ticket',
+    tags:         ['suporte', 'chamados', 'maio'],
+    analyst_only: true,
+  },
+  'ÁUDIOS DE ATENDIMENTO': {
+    title:        'Relatório de Áudios de Atendimento',
+    description:  'Análise de IA dos áudios enviados em atendimento e comparativos de TMA.',
+    category:     'Análise',
+    tags:         ['processos', 'melhoria'],
+    analyst_only: true,
   },
 }
 // ───────────────────────────────────────────────────────────────────────────
@@ -84,11 +93,12 @@ function getLocalPages() {
       return {
         id:           slug,
         slug,
-        title:        meta.title       || nameWithoutExt,
-        description:  meta.description || null,
-        category:     meta.category    || null,
-        tags:         meta.tags        || [],
-        storage_path: filename,         // nome original — usado para montar a URL local
+        title:        meta.title        || nameWithoutExt,
+        description:  meta.description  || null,
+        category:     meta.category     || null,
+        tags:         meta.tags         || [],
+        analyst_only: meta.analyst_only || false,
+        storage_path: filename,          // nome original — usado para montar a URL local
         file_size:    stat.size,
         published:    true,
         created_at:   stat.mtime.toISOString(),

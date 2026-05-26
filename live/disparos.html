@@ -967,6 +967,7 @@
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
   const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname)
+  const DEV_ROLE = IS_LOCAL ? (new URLSearchParams(location.search).get('devRole') || 'analyst') : null
 
   // ── AUTH GATE ────────────────────────────────────────────────────────────
   client.auth.onAuthStateChange((event, session) => {
@@ -998,6 +999,9 @@
         showAuthError('403', 'Acesso restrito', 'Este dashboard é exclusivo para analistas.')
         return
       }
+    } else if (IS_LOCAL && DEV_ROLE !== 'analyst') {
+      showAuthError('403', 'Acesso restrito', 'Este dashboard é exclusivo para analistas.')
+      return
     }
     document.getElementById('dashBody').style.display = 'block'
     setupFilters()

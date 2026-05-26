@@ -40,6 +40,7 @@
     A Certain Document Index
   </a>
   <span class="nav-spacer"></span>
+  <span id="devRoleBadge" style="display:none;padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.06em;background:rgba(245,166,35,0.12);color:#f5a623;border:1px solid rgba(245,166,35,0.28)"></span>
   <a href="admin.html" class="nav-admin">↑ Admin</a>
 </nav>
 
@@ -301,7 +302,8 @@
     applyFilters()
   }
 
-  const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname)
+  const IS_LOCAL  = ['localhost', '127.0.0.1'].includes(location.hostname)
+  const DEV_ROLE  = IS_LOCAL ? (new URLSearchParams(location.search).get('devRole') || 'analyst') : null
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   function showModal() { document.getElementById('loginModal').classList.add('visible') }
@@ -342,15 +344,22 @@
   })
 
   async function loadUserRole(session) {
-    if (!session) { userRole = 'analyst'; return }  // IS_LOCAL bypass
-    const { data } = await client
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', session.user.id)
-      .single()
-    userRole = data?.role ?? 'employee'
+    if (!session) {
+      userRole = DEV_ROLE  // IS_LOCAL: honour ?devRole=; otherwise never reached
+    } else {
+      const { data } = await client
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .single()
+      userRole = data?.role ?? 'employee'
+    }
     document.querySelector('.dash-section').style.display =
       userRole === 'analyst' ? '' : 'none'
+    if (IS_LOCAL) {
+      const badge = document.getElementById('devRoleBadge')
+      if (badge) { badge.textContent = `DEV: ${userRole.toUpperCase()}`; badge.style.display = '' }
+    }
   }
 
   async function loadPagesData() {
@@ -377,6 +386,9 @@
       return
     }
 
+    if (userRole !== 'analyst') {
+      data = (data || []).filter(p => !p.analyst_only)
+    }
     allPages = data
     buildFilters(data)
     renderCards(data)
