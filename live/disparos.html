@@ -988,6 +988,17 @@
 
   // ── DASHBOARD INIT ────────────────────────────────────────────────────────
   async function initDashboard(session) {
+    if (session) {
+      const { data } = await client
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .single()
+      if ((data?.role ?? 'employee') !== 'analyst') {
+        showAuthError('403', 'Acesso restrito', 'Este dashboard é exclusivo para analistas.')
+        return
+      }
+    }
     document.getElementById('dashBody').style.display = 'block'
     setupFilters()
     await Promise.all([loadKPIs(), loadChart(), loadContext(), loadQuality()])

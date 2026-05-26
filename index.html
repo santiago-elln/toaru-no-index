@@ -186,6 +186,7 @@
   let activeTag = ''
   let activeDateFrom = ''
   let activeDateTo   = ''
+  let userRole = 'employee'
 
   const CAT_STYLES = {
     'Relatório': { bg: 'rgba(76,175,50,0.13)',   color: '#4caf32',  border: 'rgba(76,175,50,0.28)'   },
@@ -331,14 +332,26 @@
   // do redirect já foi processado antes de decidir mostrar o modal.
   client.auth.onAuthStateChange((event, session) => {
     if (event === 'INITIAL_SESSION') {
-      if (session || IS_LOCAL) { hideModal(); loadPagesData() }
+      if (session || IS_LOCAL) { hideModal(); loadUserRole(session).then(loadPagesData) }
       else showModal()
     } else if (event === 'SIGNED_IN') {
-      hideModal(); loadPagesData()
+      hideModal(); loadUserRole(session).then(loadPagesData)
     } else if (event === 'SIGNED_OUT') {
       showModal()
     }
   })
+
+  async function loadUserRole(session) {
+    if (!session) { userRole = 'analyst'; return }  // IS_LOCAL bypass
+    const { data } = await client
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', session.user.id)
+      .single()
+    userRole = data?.role ?? 'employee'
+    document.querySelector('.dash-section').style.display =
+      userRole === 'analyst' ? '' : 'none'
+  }
 
   async function loadPagesData() {
     let data, error
