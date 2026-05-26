@@ -39,6 +39,7 @@
       padding: 18px 20px;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       gap: 6px;
       min-height: 110px;
     }
@@ -60,12 +61,20 @@
 
     .kpi-value {
       font-family: 'Syne', sans-serif;
-      font-size: 2rem;
+      font-size: 3rem;
       font-weight: 800;
       color: #e8e8e8;
       line-height: 1;
     }
     .kpi-value.accent { color: #4caf32; }
+
+    .kpi-unit {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #555;
+      margin-left: 4px;
+    }
 
     .kpi-sub {
       font-size: 11px;
@@ -120,11 +129,24 @@
     .legend-dot.docs { background: #888; }
     .legend-dot.mass { background: #c0392b; }
 
+    .chart-main-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .chart-sidebar {
+      flex-shrink: 0;
+      width: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
     .chart-totals {
       display: flex;
       flex-direction: column;
       gap: 3px;
-      text-align: right;
     }
 
     .chart-total-label {
@@ -141,43 +163,33 @@
     }
     .chart-total-row span { color: #bbb; font-weight: 600; }
 
-    /* ── BAR CHART ── */
-    .bar-chart-wrap {
+    /* ── HEATMAPS ── */
+    .heatmap-col {
       flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 10px;
     }
 
-    .bar-track-row {
+    .heatmap-section {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      flex-direction: column;
+      gap: 5px;
     }
 
-    .bar-track {
-      flex: 1;
-      height: 16px;
-      background: rgba(255,255,255,0.04);
-      border-radius: 3px;
-      overflow: hidden;
-      display: flex;
-    }
-
-    .bar-seg {
-      height: 100%;
-      transition: width 0.5s ease;
-    }
-    .bar-seg.sig  { background: rgba(76,175,50,0.75); }
-    .bar-seg.docs { background: rgba(120,120,120,0.5); }
-    .bar-seg.mass { background: rgba(192,57,43,0.7); }
-
-    .bar-date {
+    .heatmap-section-label {
       font-size: 9px;
-      color: #444;
-      width: 36px;
-      flex-shrink: 0;
-      text-align: right;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #333;
+    }
+
+    .heatmap-svg {
+      width: 100%;
+      display: block;
+      overflow: visible;
     }
 
     /* ── FILTER + CONTEXT SECTION ── */
@@ -693,7 +705,7 @@
       <div class="kpi-card">
         <span class="kpi-label">Conversão após resposta</span>
         <span class="kpi-value accent" id="kpiConvRate">—</span>
-        <span class="kpi-sub">leads que responderam e fecharam</span>
+        <!-- <span class="kpi-sub">leads que responderam e fecharam</span> -->
       </div>
 
       <div class="kpi-card">
@@ -703,13 +715,13 @@
 
       <div class="kpi-card">
           <span class="kpi-label">Receita recuperada</span>
-          <span class="kpi-value" id="kpiRevenue">—</span>
-          <span class="kpi-sub">em kWh contratados</span>
+          <div style="display:flex;align-items:baseline;gap:6px"><span class="kpi-value" id="kpiRevenue">—</span><span class="kpi-unit" id="kpiRevenueUnit"></span></div>
+          <!-- <span class="kpi-sub">em kWh contratados</span> -->
       </div>
 
       <div class="kpi-stack">
         <div class="kpi-card">
-          <span class="kpi-label">Tempo médio 1ª resposta</span>
+          <span class="kpi-label">Tempo médio de resposta (cliente)</span>
           <span class="kpi-value" id="kpiReplyTime">—</span>
           <span class="kpi-sub">após disparo</span>
         </div>
@@ -723,22 +735,31 @@
     </div>
     <div class="kpi-row">
       <div class="chart-card">
-        <div class="chart-card-header">
-          <div>
-            <div class="kpi-label" style="margin-bottom:8px">Respostas ao longo do tempo</div>
-            <div class="chart-legend">
-              <div class="legend-item"><span class="legend-dot sig"></span>Assinaturas pendentes</div>
-              <div class="legend-item"><span class="legend-dot docs"></span>Documentos pendentes</div>
-              <div class="legend-item"><span class="legend-dot mass"></span>Datas de disparo</div>
+        <div class="kpi-label" style="margin-bottom:10px">Respostas ao longo do tempo</div>
+        <div class="chart-main-row">
+          <div class="heatmap-col">
+            <div class="heatmap-section">
+              <span class="heatmap-section-label">Aguardando Assinatura</span>
+              <svg class="heatmap-svg" id="heatmapSig" preserveAspectRatio="xMinYMid meet"></svg>
+            </div>
+            <div class="heatmap-section">
+              <span class="heatmap-section-label">Devolutivas</span>
+              <svg class="heatmap-svg" id="heatmapDocs" preserveAspectRatio="xMinYMid meet"></svg>
             </div>
           </div>
-          <div class="chart-totals">
-            <div class="chart-total-label">Total de mensagens enviadas</div>
-            <div class="chart-total-row">Assinaturas: <span id="totalSig">—</span></div>
-            <div class="chart-total-row">Documentos: <span id="totalDocs">—</span></div>
+          <div class="chart-sidebar">
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-dot sig"></span>Ag. Assinatura</div>
+              <div class="legend-item"><span class="legend-dot docs"></span>Devolutivas</div>
+              <div class="legend-item"><span class="legend-dot mass"></span>Datas de disparo</div>
+            </div>
+            <div class="chart-totals">
+              <div class="chart-total-label">Total recebido</div>
+              <div class="chart-total-row">Assin.: <span id="totalSig">—</span></div>
+              <div class="chart-total-row">Devol.: <span id="totalDocs">—</span></div>
+            </div>
           </div>
         </div>
-        <div class="bar-chart-wrap" id="barChart"></div>
       </div>
     </div>
 
@@ -746,7 +767,7 @@
     <div class="filter-context-wrap">
 
       <!-- Mirror toggle -->
-      <div class="mirror-row">
+      <div class="mirror-row" style="display:none">
         <label class="mirror-label" for="mirrorToggle">
           <input type="checkbox" id="mirrorToggle" checked>
           <span class="mirror-ui"></span>
@@ -756,7 +777,7 @@
       </div>
 
       <!-- Filter panels (2-col splits into 1-col when mirrored) -->
-      <div class="filter-panels-row" id="filterPanelsRow">
+      <div class="filter-panels-row" id="filterPanelsRow" style="display:none">
 
         <!-- Sig panel (doubles as shared panel when mirrored) -->
         <div class="filter-panel" id="panelSig">
@@ -814,7 +835,7 @@
       <div class="context-row">
 
         <div class="context-card">
-          <div class="context-card-title">Contexto — Assinaturas pendentes</div>
+          <div class="context-card-title">Contexto — Aguardando Assinatura</div>
 
           <div class="ctx-progress-wrap">
             <div class="ctx-progress-header">
@@ -844,7 +865,11 @@
               <span class="ctx-stat-label">Respostas recebidas</span>
               <span class="ctx-stat-value" id="sig-replies">—</span>
             </div>
-            <div class="ctx-stat ctx-stat--wide">
+            <div class="ctx-stat">
+              <span class="ctx-stat-label">Tempo médio de atendimento</span>
+              <span class="ctx-stat-value" id="sig-tma">—</span>
+            </div>
+            <div class="ctx-stat">
               <span class="ctx-stat-label">Opt-out</span>
               <span class="ctx-stat-value ctx-stat-value--warn" id="sig-optout">—</span>
             </div>
@@ -852,7 +877,7 @@
         </div>
 
         <div class="context-card">
-          <div class="context-card-title">Contexto — Documentos pendentes</div>
+          <div class="context-card-title">Contexto — Devolutivas</div>
 
           <div class="ctx-progress-wrap">
             <div class="ctx-progress-header">
@@ -882,7 +907,12 @@
               <span class="ctx-stat-label">Respostas recebidas</span>
               <span class="ctx-stat-value" id="docs-replies">—</span>
             </div>
-            <div class="ctx-stat ctx-stat--wide">
+
+            <div class="ctx-stat">
+              <span class="ctx-stat-label">Tempo médio de atendimento</span>
+              <span class="ctx-stat-value" id="docs-tma">—</span>
+            </div>
+            <div class="ctx-stat">
               <span class="ctx-stat-label">Opt-out</span>
               <span class="ctx-stat-value ctx-stat-value--warn" id="docs-optout">—</span>
             </div>
@@ -960,7 +990,7 @@
   async function initDashboard(session) {
     document.getElementById('dashBody').style.display = 'block'
     setupFilters()
-    await Promise.all([loadKPIs(), loadChart(), loadQuality()])
+    await Promise.all([loadKPIs(), loadChart(), loadContext(), loadQuality()])
   }
 
   // ── FILTER STATE ──────────────────────────────────────────────────────────
@@ -1031,65 +1061,135 @@
 
   // ── KPI LOADER ────────────────────────────────────────────────────────────
   async function loadKPIs() {
-    // TODO: replace with real Supabase queries once tables are defined
-    // const { data } = await client.from('disparos_kpis').select('*').single()
-    const mock = { convRate: null, signed: null, revenue: null, closingTime: null, replyTime: null }
+    const { data } = await client.from('disparos_kpis').select('*').single()
+    if (!data) return
 
-    setText('kpiConvRate',    fmt(mock.convRate,    v => `${v}%`))
-    setText('kpiSigned',      fmt(mock.signed,      v => String(v)))
-    setText('kpiRevenue',     fmt(mock.revenue,     v => `${v} kWh`))
-    setText('kpiClosingTime', fmt(mock.closingTime, v => `${v}d`))
-    setText('kpiReplyTime',   fmt(mock.replyTime,   v => `${v}h`))
+    setText('kpiConvRate',    fmt(data.conv_rate,    v => `${v}%`))
+    setText('kpiSigned',      fmt(data.total_signed, v => v.toLocaleString('pt-BR')))
+    setText('kpiRevenue',     fmt(data.total_kwh,    v => Number(v).toLocaleString('pt-BR')))
+    if (data.total_kwh != null) setText('kpiRevenueUnit', ' kWh')
+    setText('kpiClosingTime', fmt(data.tma_min,      fmtTime))
+    setText('kpiReplyTime',   fmt(data.tmr_min,      fmtTime))
+  }
+
+  // ── CONTEXT LOADER ────────────────────────────────────────────────────────
+  async function loadContext() {
+    const { data } = await client.from('disparos_context').select('*')
+    if (!data) return
+
+    for (const row of data) {
+      const p = row.grupo
+      const pct = row.reach_pct != null ? `${Number(row.reach_pct).toFixed(1)}%` : '—'
+
+      setText(`${p}-pct`,        pct)
+      setText(`${p}-reach`,      `${row.contacts_reached} / ${row.total_contacts} clientes contactados`)
+      setText(`${p}-conv-agent`, fmt(row.avg_conv_per_agent, v => Number(v).toFixed(1)))
+      setText(`${p}-conv-total`, fmt(row.total_conversions,  v => v.toLocaleString('pt-BR')))
+      setText(`${p}-contacts`,   fmt(row.replies_received,   v => v.toLocaleString('pt-BR')))
+      setText(`${p}-replies`,    fmt(row.contacts_reached,   v => v.toLocaleString('pt-BR')))
+      setText(`${p}-optout`,     fmt(row.optout_count,       v => String(v)))
+
+      const fill = document.getElementById(`${p}-fill`)
+      if (fill && row.reach_pct != null) fill.style.width = `${Math.min(Number(row.reach_pct), 100)}%`
+    }
   }
 
   // ── CHART LOADER ──────────────────────────────────────────────────────────
   async function loadChart() {
-    // TODO: const { data } = await client.from('disparos_respostas').select('*').order('date')
-    setText('totalSig',  '—')
-    setText('totalDocs', '—')
-    renderBarChart([])
+    const { data } = await client.from('disparos_bar_chart').select('*').order('date')
+    if (!data) return
+
+    const totalSig  = data.reduce((s, r) => s + (r.sig  ?? 0), 0)
+    const totalDocs = data.reduce((s, r) => s + (r.docs ?? 0), 0)
+    setText('totalSig',  totalSig.toLocaleString('pt-BR'))
+    setText('totalDocs', totalDocs.toLocaleString('pt-BR'))
+
+    const sigRows  = data.map(r => ({ date: r.date, count: r.sig  ?? 0, isMassDate: r.is_mass_date }))
+    const docsRows = data.map(r => ({ date: r.date, count: r.docs ?? 0, isMassDate: r.is_mass_date }))
+
+    renderHeatmap(sigRows,  'heatmapSig',  'sig')
+    renderHeatmap(docsRows, 'heatmapDocs', 'docs')
   }
 
-  // ── BAR CHART RENDERER ────────────────────────────────────────────────────
-  // rows: [{ date: string, sig: number, docs: number, isMassDate: bool }]
-  function renderBarChart(rows) {
-    const wrap = document.getElementById('barChart')
-    wrap.innerHTML = ''
+  // ── HEATMAP RENDERER ──────────────────────────────────────────────────────
+  // rows: [{ date: 'YYYY-MM-DD', count: number, isMassDate: boolean }]
+  function renderHeatmap(rows, svgId, colorGroup) {
+    const svg = document.getElementById(svgId)
+    if (!svg) return
 
     if (!rows.length) {
-      wrap.innerHTML = '<div style="color:#2f2f2f;font-size:11px;font-style:italic;text-align:center;padding:12px 0">Sem dados</div>'
+      svg.setAttribute('viewBox', '0 0 200 22')
+      svg.innerHTML = '<text x="100" y="14" text-anchor="middle" font-size="9" fill="#242424" font-style="italic">Sem dados</text>'
       return
     }
 
-    const maxSig  = Math.max(...rows.map(r => r.sig  ?? 0), 1)
-    const maxDocs = Math.max(...rows.map(r => r.docs ?? 0), 1)
+    const CELL = 10, GAP = 2, PAD_T = 2, PAD_B = 12
+    const colorFn = colorGroup === 'sig'
+      ? a => `rgba(76,175,50,${a})`
+      : a => `rgba(155,155,155,${a})`
 
-    for (const row of rows) {
-      const sigPct  = ((row.sig  ?? 0) / maxSig  * 100).toFixed(1)
-      const docsPct = ((row.docs ?? 0) / maxDocs * 100).toFixed(1)
-      const div = document.createElement('div')
-      div.className = 'bar-track-row'
-      div.innerHTML = `
-        <span class="bar-date">${row.date}</span>
-        <div class="bar-track">
-          ${row.isMassDate
-            ? '<div class="bar-seg mass" style="width:100%"></div>'
-            : `<div class="bar-seg sig"  style="width:${sigPct}%"></div>
-               <div class="bar-seg docs" style="width:${docsPct}%"></div>`}
-        </div>`
-      wrap.appendChild(div)
+    const sorted = rows.map(r => r.date).sort()
+    const n = sorted.length
+
+    let maxCount = 1
+    for (const r of rows) {
+      if ((r.count ?? 0) > maxCount) maxCount = r.count
     }
+    const map = Object.fromEntries(rows.map(r => [r.date, r]))
+
+    const SVG_W = n * (CELL + GAP)
+    const SVG_H = PAD_T + CELL + PAD_B
+
+    let out = ''
+
+    // Month labels below cells
+    const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+    let lastMonth = -1
+    for (let i = 0; i < n; i++) {
+      const m = parseInt(sorted[i].slice(5, 7), 10) - 1
+      if (m !== lastMonth) {
+        lastMonth = m
+        out += `<text x="${i * (CELL + GAP)}" y="${PAD_T + CELL + 10}" font-size="7" fill="#2a2a2a">${MONTHS[m]}</text>`
+      }
+    }
+
+    // Cells
+    for (let i = 0; i < n; i++) {
+      const dateStr = sorted[i]
+      const x = i * (CELL + GAP)
+      const info = map[dateStr]
+
+      let fill, stroke = 'none', strokeW = 0
+      if (info.isMassDate) {
+        fill = 'rgba(192,57,43,0.4)'
+        stroke = 'rgba(192,57,43,0.7)'
+        strokeW = 0.75
+      } else if (!info.count) {
+        fill = 'rgba(255,255,255,0.04)'
+      } else {
+        fill = colorFn((0.12 + (info.count / maxCount) * 0.78).toFixed(2))
+      }
+
+      out += `<rect x="${x}" y="${PAD_T}" width="${CELL}" height="${CELL}" rx="2" ry="2" fill="${fill}" stroke="${stroke}" stroke-width="${strokeW}"><title>${dateStr}: ${info.count} respostas${info.isMassDate ? ' (disparo)' : ''}</title></rect>`
+    }
+
+    svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`)
+    svg.innerHTML = out
   }
 
   // ── QUALITY LOADERS ───────────────────────────────────────────────────────
   async function loadQuality() {
-    // TODO: const { data: interactions } = await client
-    //   .from('disparos_interacoes').select('date, hour, type').order('date')
-    // TODO: const { data: reasons } = await client
-    //   .from('disparos_motivos').select('motivo, contagem').order('contagem', { ascending: false }).limit(6)
+    const [{ data: scatter }, { data: motivos }] = await Promise.all([
+      client.from('disparos_scatter').select('date,hour,type').order('date'),
+      client.from('disparos_motivos').select('motivo,contagem').order('contagem', { ascending: false }).limit(6),
+    ])
+    renderScatterChart(scatter ?? [])
 
-    renderScatterChart([])
-    renderReasons([])
+    const maxC = motivos?.length ? motivos[0].contagem : 1
+    renderReasons((motivos ?? []).map(r => ({
+      text: r.motivo,
+      pct:  Math.round((r.contagem / maxC) * 100),
+    })))
   }
 
   // points: [{ date: 'YYYY-MM-DD', hour: 0-23, type: 'reply'|'response' }]
@@ -1167,6 +1267,14 @@
   }
 
   // ── UTILS ─────────────────────────────────────────────────────────────────
+  function fmtTime(min) {
+    if (min < 60)   return `${Math.round(min)}min`
+    if (min < 1440) return `${Math.floor(min / 60)}h ${Math.round(min % 60)}min`
+    const d = Math.floor(min / 1440)
+    const h = Math.floor((min % 1440) / 60)
+    return h > 0 ? `${d}d ${h}h` : `${d}d`
+  }
+
   function setText(id, val) {
     const el = document.getElementById(id)
     if (el) el.textContent = val
