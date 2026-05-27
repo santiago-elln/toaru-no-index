@@ -639,13 +639,17 @@
     function positionModal() {
       const trigger = document.getElementById('calendarToggle')
       const content = document.getElementById('calModalContent')
-      const rect = trigger.getBoundingClientRect()
-      const cardW = content.offsetWidth || 480
-      let top = rect.bottom + 8, left = rect.left
-      if (left + cardW > window.innerWidth - 16) left = window.innerWidth - cardW - 16
+      const rect    = trigger.getBoundingClientRect()
+      const cardW   = content.offsetWidth  || 480
+      const cardH   = content.offsetHeight || 420
+      let top  = rect.bottom + 8
+      let left = rect.left
+      if (left + cardW > window.innerWidth  - 16) left = window.innerWidth  - cardW - 16
       if (left < 16) left = 16
-      if (top + 380 > window.innerHeight - 16) top = rect.top - 380 - 8
-      content.style.top = top + 'px'; content.style.left = left + 'px'
+      if (top  + cardH > window.innerHeight - 16) top  = rect.top - cardH - 8
+      if (top  < 8) top = 8  // never clip above viewport
+      content.style.top  = top  + 'px'
+      content.style.left = left + 'px'
     }
 
     function syncCancelBtn() {
