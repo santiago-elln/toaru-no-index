@@ -73,6 +73,14 @@
     <section class="dash-section" id="dashSection">
       <div class="dash-hd">
         <h2 class="dash-title">Dashboards</h2>
+        <input
+          class="dash-search"
+          id="dashSearch"
+          type="search"
+          placeholder="Buscar dashboard…"
+          autocomplete="off"
+          oninput="onDashSearch(this.value)"
+        >
       </div>
       <div class="dash-grid" id="dashGrid"></div>
     </section>
@@ -153,17 +161,19 @@
   // ── Dashboard registry ────────────────────────────────────────────────────
   const DASHBOARDS = [
     {
+      slug:      'suporte-performance',
       href:      'live/performance.html',
       title:     'Suporte Performance',
       desc:      'Respostas, conversões e qualidade das campanhas de disparo em tempo real.',
-      thumbnail: 'assets/temp_thumbnail.png',
+      fallbackThumbnail: 'assets/temp_thumbnail.png',
       roles:     ['analyst', 'editor'],
     },
     {
+      slug:  'biblioteca-de-audios',
       href:  'green/biblioteca-de-audios.html',
       title: 'Biblioteca de Áudios',
       desc:  'Acervo de gravações de atendimento para consulta e análise.',
-      icon:  `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
+      fallbackIcon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
                 <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
                 <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
                 <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
@@ -172,16 +182,44 @@
     },
   ]
 
+  let dashThumbnails = {} // slug → public URL
+  let dashSearchTerm = ''
+
+  function onDashSearch(value) {
+    dashSearchTerm = value.trim().toLowerCase()
+    renderDashboards(userRole)
+  }
+
+  async function loadDashboardThumbnails() {
+    const slugs = DASHBOARDS.map(d => d.slug)
+    const { data } = await client.from('pages').select('slug, thumbnail_path').in('slug', slugs)
+    if (!data) return
+    await Promise.all(data.map(async p => {
+      if (!p.thumbnail_path) return
+      const { data: signed } = await client.storage
+        .from('thumbnails').createSignedUrl(p.thumbnail_path, 3600)
+      if (signed?.signedUrl) dashThumbnails[p.slug] = signed.signedUrl
+    }))
+  }
+
   function renderDashboards(role) {
     const dashGrid = document.getElementById('dashGrid')
-    const visible  = DASHBOARDS.filter(d => d.roles.includes(role))
-    if (!visible.length) { dashGrid.innerHTML = ''; return }
+    let visible = DASHBOARDS.filter(d => d.roles.includes(role))
+    if (dashSearchTerm) {
+      visible = visible.filter(d =>
+        d.title.toLowerCase().includes(dashSearchTerm) ||
+        d.desc.toLowerCase().includes(dashSearchTerm)
+      )
+    }
+    if (!visible.length) {
+      dashGrid.innerHTML = `<p style="font-size:14px;color:var(--text-muted);padding:4px 0">Nenhum dashboard encontrado.</p>`
+      return
+    }
     dashGrid.innerHTML = visible.map(d => {
-      const thumb = d.thumbnail
-        ? `<div class="dash-thumb" style="padding:0;overflow:hidden">
-             <img src="${d.thumbnail}" alt="${d.title}" style="width:100%;height:100%;object-fit:cover;display:block">
-           </div>`
-        : `<div class="dash-thumb">${d.icon || ''}</div>`
+      const thumbUrl = dashThumbnails[d.slug] || d.fallbackThumbnail || null
+      const thumb = thumbUrl
+        ? `<div class="dash-thumb"><img src="${thumbUrl}" alt="${d.title}"></div>`
+        : `<div class="dash-thumb">${d.fallbackIcon || ''}</div>`
       return `<a class="dash-card" href="${d.href}">
         ${thumb}
         <div class="dash-card-body">
@@ -364,6 +402,7 @@
         .single()
       userRole = data?.role ?? 'employee'
     }
+    await loadDashboardThumbnails()
     renderDashboards(userRole)
     if (IS_LOCAL) {
       const toggle = document.getElementById('devRoleToggle')

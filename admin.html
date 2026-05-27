@@ -116,6 +116,11 @@
         <div class="field-hint" id="slugPreview"></div>
       </div>
 
+      <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;margin-bottom:0">
+        <input type="checkbox" id="upAnalystOnly" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0">
+        <label for="upAnalystOnly" style="margin:0;font-size:13px;color:var(--text-dim);cursor:pointer">Acesso Restrito a Colaboradores</label>
+      </div>
+
       <div class="progress-wrap" id="progressWrap">
         <div class="progress-bar" id="progressBar"></div>
       </div>
@@ -138,27 +143,36 @@
   const SUPABASE_URL = '__SUPABASE_URL__'
   const SUPABASE_KEY = '__SUPABASE_KEY__'
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname)
 
-  let selectedFile   = null
-  let allAdminPages  = []
-  let viewFilter     = ''
+  let selectedFile        = null
+  let allAdminPages       = []
+  let viewFilter          = ''
+  let signedThumbnailUrls = {} // page id → signed URL
 
   // ── AUTH ──────────────────────────────────────────────
-  client.auth.onAuthStateChange(async (_event, session) => {
-    if (!session) { showLogin(); return }
-    const { data } = await client
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', session.user.id)
-      .single()
-    if (data?.role !== 'editor') {
-      await client.auth.signOut()
-      showLogin()
-      setAlert('loginAlert', 'Acesso negado. Esta área é restrita a usuários com perfil Editor.', 'error')
-      return
-    }
-    showAdmin(session.user)
-  })
+  if (IS_LOCAL) {
+    client.auth.getSession().then(({ data: { session } }) => {
+      const user = session?.user ?? { email: 'dev@local' }
+      showAdmin(user)
+    })
+  } else {
+    client.auth.onAuthStateChange(async (_event, session) => {
+      if (!session) { showLogin(); return }
+      const { data } = await client
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .single()
+      if (data?.role !== 'editor') {
+        await client.auth.signOut()
+        showLogin()
+        setAlert('loginAlert', 'Acesso negado. Esta área é restrita a usuários com perfil Editor.', 'error')
+        return
+      }
+      showAdmin(session.user)
+    })
+  }
 
   async function loginWithMicrosoft() {
     const btn = document.getElementById('loginBtn')
@@ -179,6 +193,7 @@
   }
 
   async function logout() {
+    if (IS_LOCAL) { showLogin(); return }
     await client.auth.signOut()
   }
 
@@ -248,8 +263,9 @@
     const category    = document.getElementById('upCategory').value
     const tags        = document.getElementById('upTags').value
       .split(',').map(t => t.trim()).filter(Boolean)
-    const authorName  = document.getElementById('upAuthorName').value.trim()
-    const authorEmail = document.getElementById('upAuthorEmail').value.trim()
+    const authorName   = document.getElementById('upAuthorName').value.trim()
+    const authorEmail  = document.getElementById('upAuthorEmail').value.trim()
+    const analystOnly  = document.getElementById('upAnalystOnly').checked
 
     if (!selectedFile) return setAlert('uploadAlert', 'Selecione um arquivo HTML.', 'error')
     if (!title)        return setAlert('uploadAlert', 'O título é obrigatório.', 'error')
@@ -292,9 +308,10 @@
       tags,
       author_name:  authorName  || null,
       author_email: authorEmail || null,
-      storage_path: storagePath,
-      file_size:    selectedFile.size,
-      published:    true,
+      storage_path:  storagePath,
+      file_size:     selectedFile.size,
+      published:     true,
+      analyst_only:  analystOnly,
     }, { onConflict: 'slug' })
 
     pb.style.width = '100%'
@@ -328,6 +345,7 @@
     document.getElementById('upAuthorEmail').value     = ''
     document.getElementById('upSlug').value            = ''
     document.getElementById('slugPreview').textContent = ''
+    document.getElementById('upAnalystOnly').checked   = false
   }
 
   // ── LISTA DE PÁGINAS ──────────────────────────────────
@@ -356,7 +374,59 @@
       return
     }
 
-    list.innerHTML = data.map(p => `
+    list.innerHTML = data.map(p => {
+      const isDashboard = !p.storage_path
+      const thumbUrl = signedThumbnailUrls[p.id] || null
+
+      const controls = isDashboard ? `
+        <div class="toggle-group">
+          <span class="toggle-group-label">Capa</span>
+          <label style="cursor:pointer;display:block;width:80px;height:45px;border-radius:6px;overflow:hidden;border:1px solid var(--border);background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center">
+            ${thumbUrl
+              ? `<img src="${thumbUrl}" style="width:100%;height:100%;object-fit:cover;display:block">`
+              : `<span style="font-size:10px;color:var(--text-muted)">+ Capa</span>`}
+            <input type="file" accept="image/*" style="display:none" onchange="uploadThumbnail('${p.id}','${p.slug}',this)">
+          </label>
+        </div>
+        <div class="toggle-group">
+          <span class="toggle-group-label">Publicado</span>
+          <div class="toggle-wrap">
+            <input type="checkbox" class="toggle" ${p.published ? 'checked' : ''}
+              onchange="togglePublished('${p.id}', this.checked)">
+          </div>
+        </div>
+        <div class="toggle-group">
+          <span class="toggle-group-label">Staff</span>
+          <div class="toggle-wrap">
+            <input type="checkbox" class="toggle" ${p.analyst_only ? 'checked' : ''}
+              onchange="updateAnalystOnly('${p.id}', this.checked)">
+          </div>
+        </div>
+      ` : `
+        <div class="toggle-group">
+          <span class="toggle-group-label">Publicado</span>
+          <div class="toggle-wrap">
+            <input type="checkbox" class="toggle" ${p.published ? 'checked' : ''}
+              onchange="togglePublished('${p.id}', this.checked)">
+          </div>
+        </div>
+        <div class="toggle-group">
+          <span class="toggle-group-label">Staff</span>
+          <div class="toggle-wrap">
+            <input type="checkbox" class="toggle" ${p.analyst_only ? 'checked' : ''}
+              onchange="updateAnalystOnly('${p.id}', this.checked)">
+          </div>
+        </div>
+        <div class="toggle-group">
+          <span class="toggle-group-label">Sidebar</span>
+          <div class="toggle-wrap">
+            <input type="checkbox" class="toggle" ${p.show_in_sidebar ? 'checked' : ''}
+              onchange="updateSidebar('${p.id}', this.checked)">
+          </div>
+        </div>
+        <button class="btn-danger" onclick="deletePage('${p.id}','${p.storage_path}',this)">Excluir</button>
+      `
+      return `
       <div class="page-item" id="pi-${p.id}">
         <div class="page-item-info">
           <div class="page-item-title">${p.title}</div>
@@ -370,23 +440,9 @@
           </div>
         </div>
         ${p.category ? `<span class="page-item-cat">${p.category}</span>` : ''}
-        <div class="toggle-group">
-          <span class="toggle-group-label">Publicado</span>
-          <div class="toggle-wrap">
-            <input type="checkbox" class="toggle" ${p.published ? 'checked' : ''}
-              onchange="togglePublished('${p.id}', this.checked)">
-          </div>
-        </div>
-        <div class="toggle-group">
-          <span class="toggle-group-label">Sidebar</span>
-          <div class="toggle-wrap">
-            <input type="checkbox" class="toggle" ${p.show_in_sidebar ? 'checked' : ''}
-              onchange="updateSidebar('${p.id}', this.checked)">
-          </div>
-        </div>
-        <button class="btn-danger" onclick="deletePage('${p.id}','${p.storage_path}',this)">Excluir</button>
-      </div>
-    `).join('')
+        ${controls}
+      </div>`
+    }).join('')
   }
 
   async function loadPagesList() {
@@ -399,7 +455,15 @@
       list.innerHTML = '<p class="empty-list">Nenhum documento ainda. Faça o primeiro upload acima.</p>'
       return
     }
+    await refreshSignedThumbnails(allAdminPages.filter(p => !p.storage_path && p.thumbnail_path))
     renderPagesList()
+  }
+
+  async function refreshSignedThumbnails(pages) {
+    await Promise.all(pages.map(async p => {
+      const { data } = await client.storage.from('thumbnails').createSignedUrl(p.thumbnail_path, 3600)
+      if (data?.signedUrl) signedThumbnailUrls[p.id] = data.signedUrl
+    }))
   }
 
   async function togglePublished(id, published) {
@@ -410,6 +474,27 @@
   async function updateSidebar(id, show_in_sidebar) {
     await client.from('pages').update({ show_in_sidebar }).eq('id', id)
     allAdminPages = allAdminPages.map(p => p.id === id ? { ...p, show_in_sidebar } : p)
+  }
+
+  async function updateAnalystOnly(id, analyst_only) {
+    await client.from('pages').update({ analyst_only }).eq('id', id)
+    allAdminPages = allAdminPages.map(p => p.id === id ? { ...p, analyst_only } : p)
+  }
+
+  async function uploadThumbnail(id, slug, input) {
+    const file = input.files[0]
+    if (!file) return
+    const ext  = file.name.split('.').pop().toLowerCase()
+    const path = `${slug}.${ext}`
+    const { error } = await client.storage
+      .from('thumbnails')
+      .upload(path, file, { upsert: true, contentType: file.type })
+    if (error) { alert('Erro ao enviar imagem: ' + error.message); return }
+    await client.from('pages').update({ thumbnail_path: path }).eq('id', id)
+    allAdminPages = allAdminPages.map(p => p.id === id ? { ...p, thumbnail_path: path } : p)
+    const { data: signed } = await client.storage.from('thumbnails').createSignedUrl(path, 3600)
+    if (signed?.signedUrl) signedThumbnailUrls[id] = signed.signedUrl
+    renderPagesList()
   }
 
   async function deletePage(id, storagePath, btn) {
