@@ -100,7 +100,6 @@
 <script>
   const SUPABASE_URL = '__SUPABASE_URL__'
   const SUPABASE_KEY = '__SUPABASE_KEY__'
-  const ADMIN_EMAIL  = '__ADMIN_EMAIL__'
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
   let allLogs    = []
@@ -110,9 +109,14 @@
   let sortCol    = '', sortDir = 'desc'
 
   // ── AUTH ──────────────────────────────────────────────────────────────────
-  client.auth.onAuthStateChange((_event, session) => {
+  client.auth.onAuthStateChange(async (_event, session) => {
     if (!session) { location.replace('login.html?next=analytics.html'); return }
-    if (session.user.email !== ADMIN_EMAIL) {
+    const { data } = await client
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', session.user.id)
+      .single()
+    if (data?.role !== 'editor') {
       document.getElementById('deniedState').style.display = 'flex'
       return
     }

@@ -32,12 +32,10 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_PUBLIC_KEY }}
-          ADMIN_EMAIL:  ${{ secrets.ADMIN_EMAIL }}
         run: |
           HTML_FILES=$(find . -name "*.html" -not -path "./.git/*")
           echo "$HTML_FILES" | xargs sed -i "s|__SUPABASE_URL__|$SUPABASE_URL|g"
           echo "$HTML_FILES" | xargs sed -i "s|__SUPABASE_KEY__|$SUPABASE_KEY|g"
-          sed -i "s|__ADMIN_EMAIL__|$ADMIN_EMAIL|g" admin.html analytics.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

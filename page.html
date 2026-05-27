@@ -85,7 +85,7 @@
 
     if (data.analyst_only) {
       if (IS_LOCAL) {
-        if (DEV_ROLE !== 'analyst') {
+        if (DEV_ROLE !== 'analyst' && DEV_ROLE !== 'editor') {
           showError(403, 'Acesso restrito', 'Este documento é exclusivo para analistas.')
           return
         }
@@ -94,7 +94,8 @@
         const { data: roleData } = sess
           ? await client.from('user_roles').select('role').eq('user_id', sess.user.id).single()
           : { data: null }
-        if ((roleData?.role ?? 'employee') !== 'analyst') {
+        const role = roleData?.role ?? 'employee'
+        if (role !== 'analyst' && role !== 'editor') {
           showError(403, 'Acesso restrito', 'Este documento é exclusivo para analistas.')
           return
         }

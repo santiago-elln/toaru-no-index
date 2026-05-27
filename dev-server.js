@@ -20,6 +20,8 @@ const path = require('path')
 const PORT      = 3000
 const ROOT      = __dirname
 const PAGES_DIR = path.join(ROOT, 'pages')
+const LIVE_DIR  = path.join(ROOT, 'live')
+const GREEN_DIR = path.join(ROOT, 'green')
 
 // ── Lê .env e expõe valores para injetar nos HTMLs ──────────────────────────
 function loadEnv() {
@@ -38,14 +40,13 @@ function loadEnv() {
 const env = loadEnv()
 const SUPABASE_URL = env.VITE_SUPABASE_URL        || ''
 const SUPABASE_KEY = env.VITE_SUPABASE_PUBLIC_KEY  || ''
-const ADMIN_EMAIL  = env.ADMIN_EMAIL               || ''
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   console.warn('⚠️  VITE_SUPABASE_URL ou VITE_SUPABASE_PUBLIC_KEY ausentes no .env — placeholders não serão substituídos.')
 }
 
 // ── Metadados manuais (mesmo objeto do seed.js) ─────────────────────────────
-// Se um arquivo não estiver aqui, o título será o nome do arquivo.
+// Metadados para arquivos em /pages (apresentações).
 const METADATA = {
   'Dashboard MAY 13th FEELINGS': {
     title:        'Dashboard de Sentimentos — 13 Maio',
@@ -69,6 +70,24 @@ const METADATA = {
     analyst_only: true,
   },
 }
+
+// Metadados para dashboards em /live e /green.
+const DASHBOARD_METADATA = {
+  'performance': {
+    slug:            'suporte-performance',
+    title:           'Suporte Performance',
+    description:     'Respostas, conversões e qualidade das campanhas de disparo em tempo real.',
+    analyst_only:    true,
+    show_in_sidebar: false,
+  },
+  'biblioteca-de-audios': {
+    slug:            'biblioteca-de-audios',
+    title:           'Biblioteca de Áudios',
+    description:     'Acervo de gravações de atendimento para consulta e análise.',
+    analyst_only:    false,
+    show_in_sidebar: false,
+  },
+}
 // ───────────────────────────────────────────────────────────────────────────
 
 function slugify(str) {
@@ -80,32 +99,64 @@ function slugify(str) {
 }
 
 function getLocalPages() {
-  if (!fs.existsSync(PAGES_DIR)) return []
+  const results = []
 
-  return fs.readdirSync(PAGES_DIR)
-    .filter(f => /\.html?$/i.test(f))
-    .map(filename => {
-      const nameWithoutExt = filename.replace(/\.html?$/i, '')
-      const slug  = slugify(nameWithoutExt)
-      const stat  = fs.statSync(path.join(PAGES_DIR, filename))
-      const meta  = METADATA[nameWithoutExt] || {}
+  // ── /pages (apresentações — visíveis na sidebar) ──────────────────────────
+  if (fs.existsSync(PAGES_DIR)) {
+    fs.readdirSync(PAGES_DIR)
+      .filter(f => /\.html?$/i.test(f))
+      .forEach(filename => {
+        const nameWithoutExt = filename.replace(/\.html?$/i, '')
+        const slug = slugify(nameWithoutExt)
+        const stat = fs.statSync(path.join(PAGES_DIR, filename))
+        const meta = METADATA[nameWithoutExt] || {}
+        results.push({
+          id:              slug,
+          slug,
+          title:           meta.title        || nameWithoutExt,
+          description:     meta.description  || null,
+          category:        meta.category     || null,
+          tags:            meta.tags         || [],
+          analyst_only:    meta.analyst_only || false,
+          show_in_sidebar: true,
+          storage_path:    filename,
+          file_size:       stat.size,
+          published:       true,
+          created_at:      stat.mtime.toISOString(),
+          updated_at:      stat.mtime.toISOString(),
+        })
+      })
+  }
 
-      return {
-        id:           slug,
-        slug,
-        title:        meta.title        || nameWithoutExt,
-        description:  meta.description  || null,
-        category:     meta.category     || null,
-        tags:         meta.tags         || [],
-        analyst_only: meta.analyst_only || false,
-        storage_path: filename,          // nome original — usado para montar a URL local
-        file_size:    stat.size,
-        published:    true,
-        created_at:   stat.mtime.toISOString(),
-        updated_at:   stat.mtime.toISOString(),
-      }
-    })
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  // ── /live e /green (dashboards — não aparecem na sidebar) ─────────────────
+  for (const [dir, prefix] of [[LIVE_DIR, 'live'], [GREEN_DIR, 'green']]) {
+    if (!fs.existsSync(dir)) continue
+    fs.readdirSync(dir)
+      .filter(f => /\.html?$/i.test(f))
+      .forEach(filename => {
+        const nameWithoutExt = filename.replace(/\.html?$/i, '')
+        const meta = DASHBOARD_METADATA[nameWithoutExt] || {}
+        const slug = meta.slug || slugify(nameWithoutExt)
+        const stat = fs.statSync(path.join(dir, filename))
+        results.push({
+          id:              slug,
+          slug,
+          title:           meta.title        || nameWithoutExt,
+          description:     meta.description  || null,
+          category:        null,
+          tags:            [],
+          analyst_only:    meta.analyst_only || false,
+          show_in_sidebar: false,
+          storage_path:    null,
+          file_size:       stat.size,
+          published:       true,
+          created_at:      stat.mtime.toISOString(),
+          updated_at:      stat.mtime.toISOString(),
+        })
+      })
+  }
+
+  return results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 }
 
 const MIME_TYPES = {
@@ -174,7 +225,6 @@ const server = http.createServer((req, res) => {
     content = content
       .replace(/__SUPABASE_URL__/g,  SUPABASE_URL)
       .replace(/__SUPABASE_KEY__/g,  SUPABASE_KEY)
-      .replace(/__ADMIN_EMAIL__/g,   ADMIN_EMAIL)
     res.writeHead(200, { 'Content-Type': mime })
     res.end(content)
     return

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Disparos — iGreen Energy</title>
+  <title>Suporte Performance</title>
   <link rel="icon" type="image/png" href="../assets/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -685,7 +685,7 @@
     <div class="topbar-sep"></div>
     <span class="topbar-cat">Operações</span>
     <div class="topbar-sep"></div>
-    <span class="topbar-title">Disparos &amp; Recuperação</span>
+    <span class="topbar-title">Suporte Performance</span>
   </div>
 
   <!-- AUTH ERROR (hidden until needed) -->
@@ -995,17 +995,31 @@
         .select('role')
         .eq('user_id', session.user.id)
         .single()
-      if ((data?.role ?? 'employee') !== 'analyst') {
+      const role = data?.role ?? 'employee'
+      if (role !== 'analyst' && role !== 'editor') {
         showAuthError('403', 'Acesso restrito', 'Este dashboard é exclusivo para analistas.')
         return
       }
-    } else if (IS_LOCAL && DEV_ROLE !== 'analyst') {
+    } else if (IS_LOCAL && DEV_ROLE !== 'analyst' && DEV_ROLE !== 'editor') {
       showAuthError('403', 'Acesso restrito', 'Este dashboard é exclusivo para analistas.')
       return
     }
     document.getElementById('dashBody').style.display = 'block'
     setupFilters()
     await Promise.all([loadKPIs(), loadChart(), loadContext(), loadQuality()])
+    if (!IS_LOCAL && session) logDashboardAccess(session)
+  }
+
+  async function logDashboardAccess(session) {
+    const { data: page } = await client
+      .from('pages').select('id').eq('slug', 'suporte-performance').single()
+    if (!page) return
+    await client.from('access_logs').insert({
+      page_id:    page.id,
+      page_slug:  'suporte-performance',
+      page_title: 'Suporte Performance',
+      user_email: session.user.email,
+    })
   }
 
   // ── FILTER STATE ──────────────────────────────────────────────────────────

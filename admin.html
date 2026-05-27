@@ -16,6 +16,19 @@
   <a href="index.html" class="nav-back">← Índice</a>
   <div class="nav-sep"></div>
   <span class="nav-title">Admin</span>
+  <div id="viewToggle" style="display:flex;align-items:center;gap:7px;flex-shrink:0;margin-left:auto">
+    <span style="font-size:9px;font-weight:800;letter-spacing:0.12em;color:rgba(245,166,35,0.45)">VER</span>
+    <div style="display:flex;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:6px;padding:2px;gap:2px">
+      <button class="view-pill" data-view="employee"
+        style="padding:3px 10px;border-radius:4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.06em;color:rgba(245,166,35,0.4);cursor:pointer;transition:all 0.15s">
+        Colaborador
+      </button>
+      <button class="view-pill" data-view="analyst"
+        style="padding:3px 10px;border-radius:4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.06em;color:rgba(245,166,35,0.4);cursor:pointer;transition:all 0.15s">
+        Analista
+      </button>
+    </div>
+  </div>
   <a href="analytics.html" style="font-size:13px;color:var(--text-muted);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text-muted)'">Analytics →</a>
   <span class="nav-user" id="navUser"></span>
   <button class="nav-logout" onclick="logout()">Sair</button>
@@ -126,17 +139,22 @@
   const SUPABASE_KEY = '__SUPABASE_KEY__'
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
-  const ADMIN_EMAIL = '__ADMIN_EMAIL__'
-
-  let selectedFile = null
+  let selectedFile   = null
+  let allAdminPages  = []
+  let viewFilter     = ''
 
   // ── AUTH ──────────────────────────────────────────────
-  client.auth.onAuthStateChange((_event, session) => {
+  client.auth.onAuthStateChange(async (_event, session) => {
     if (!session) { showLogin(); return }
-    if (session.user.email !== ADMIN_EMAIL) {
-      client.auth.signOut()
+    const { data } = await client
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', session.user.id)
+      .single()
+    if (data?.role !== 'editor') {
+      await client.auth.signOut()
       showLogin()
-      setAlert('loginAlert', 'Acesso negado. Esta área é restrita ao administrador do sistema.', 'error')
+      setAlert('loginAlert', 'Acesso negado. Esta área é restrita a usuários com perfil Editor.', 'error')
       return
     }
     showAdmin(session.user)
@@ -313,16 +331,30 @@
   }
 
   // ── LISTA DE PÁGINAS ──────────────────────────────────
-  async function loadPagesList() {
+  function setViewPill(view) {
+    viewFilter = view
+    document.querySelectorAll('.view-pill').forEach(p => {
+      const active = p.dataset.view === view
+      p.style.background = active ? 'rgba(245,166,35,0.18)' : 'transparent'
+      p.style.color      = active ? '#f5a623' : 'rgba(245,166,35,0.4)'
+    })
+    renderPagesList()
+  }
+
+  document.querySelectorAll('.view-pill').forEach(p =>
+    p.addEventListener('click', () => setViewPill(p.dataset.view))
+  )
+
+  function renderPagesList() {
     const list = document.getElementById('pagesList')
+    let data = allAdminPages
+    if (viewFilter === 'employee') data = data.filter(p => !p.analyst_only)
+    if (viewFilter === 'analyst')  data = data.filter(p =>  p.analyst_only)
 
-    const { data, error } = await client
-      .from('pages')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) { list.innerHTML = `<p class="empty-list">Erro: ${error.message}</p>`; return }
-    if (!data.length) { list.innerHTML = '<p class="empty-list">Nenhum documento ainda. Faça o primeiro upload acima.</p>'; return }
+    if (!data.length) {
+      list.innerHTML = '<p class="empty-list">Nenhum documento nesta categoria.</p>'
+      return
+    }
 
     list.innerHTML = data.map(p => `
       <div class="page-item" id="pi-${p.id}">
@@ -338,17 +370,46 @@
           </div>
         </div>
         ${p.category ? `<span class="page-item-cat">${p.category}</span>` : ''}
-        <div class="toggle-wrap" title="${p.published ? 'Publicado' : 'Oculto'}">
-          <input type="checkbox" class="toggle" ${p.published ? 'checked' : ''}
-            onchange="togglePublished('${p.id}', this.checked)">
+        <div class="toggle-group">
+          <span class="toggle-group-label">Publicado</span>
+          <div class="toggle-wrap">
+            <input type="checkbox" class="toggle" ${p.published ? 'checked' : ''}
+              onchange="togglePublished('${p.id}', this.checked)">
+          </div>
+        </div>
+        <div class="toggle-group">
+          <span class="toggle-group-label">Sidebar</span>
+          <div class="toggle-wrap">
+            <input type="checkbox" class="toggle" ${p.show_in_sidebar ? 'checked' : ''}
+              onchange="updateSidebar('${p.id}', this.checked)">
+          </div>
         </div>
         <button class="btn-danger" onclick="deletePage('${p.id}','${p.storage_path}',this)">Excluir</button>
       </div>
     `).join('')
   }
 
+  async function loadPagesList() {
+    const list = document.getElementById('pagesList')
+    const { data, error } = await client
+      .from('pages').select('*').order('created_at', { ascending: false })
+    if (error) { list.innerHTML = `<p class="empty-list">Erro: ${error.message}</p>`; return }
+    allAdminPages = data ?? []
+    if (!allAdminPages.length) {
+      list.innerHTML = '<p class="empty-list">Nenhum documento ainda. Faça o primeiro upload acima.</p>'
+      return
+    }
+    renderPagesList()
+  }
+
   async function togglePublished(id, published) {
     await client.from('pages').update({ published }).eq('id', id)
+    allAdminPages = allAdminPages.map(p => p.id === id ? { ...p, published } : p)
+  }
+
+  async function updateSidebar(id, show_in_sidebar) {
+    await client.from('pages').update({ show_in_sidebar }).eq('id', id)
+    allAdminPages = allAdminPages.map(p => p.id === id ? { ...p, show_in_sidebar } : p)
   }
 
   async function deletePage(id, storagePath, btn) {
@@ -360,6 +421,7 @@
 
     await client.storage.from('pages').remove([storagePath])
     await client.from('pages').delete().eq('id', id)
+    allAdminPages = allAdminPages.filter(p => p.id !== id)
 
     item.style.opacity  = '0'
     item.style.height   = `${item.offsetHeight}px`

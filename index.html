@@ -40,7 +40,19 @@
     A Certain Document Index
   </a>
   <span class="nav-spacer"></span>
-  <span id="devRoleBadge" style="display:none;padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.06em;background:rgba(245,166,35,0.12);color:#f5a623;border:1px solid rgba(245,166,35,0.28)"></span>
+  <div id="devRoleToggle" style="display:none;align-items:center;gap:7px;flex-shrink:0">
+    <span style="font-size:9px;font-weight:800;letter-spacing:0.12em;color:rgba(245,166,35,0.45)">DEV</span>
+    <div style="display:flex;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:6px;padding:2px;gap:2px">
+      <button class="dev-role-pill" data-role="employee"
+        style="padding:3px 10px;border-radius:4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.06em;color:rgba(245,166,35,0.4);cursor:pointer;transition:all 0.15s">
+        Employee
+      </button>
+      <button class="dev-role-pill" data-role="analyst"
+        style="padding:3px 10px;border-radius:4px;border:none;background:transparent;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.06em;color:rgba(245,166,35,0.4);cursor:pointer;transition:all 0.15s">
+        Analyst
+      </button>
+    </div>
+  </div>
   <a href="admin.html" class="nav-admin">↑ Admin</a>
 </nav>
 
@@ -58,55 +70,11 @@
       </blockquote>
     </section>
 
-    <section class="dash-section">
+    <section class="dash-section" id="dashSection">
       <div class="dash-hd">
         <h2 class="dash-title">Dashboards</h2>
-        <span class="dash-badge">Em breve</span>
       </div>
-      <div class="dash-grid" id="dashGrid">
-        <!--
-          Card format for real dashboards:
-            Local:   <div class="dash-card" data-type="local"   data-target="slug-do-arquivo">
-            Power BI:<div class="dash-card" data-type="powerbi" data-target="https://app.powerbi.com/reportEmbed?reportId=...&groupId=...&autoAuth=true&ctid=...">
-        -->
-
-        <!-- Disparos & Recuperação -->
-        <a class="dash-card" href="live/disparos.html">
-          <div class="dash-thumb" style="padding:0;overflow:hidden">
-            <img src="assets/temp_thumbnail.png" alt="Disparos & Recuperação"
-                 style="width:100%;height:100%;object-fit:cover;display:block">
-          </div>
-          <div class="dash-card-body">
-            <div class="dash-card-title">Disparos &amp; Recuperação</div>
-            <div class="dash-card-desc">Respostas, conversões e qualidade das campanhas de disparo em tempo real.</div>
-          </div>
-        </a>
-
-        <!-- placeholder cards — layout preview -->
-        <div class="dash-card dash-card--soon">
-          <div class="dash-thumb">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
-              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-          </div>
-          <div class="dash-card-body">
-            <div class="dash-card-title">Dashboard de Vendas</div>
-            <div class="dash-card-desc">KPIs comerciais, pipeline e acompanhamento de metas em tempo real.</div>
-          </div>
-        </div>
-        <div class="dash-card dash-card--soon">
-          <div class="dash-thumb">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-          </div>
-          <div class="dash-card-body">
-            <div class="dash-card-title">Painel de Operações</div>
-            <div class="dash-card-desc">Monitoramento operacional e indicadores de desempenho de projetos.</div>
-          </div>
-        </div>
-      </div>
+      <div class="dash-grid" id="dashGrid"></div>
     </section>
 
   </div><!-- /main-col -->
@@ -181,6 +149,48 @@
   const grid       = document.getElementById('grid')
   const filterBar  = document.getElementById('filterBar')
   const gridCount  = document.getElementById('gridCount')
+
+  // ── Dashboard registry ────────────────────────────────────────────────────
+  const DASHBOARDS = [
+    {
+      href:      'live/performance.html',
+      title:     'Suporte Performance',
+      desc:      'Respostas, conversões e qualidade das campanhas de disparo em tempo real.',
+      thumbnail: 'assets/temp_thumbnail.png',
+      roles:     ['analyst', 'editor'],
+    },
+    {
+      href:  'green/biblioteca-de-audios.html',
+      title: 'Biblioteca de Áudios',
+      desc:  'Acervo de gravações de atendimento para consulta e análise.',
+      icon:  `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
+                <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
+                <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+              </svg>`,
+      roles: ['employee', 'analyst', 'editor'],
+    },
+  ]
+
+  function renderDashboards(role) {
+    const dashGrid = document.getElementById('dashGrid')
+    const visible  = DASHBOARDS.filter(d => d.roles.includes(role))
+    if (!visible.length) { dashGrid.innerHTML = ''; return }
+    dashGrid.innerHTML = visible.map(d => {
+      const thumb = d.thumbnail
+        ? `<div class="dash-thumb" style="padding:0;overflow:hidden">
+             <img src="${d.thumbnail}" alt="${d.title}" style="width:100%;height:100%;object-fit:cover;display:block">
+           </div>`
+        : `<div class="dash-thumb">${d.icon || ''}</div>`
+      return `<a class="dash-card" href="${d.href}">
+        ${thumb}
+        <div class="dash-card-body">
+          <div class="dash-card-title">${d.title}</div>
+          <div class="dash-card-desc">${d.desc}</div>
+        </div>
+      </a>`
+    }).join('')
+  }
 
   let allPages = []
   let activeCategory = ''
@@ -302,8 +312,8 @@
     applyFilters()
   }
 
-  const IS_LOCAL  = ['localhost', '127.0.0.1'].includes(location.hostname)
-  const DEV_ROLE  = IS_LOCAL ? (new URLSearchParams(location.search).get('devRole') || 'analyst') : null
+  const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname)
+  let devRole    = IS_LOCAL ? (new URLSearchParams(location.search).get('devRole') || 'analyst') : null
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   function showModal() { document.getElementById('loginModal').classList.add('visible') }
@@ -345,7 +355,7 @@
 
   async function loadUserRole(session) {
     if (!session) {
-      userRole = DEV_ROLE  // IS_LOCAL: honour ?devRole=; otherwise never reached
+      userRole = devRole  // IS_LOCAL: use current devRole value; otherwise never reached
     } else {
       const { data } = await client
         .from('user_roles')
@@ -354,13 +364,30 @@
         .single()
       userRole = data?.role ?? 'employee'
     }
-    document.querySelector('.dash-section').style.display =
-      userRole === 'analyst' ? '' : 'none'
+    renderDashboards(userRole)
     if (IS_LOCAL) {
-      const badge = document.getElementById('devRoleBadge')
-      if (badge) { badge.textContent = `DEV: ${userRole.toUpperCase()}`; badge.style.display = '' }
+      const toggle = document.getElementById('devRoleToggle')
+      toggle.style.display = 'flex'
+      toggle.querySelectorAll('.dev-role-pill').forEach(p => {
+        const active = p.dataset.role === userRole
+        p.style.background = active ? 'rgba(245,166,35,0.18)' : 'transparent'
+        p.style.color      = active ? '#f5a623' : 'rgba(245,166,35,0.4)'
+      })
     }
   }
+
+  function setupDevToggle() {
+    if (!IS_LOCAL) return
+    document.querySelectorAll('.dev-role-pill').forEach(pill => {
+      pill.addEventListener('click', async () => {
+        if (pill.dataset.role === devRole) return
+        devRole = pill.dataset.role
+        await loadUserRole(null)
+        await loadPagesData()
+      })
+    })
+  }
+  setupDevToggle()
 
   async function loadPagesData() {
     let data, error
@@ -370,6 +397,7 @@
         const res = await fetch('/api/pages')
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         data = await res.json()
+        data = (data || []).filter(p => p.show_in_sidebar !== false)
       } catch (e) {
         error = e
       }
@@ -378,6 +406,7 @@
         .from('pages')
         .select('*')
         .eq('published', true)
+        .eq('show_in_sidebar', true)
         .order('created_at', { ascending: false }))
     }
 
@@ -386,7 +415,7 @@
       return
     }
 
-    if (userRole !== 'analyst') {
+    if (userRole !== 'analyst' && userRole !== 'editor') {
       data = (data || []).filter(p => !p.analyst_only)
     }
     allPages = data
@@ -394,25 +423,6 @@
     renderCards(data)
   }
 
-  // ── Dashboard routing ───────────────────────────────────────────────────────
-  document.getElementById('dashGrid').addEventListener('click', e => {
-    const thumb = e.target.closest('.dash-thumb')
-    if (!thumb) return
-    const card = thumb.closest('.dash-card')
-    if (!card || card.classList.contains('dash-card--soon')) return
-
-    const type   = card.dataset.type
-    const target = card.dataset.target
-    if (!type || !target) return
-
-    const title = encodeURIComponent(card.querySelector('.dash-card-title')?.textContent || 'Dashboard')
-
-    if (type === 'local') {
-      location.href = `live/${target}.html`
-    } else if (type === 'powerbi') {
-      location.href = `live/powerbi.html?url=${encodeURIComponent(target)}&title=${title}`
-    }
-  })
 
   document.querySelector('[data-cat=""]').addEventListener('click', () => setCategory(''))
   document.querySelector('[data-tag=""]').addEventListener('click', () => setTag(''))

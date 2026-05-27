@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biblioteca de Áudios — iGreen Energy</title>
+  <link rel="icon" type="image/png" href="../assets/favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="../css/page.css">
+  <style>
+    /* ── LAYOUT ── */
+    #authError {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-align: center;
+      padding: 40px;
+    }
+    #authError.visible { display: flex; }
+    .err-code {
+      font-family: 'Syne', sans-serif;
+      font-size: 72px;
+      font-weight: 800;
+      color: rgba(76,175,50,0.18);
+      line-height: 1;
+    }
+    #authError h2 { font-size: 20px; color: #e8e8e8; }
+    #authError p  { font-size: 14px; color: #555; }
+    #authError a  {
+      display: inline-block; margin-top: 8px;
+      padding: 8px 20px; border-radius: 8px;
+      background: rgba(76,175,50,0.10);
+      border: 1px solid rgba(76,175,50,0.25);
+      color: #4caf32; font-size: 14px; text-decoration: none;
+      transition: background 0.2s;
+    }
+    #authError a:hover { background: rgba(76,175,50,0.2); }
+
+    #pageBody {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOPBAR LOGO ── */
+    .topbar-logo {
+      height: 19px;
+      opacity: 0.45;
+      mix-blend-mode: lighten;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    /* ── TAB BAR ── */
+    .tab-bar {
+      flex-shrink: 0;
+      display: flex;
+      padding: 0 20px;
+      background: rgba(10,10,10,0.98);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 16px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: #3a3a3a;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: #666; }
+    .tab-btn.active { color: #4caf32; border-bottom-color: #4caf32; }
+
+    /* ── SEARCH SECTION ── */
+    .search-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .search-wrap {
+      flex: 1;
+      min-width: 180px;
+      position: relative;
+    }
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #2a2a2a;
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px;
+      padding: 8px 12px 8px 34px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: #e8e8e8;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input:focus { border-color: rgba(76,175,50,0.35); }
+    .search-input::placeholder { color: #282828; }
+    .gender-pills { display: flex; gap: 6px; flex-shrink: 0; }
+    .gpill {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: transparent;
+      color: #3a3a3a;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .gpill:hover { border-color: rgba(76,175,50,0.3); color: #666; }
+    .gpill.active {
+      background: rgba(76,175,50,0.1);
+      border-color: rgba(76,175,50,0.4);
+      color: #4caf32;
+    }
+
+    /* ── BIBLIOTECA TAB ── */
+    #tabBiblioteca {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .list-meta {
+      padding: 10px 22px 2px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #242424;
+      flex-shrink: 0;
+    }
+    .audio-list {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.06) transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 8px 22px 28px;
+    }
+
+    /* ── AUDIO CARD ── */
+    .audio-card {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      padding: 15px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      transition: border-color 0.15s;
+    }
+    .audio-card:hover { border-color: rgba(255,255,255,0.12); }
+
+    .audio-card-top {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+    .gender-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 7px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .gender-m { background: rgba(91,155,213,0.12); color: #5b9bd5; border: 1px solid rgba(91,155,213,0.2); }
+    .gender-f { background: rgba(213,91,155,0.12); color: #d55b9b; border: 1px solid rgba(213,91,155,0.2); }
+    .audio-name {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      color: #e0e0e0;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .shortcut-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .shortcut-code {
+      font-family: 'DM Mono', 'Courier New', monospace;
+      font-size: 11px;
+      color: #4caf32;
+      background: rgba(76,175,50,0.08);
+      border: 1px solid rgba(76,175,50,0.18);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .copy-btn {
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+      cursor: pointer;
+      color: #3a3a3a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .copy-btn:hover {
+      background: rgba(76,175,50,0.1);
+      border-color: rgba(76,175,50,0.3);
+      color: #4caf32;
+    }
+
+    /* ── PLAYER ── */
+    .player-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .play-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid rgba(76,175,50,0.3);
+      background: rgba(76,175,50,0.07);
+      color: #4caf32;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .play-btn:hover { background: rgba(76,175,50,0.14); border-color: rgba(76,175,50,0.5); }
+    .play-btn.playing { background: rgba(76,175,50,0.18); border-color: #4caf32; }
+    .progress-track {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+    }
+    .progress-fill {
+      position: absolute;
+      left: 0; top: 0;
+      height: 100%;
+      background: #4caf32;
+      border-radius: 2px;
+      pointer-events: none;
+      transition: width 0.1s linear;
+    }
+    .time-disp {
+      font-size: 10px;
+      color: #333;
+      font-family: monospace;
+      flex-shrink: 0;
+      min-width: 38px;
+      text-align: right;
+    }
+
+    /* ── TRANSCRIPT ── */
+    .transcript-section {
+      border-top: 1px solid rgba(255,255,255,0.04);
+      padding-top: 10px;
+    }
+    .transcript-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #2e2e2e;
+      cursor: pointer;
+      padding: 0;
+      transition: color 0.15s;
+    }
+    .transcript-toggle-btn:hover { color: #555; }
+    .transcript-toggle-btn svg { transition: transform 0.2s; flex-shrink: 0; }
+    .transcript-toggle-btn.open svg { transform: rotate(180deg); }
+    .transcript-text {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #4a4a4a;
+      line-height: 1.65;
+    }
+
+    /* ── SKELETON ── */
+    @keyframes shimmer { 0%,100% { opacity: 0.4 } 50% { opacity: 0.1 } }
+    .skel {
+      border-radius: 6px;
+      background: rgba(255,255,255,0.06);
+      animation: shimmer 1.6s ease-in-out infinite;
+    }
+    .skel-card {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      padding: 15px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+    .skel-row { display: flex; align-items: center; gap: 8px; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 56px 20px;
+      color: #242424;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* ── UPLOAD TAB ── */
+    #tabUpload {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.06) transparent;
+    }
+    .upload-section {
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 26px 22px 48px;
+    }
+    .upload-heading {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #4caf32;
+      margin-bottom: 14px;
+    }
+    .form-card {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #444;
+    }
+    .form-input, .form-textarea {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 10px 13px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: #e8e8e8;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: rgba(76,175,50,0.4); }
+    .form-textarea { min-height: 88px; resize: vertical; }
+
+    .file-drop {
+      border: 2px dashed rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 26px 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .file-drop:hover, .file-drop.dragover {
+      border-color: rgba(76,175,50,0.4);
+      background: rgba(76,175,50,0.03);
+    }
+    .file-drop-icon { color: #252525; margin-bottom: 8px; }
+    .file-drop-hint { font-size: 12px; color: #303030; line-height: 1.5; }
+    .file-drop-hint strong { color: #4caf32; }
+    .file-name-display { margin-top: 7px; font-size: 11px; color: #4caf32; font-weight: 600; min-height: 16px; }
+
+    .gender-radio { display: flex; gap: 8px; }
+    .gender-opt { flex: 1; }
+    .gender-opt input[type="radio"] { display: none; }
+    .gender-opt label {
+      display: block;
+      text-align: center;
+      padding: 9px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: #3a3a3a;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .gender-opt input:checked + label {
+      background: rgba(76,175,50,0.1);
+      border-color: rgba(76,175,50,0.4);
+      color: #4caf32;
+    }
+
+    .form-actions { display: flex; justify-content: flex-end; }
+    .submit-btn {
+      padding: 10px 24px;
+      background: rgba(76,175,50,0.1);
+      border: 1px solid rgba(76,175,50,0.28);
+      border-radius: 8px;
+      color: #4caf32;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .submit-btn:hover { background: rgba(76,175,50,0.18); }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .local-notice {
+      background: rgba(245,166,35,0.07);
+      border: 1px solid rgba(245,166,35,0.2);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #c49520;
+      line-height: 1.5;
+    }
+
+    /* ── SETTINGS BTN ── */
+    .settings-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: none;
+      color: #484848;
+      cursor: pointer;
+      transition: all 0.18s;
+      flex-shrink: 0;
+    }
+    .settings-btn:hover { border-color: rgba(255,255,255,0.2); color: #888; }
+
+    /* ── TOPBAR LOGO (no auto margin — title flex:1 handles spacing) ── */
+    .topbar-logo { margin-left: 0 !important; }
+
+    /* ── GENDER MODAL ── */
+    .gender-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.84);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      backdrop-filter: blur(4px);
+    }
+    .gender-modal {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px;
+      padding: 32px 28px 28px;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin: 16px;
+    }
+    .gender-modal-hd { text-align: center; }
+    .gender-modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #e8e8e8;
+      margin-bottom: 8px;
+    }
+    .gender-modal-sub {
+      font-size: 12px;
+      color: #444;
+      line-height: 1.55;
+    }
+    .gender-modal-opts { display: flex; gap: 12px; }
+    .gender-modal-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 24px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: all 0.18s;
+    }
+    .gender-modal-m {
+      background: rgba(91,155,213,0.06);
+      border: 1px solid rgba(91,155,213,0.2);
+      color: #5b9bd5;
+    }
+    .gender-modal-m:hover {
+      background: rgba(91,155,213,0.14);
+      border-color: rgba(91,155,213,0.45);
+    }
+    .gender-modal-f {
+      background: rgba(213,91,155,0.06);
+      border: 1px solid rgba(213,91,155,0.2);
+      color: #d55b9b;
+    }
+    .gender-modal-f:hover {
+      background: rgba(213,91,155,0.14);
+      border-color: rgba(213,91,155,0.45);
+    }
+    .gender-modal-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gender-modal-m .gender-modal-icon { background: rgba(91,155,213,0.14); }
+    .gender-modal-f .gender-modal-icon { background: rgba(213,91,155,0.14); }
+
+    /* ── PILL ACTIVE COLORS BY GENDER ── */
+    .gpill[data-gender="masculino"].active {
+      background: rgba(91,155,213,0.12);
+      border-color: rgba(91,155,213,0.38);
+      color: #5b9bd5;
+    }
+    .gpill[data-gender="feminino"].active {
+      background: rgba(213,91,155,0.12);
+      border-color: rgba(213,91,155,0.38);
+      color: #d55b9b;
+    }
+    .gpill[data-gender=""].active {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.18);
+      color: #ccc;
+    }
+
+    /* ── UPLOAD RADIO COLORS BY GENDER ── */
+    #gMasc:checked + label {
+      background: rgba(91,155,213,0.1);
+      border-color: rgba(91,155,213,0.38);
+      color: #5b9bd5;
+    }
+    #gFem:checked + label {
+      background: rgba(213,91,155,0.1);
+      border-color: rgba(213,91,155,0.38);
+      color: #d55b9b;
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a href="../index.html" class="back-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Início
+    </a>
+    <div class="topbar-sep"></div>
+    <span class="topbar-cat">Operações</span>
+    <div class="topbar-sep"></div>
+    <span class="topbar-title">Biblioteca de Áudios</span>
+    <button class="settings-btn" id="settingsBtn" title="Configurar filtro de gênero">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+    <img src="../assets/footericon.png" alt="iGreen Energy" class="topbar-logo">
+  </div>
+
+  <!-- AUTH ERROR -->
+  <div id="authError">
+    <div class="err-code" id="errCode">401</div>
+    <h2 id="errTitle">Acesso negado</h2>
+    <p id="errMsg">Você precisa estar autenticado para acessar este recurso.</p>
+    <a href="../index.html">← Voltar ao índice</a>
+  </div>
+
+  <!-- PAGE BODY -->
+  <div id="pageBody" style="display:none">
+
+    <!-- TAB BAR — analyst only -->
+    <div class="tab-bar" id="tabBar" style="display:none">
+      <button class="tab-btn active" data-tab="biblioteca">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+          <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
+          <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+        </svg>
+        Biblioteca
+      </button>
+      <button class="tab-btn" data-tab="upload">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Novo Áudio
+      </button>
+    </div>
+
+    <!-- ── TAB: BIBLIOTECA ── -->
+    <div id="tabBiblioteca">
+
+      <div class="search-section">
+        <div class="search-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input class="search-input" id="searchInput" type="search"
+                 placeholder="Buscar por título, transcrição ou shortcut…">
+        </div>
+      </div>
+
+      <div class="list-meta" id="listMeta"></div>
+
+      <div class="audio-list" id="audioList">
+        <div class="skel-card">
+          <div class="skel-row">
+            <div class="skel" style="width:36px;height:18px;border-radius:4px"></div>
+            <div class="skel" style="flex:1;height:13px"></div>
+            <div class="skel" style="width:82px;height:18px;border-radius:4px"></div>
+            <div class="skel" style="width:28px;height:28px;border-radius:6px"></div>
+          </div>
+          <div class="skel-row">
+            <div class="skel" style="width:30px;height:30px;border-radius:50%"></div>
+            <div class="skel" style="flex:1;height:3px;border-radius:2px"></div>
+            <div class="skel" style="width:36px;height:10px;border-radius:3px"></div>
+          </div>
+        </div>
+        <div class="skel-card">
+          <div class="skel-row">
+            <div class="skel" style="width:30px;height:18px;border-radius:4px"></div>
+            <div class="skel" style="flex:1;height:13px"></div>
+            <div class="skel" style="width:70px;height:18px;border-radius:4px"></div>
+            <div class="skel" style="width:28px;height:28px;border-radius:6px"></div>
+          </div>
+          <div class="skel-row">
+            <div class="skel" style="width:30px;height:30px;border-radius:50%"></div>
+            <div class="skel" style="flex:1;height:3px;border-radius:2px"></div>
+            <div class="skel" style="width:36px;height:10px;border-radius:3px"></div>
+          </div>
+        </div>
+        <div class="skel-card">
+          <div class="skel-row">
+            <div class="skel" style="width:32px;height:18px;border-radius:4px"></div>
+            <div class="skel" style="flex:1;height:13px"></div>
+            <div class="skel" style="width:90px;height:18px;border-radius:4px"></div>
+            <div class="skel" style="width:28px;height:28px;border-radius:6px"></div>
+          </div>
+          <div class="skel-row">
+            <div class="skel" style="width:30px;height:30px;border-radius:50%"></div>
+            <div class="skel" style="flex:1;height:3px;border-radius:2px"></div>
+            <div class="skel" style="width:36px;height:10px;border-radius:3px"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tabBiblioteca -->
+
+    <!-- ── TAB: UPLOAD ── -->
+    <div id="tabUpload" style="display:none">
+      <div class="upload-section">
+        <div class="upload-heading">Novo Áudio</div>
+        <div class="form-card">
+          <div id="localNotice"></div>
+          <form id="uploadForm" autocomplete="off">
+
+            <div class="form-group">
+              <label class="form-label">Arquivo de áudio *</label>
+              <input type="file" id="fileInput" accept=".mp3,.m4a,.wav,.ogg,.aac" style="display:none">
+              <div class="file-drop" id="fileDrop">
+                <div class="file-drop-icon">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </div>
+                <div class="file-drop-hint">
+                  <strong>Clique</strong> ou arraste um arquivo aqui<br>
+                  <span style="font-size:11px;color:#222">MP3 · M4A · WAV · OGG · AAC</span>
+                </div>
+                <div class="file-name-display" id="fileNameDisplay"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fShortcut">Shortcut *</label>
+              <input class="form-input" type="text" id="fShortcut" required
+                     placeholder="Ex: #audio-boas-vindas">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fTitle">Título (opcional)</label>
+              <input class="form-input" type="text" id="fTitle"
+                     placeholder="Exibido no lugar do nome do arquivo">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Gênero da voz *</label>
+              <div class="gender-radio">
+                <div class="gender-opt">
+                  <input type="radio" name="fGender" id="gMasc" value="masculino">
+                  <label for="gMasc">Masculino</label>
+                </div>
+                <div class="gender-opt">
+                  <input type="radio" name="fGender" id="gFem" value="feminino">
+                  <label for="gFem">Feminino</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fTranscription">Transcrição (opcional)</label>
+              <textarea class="form-input form-textarea" id="fTranscription"
+                        placeholder="Texto completo falado no áudio…"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="submit-btn" id="submitBtn">Enviar áudio</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div><!-- /tabUpload -->
+
+  </div><!-- /pageBody -->
+
+  <!-- GENDER ONBOARDING / SETTINGS MODAL -->
+  <div class="gender-modal-overlay" id="genderModal" style="display:none">
+    <div class="gender-modal">
+      <div class="gender-modal-hd">
+        <div class="gender-modal-title">Qual voz você prefere ouvir?</div>
+        <div class="gender-modal-sub">Selecione o gênero dos áudios. Você pode alterar isso a qualquer momento nas configurações.</div>
+      </div>
+      <div class="gender-modal-opts">
+        <button class="gender-modal-btn gender-modal-m" data-gender="masculino">
+          <div class="gender-modal-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
+            </svg>
+          </div>
+          Masculino
+        </button>
+        <button class="gender-modal-btn gender-modal-f" data-gender="feminino">
+          <div class="gender-modal-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7"/>
+            </svg>
+          </div>
+          Feminino
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<script>
+  const SUPABASE_URL = '__SUPABASE_URL__'
+  const SUPABASE_KEY = '__SUPABASE_KEY__'
+  const client   = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname)
+  const DEV_ROLE = IS_LOCAL
+    ? (new URLSearchParams(location.search).get('devRole') || 'analyst')
+    : null
+
+  const BUCKET          = 'audios'
+  const GENDER_PREF_KEY = 'audiobib_gender'
+
+  let allAudios      = []
+  let userRole       = 'employee'
+  let activeSession  = null
+  let filterGender   = ''
+  let filterQuery    = ''
+  let currentAudio   = null
+  let currentPlayBtn = null
+
+  // ── AUTH ──────────────────────────────────────────────────────────────────
+  client.auth.onAuthStateChange((event, session) => {
+    if (event === 'INITIAL_SESSION') {
+      if (session || IS_LOCAL) initPage(session)
+      else showAuthError('401', 'Acesso negado', 'Você precisa estar autenticado para acessar este recurso.')
+    } else if (event === 'SIGNED_OUT') {
+      showAuthError('401', 'Sessão encerrada', 'Volte ao índice para fazer login novamente.')
+    }
+  })
+
+  function showAuthError(code, title, msg) {
+    document.getElementById('pageBody').style.display = 'none'
+    document.getElementById('errCode').textContent  = code
+    document.getElementById('errTitle').textContent = title
+    document.getElementById('errMsg').textContent   = msg
+    document.getElementById('authError').classList.add('visible')
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  async function initPage(session) {
+    activeSession = session
+
+    if (session) {
+      const { data } = await client
+        .from('user_roles').select('role').eq('user_id', session.user.id).single()
+      userRole = data?.role ?? 'employee'
+    } else if (IS_LOCAL) {
+      userRole = DEV_ROLE
+    }
+
+    document.getElementById('pageBody').style.display = 'flex'
+
+    if (userRole === 'editor') {
+      document.getElementById('tabBar').style.display = 'flex'
+      setupUploadForm()
+    }
+
+    setupTabs()
+    setupSearch()
+    setupGenderModal()
+    if (!IS_LOCAL && session) logDashboardAccess(session)
+
+    // Load audios in background while modal may be open
+    const audioPromise = loadAudios()
+
+    const savedGender = await fetchGenderPref(session)
+    if (savedGender) {
+      applyGenderPref(savedGender)
+      await audioPromise
+      renderAudios()
+    } else {
+      showGenderModal(true)
+      await audioPromise
+      // renderAudios will be called by modal confirmation
+    }
+  }
+
+  // ── GENDER PREFERENCE (DB-backed; localStorage fallback for IS_LOCAL) ──────
+  async function fetchGenderPref(session) {
+    if (!session) return localStorage.getItem(GENDER_PREF_KEY)
+    const { data } = await client
+      .from('user_preferences')
+      .select('gender_pref')
+      .eq('user_id', session.user.id)
+      .single()
+    return data?.gender_pref || null
+  }
+
+  async function saveGenderPref(gender, session) {
+    if (!session) { localStorage.setItem(GENDER_PREF_KEY, gender); return }
+    await client.from('user_preferences').upsert(
+      { user_id: session.user.id, gender_pref: gender, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    )
+  }
+
+  async function logDashboardAccess(session) {
+    const { data: page } = await client
+      .from('pages').select('id').eq('slug', 'biblioteca-de-audios').single()
+    if (!page) return
+    await client.from('access_logs').insert({
+      page_id:    page.id,
+      page_slug:  'biblioteca-de-audios',
+      page_title: 'Biblioteca de Áudios',
+      user_email: session.user.email,
+    })
+  }
+
+  // ── GENDER MODAL ──────────────────────────────────────────────────────────
+  function setupGenderModal() {
+    document.querySelectorAll('.gender-modal-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const gender = btn.dataset.gender
+        await saveGenderPref(gender, activeSession)
+        hideGenderModal()
+        applyGenderPref(gender)
+        renderAudios()
+      })
+    })
+    document.getElementById('settingsBtn').addEventListener('click', () => showGenderModal(false))
+  }
+
+  function showGenderModal(isFirstVisit = false) {
+    const overlay = document.getElementById('genderModal')
+    overlay.style.display = 'flex'
+    overlay.onclick = isFirstVisit ? null : e => { if (e.target === overlay) hideGenderModal() }
+  }
+
+  function hideGenderModal() {
+    document.getElementById('genderModal').style.display = 'none'
+  }
+
+  function applyGenderPref(gender) {
+    filterGender = gender
+  }
+
+  // ── TABS ──────────────────────────────────────────────────────────────────
+  function setupTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn))
+        const isBiblioteca = btn.dataset.tab === 'biblioteca'
+        document.getElementById('tabBiblioteca').style.display = isBiblioteca ? '' : 'none'
+        document.getElementById('tabUpload').style.display     = isBiblioteca ? 'none' : ''
+      })
+    })
+  }
+
+  // ── SEARCH & FILTER ───────────────────────────────────────────────────────
+  function setupSearch() {
+    document.getElementById('searchInput').addEventListener('input', e => {
+      filterQuery = e.target.value.trim().toLowerCase()
+      renderAudios()
+    })
+  }
+
+  // ── LOAD ──────────────────────────────────────────────────────────────────
+  async function loadAudios() {
+    const { data, error } = await client
+      .from('audios').select('*').order('created_at', { ascending: false })
+
+    if (error) {
+      document.getElementById('audioList').innerHTML =
+        `<div class="empty-state">Erro ao carregar áudios.<br><small style="color:#333">${error.message}</small></div>`
+      return
+    }
+
+    allAudios = data ?? []
+    // Caller is responsible for calling renderAudios() after this
+  }
+
+  // ── RENDER ────────────────────────────────────────────────────────────────
+  function renderAudios() {
+    let list = allAudios
+
+    if (filterGender) list = list.filter(a => a.gender === filterGender)
+    if (filterQuery)  list = list.filter(a =>
+      (a.title || a.filename || '').toLowerCase().includes(filterQuery) ||
+      (a.transcription || '').toLowerCase().includes(filterQuery) ||
+      (a.shortcut || '').toLowerCase().includes(filterQuery)
+    )
+
+    document.getElementById('listMeta').textContent =
+      list.length ? `${list.length} áudio${list.length !== 1 ? 's' : ''}` : ''
+
+    const el = document.getElementById('audioList')
+
+    if (!list.length) {
+      el.innerHTML = `<div class="empty-state">${
+        allAudios.length ? 'Nenhum áudio corresponde à busca.' : 'Nenhum áudio cadastrado ainda.'
+      }</div>`
+      return
+    }
+
+    el.innerHTML = ''
+    list.forEach(audio => el.appendChild(buildCard(audio)))
+  }
+
+  // ── CARD ──────────────────────────────────────────────────────────────────
+  function buildCard(audio) {
+    const name        = audio.title || audio.filename
+    const genderLabel = audio.gender === 'masculino' ? 'Masc.'
+                      : audio.gender === 'feminino'  ? 'Fem.' : null
+    const genderClass = audio.gender === 'masculino' ? 'gender-m' : 'gender-f'
+
+    const card = document.createElement('div')
+    card.className = 'audio-card'
+    card.innerHTML = `
+      <div class="audio-card-top">
+        ${genderLabel ? `<span class="gender-badge ${genderClass}">${genderLabel}</span>` : ''}
+        <span class="audio-name" title="${esc(name)}">${esc(name)}</span>
+        <div class="shortcut-group">
+          <code class="shortcut-code">${esc(audio.shortcut)}</code>
+          <button class="copy-btn" title="Copiar shortcut">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="player-row">
+        <button class="play-btn" title="Reproduzir">
+          <svg class="icon-play" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="margin-left:1px">
+            <polygon points="5 3 19 12 5 21"/>
+          </svg>
+          <svg class="icon-pause" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+            <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+          </svg>
+        </button>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:0%"></div>
+        </div>
+        <span class="time-disp">—:——</span>
+      </div>
+      ${audio.transcription ? `
+      <div class="transcript-section">
+        <button class="transcript-toggle-btn">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+          Transcrição
+        </button>
+        <div class="transcript-text" style="display:none">${esc(audio.transcription)}</div>
+      </div>` : ''}
+    `
+
+    card.querySelector('.copy-btn').addEventListener('click', () => copyShortcut(audio.shortcut, card))
+    setupPlayer(card, audio)
+
+    const tBtn = card.querySelector('.transcript-toggle-btn')
+    if (tBtn) {
+      tBtn.addEventListener('click', () => {
+        const body = card.querySelector('.transcript-text')
+        const open = body.style.display !== 'none'
+        body.style.display = open ? 'none' : 'block'
+        tBtn.classList.toggle('open', !open)
+      })
+    }
+
+    return card
+  }
+
+  // ── COPY SHORTCUT ─────────────────────────────────────────────────────────
+  function copyShortcut(shortcut, card) {
+    navigator.clipboard.writeText(shortcut).then(() => {
+      const btn = card.querySelector('.copy-btn')
+      const orig = btn.innerHTML
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4caf32" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
+      btn.style.borderColor = 'rgba(76,175,50,0.5)'
+      setTimeout(() => { btn.innerHTML = orig; btn.style.borderColor = '' }, 1500)
+    })
+  }
+
+  // ── PLAYER ────────────────────────────────────────────────────────────────
+  function setupPlayer(card, audio) {
+    const playBtn  = card.querySelector('.play-btn')
+    const track    = card.querySelector('.progress-track')
+    const fill     = card.querySelector('.progress-fill')
+    const timeDisp = card.querySelector('.time-disp')
+    const iPlay    = card.querySelector('.icon-play')
+    const iPause   = card.querySelector('.icon-pause')
+
+    let audioEl = null
+
+    function fmt(s) {
+      if (!isFinite(s) || s < 0) return '—:——'
+      return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+    }
+
+    function setPlaying(on) {
+      iPlay.style.display  = on ? 'none' : ''
+      iPause.style.display = on ? '' : 'none'
+      playBtn.classList.toggle('playing', on)
+    }
+
+    async function getAudio() {
+      if (audioEl) return audioEl
+      const { data, error } = await client.storage.from(BUCKET).createSignedUrl(audio.storage_path, 3600)
+      if (error || !data?.signedUrl) { timeDisp.textContent = 'Erro'; return null }
+      const el = new Audio(data.signedUrl)
+      el.addEventListener('loadedmetadata', () => { timeDisp.textContent = fmt(el.duration) })
+      el.addEventListener('timeupdate', () => {
+        if (!isFinite(el.duration)) return
+        fill.style.width = `${(el.currentTime / el.duration) * 100}%`
+        timeDisp.textContent = fmt(el.currentTime)
+      })
+      el.addEventListener('ended', () => {
+        setPlaying(false)
+        fill.style.width = '0%'
+        timeDisp.textContent = fmt(el.duration)
+        currentAudio = null; currentPlayBtn = null
+      })
+      audioEl = el
+      return el
+    }
+
+    playBtn.addEventListener('click', async () => {
+      if (currentAudio && currentAudio !== audioEl) {
+        currentAudio.pause()
+        if (currentPlayBtn) {
+          currentPlayBtn.querySelector('.icon-play').style.display  = ''
+          currentPlayBtn.querySelector('.icon-pause').style.display = 'none'
+          currentPlayBtn.classList.remove('playing')
+        }
+      }
+
+      const el = await getAudio()
+      if (!el) return
+      audioEl = el
+
+      if (audioEl.paused) {
+        audioEl.play()
+        setPlaying(true)
+        currentAudio   = audioEl
+        currentPlayBtn = playBtn
+      } else {
+        audioEl.pause()
+        setPlaying(false)
+        currentAudio = null; currentPlayBtn = null
+      }
+    })
+
+    track.addEventListener('click', e => {
+      if (!audioEl || !isFinite(audioEl.duration)) return
+      const r = track.getBoundingClientRect()
+      audioEl.currentTime = ((e.clientX - r.left) / r.width) * audioEl.duration
+    })
+  }
+
+  // ── UPLOAD FORM ───────────────────────────────────────────────────────────
+  function setupUploadForm() {
+    if (IS_LOCAL) {
+      document.getElementById('localNotice').innerHTML = `
+        <div class="local-notice">
+          Upload não disponível no modo de desenvolvimento local.
+          Conecte-se ao ambiente de produção para enviar áudios.
+        </div>`
+      document.getElementById('submitBtn').disabled = true
+    }
+
+    const fileInput = document.getElementById('fileInput')
+    const fileDrop  = document.getElementById('fileDrop')
+    const fileLabel = document.getElementById('fileNameDisplay')
+
+    fileDrop.addEventListener('click',     () => fileInput.click())
+    fileDrop.addEventListener('dragover',  e => { e.preventDefault(); fileDrop.classList.add('dragover') })
+    fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('dragover'))
+    fileDrop.addEventListener('drop', e => {
+      e.preventDefault(); fileDrop.classList.remove('dragover')
+      const f = e.dataTransfer.files[0]
+      if (f) { fileInput.files = e.dataTransfer.files; fileLabel.textContent = f.name }
+    })
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) fileLabel.textContent = fileInput.files[0].name
+    })
+
+    document.getElementById('uploadForm').addEventListener('submit', async e => {
+      e.preventDefault()
+      if (IS_LOCAL) return
+
+      const file   = fileInput.files[0]
+      const gender = document.querySelector('[name="fGender"]:checked')?.value
+
+      if (!file)   { alert('Selecione um arquivo de áudio.'); return }
+      if (!gender) { alert('Selecione o gênero da voz.'); return }
+
+      const btn = document.getElementById('submitBtn')
+      btn.disabled = true; btn.textContent = 'Enviando…'
+
+      try {
+        const ext  = file.name.split('.').pop()
+        const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+
+        const { error: upErr } = await client.storage.from(BUCKET).upload(path, file)
+        if (upErr) throw upErr
+
+        const { error: insErr } = await client.from('audios').insert({
+          shortcut:      document.getElementById('fShortcut').value.trim(),
+          title:         document.getElementById('fTitle').value.trim() || null,
+          transcription: document.getElementById('fTranscription').value.trim() || null,
+          gender,
+          storage_path:  path,
+          filename:      file.name,
+          uploaded_by:   activeSession?.user?.id ?? null,
+        })
+        if (insErr) throw insErr
+
+        btn.textContent = '✓ Áudio enviado!'
+        e.target.reset()
+        fileLabel.textContent = ''
+        setTimeout(async () => {
+          btn.disabled = false; btn.textContent = 'Enviar áudio'
+          await loadAudios()
+          renderAudios()
+          document.querySelector('[data-tab="biblioteca"]').click()
+        }, 1600)
+      } catch (err) {
+        btn.disabled = false
+        btn.textContent = 'Erro — tente novamente'
+        console.error(err)
+      }
+    })
+  }
+
+  function esc(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  }
+</script>
+</body>
+</html>
