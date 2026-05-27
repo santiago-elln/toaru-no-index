@@ -332,9 +332,9 @@
 
   // ── LISTA DE PÁGINAS ──────────────────────────────────
   function setViewPill(view) {
-    viewFilter = view
+    viewFilter = viewFilter === view ? '' : view
     document.querySelectorAll('.view-pill').forEach(p => {
-      const active = p.dataset.view === view
+      const active = p.dataset.view === viewFilter
       p.style.background = active ? 'rgba(245,166,35,0.18)' : 'transparent'
       p.style.color      = active ? '#f5a623' : 'rgba(245,166,35,0.4)'
     })
