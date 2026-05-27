@@ -98,11 +98,11 @@
     <div class="sidebar-filters">
       <div class="filter-row" id="filterBar">
         <span class="filter-label">Categoria</span>
-        <button class="filter-btn active" data-cat="">Todos</button>
       </div>
       <div class="filter-row" id="tagBar" style="display:none">
         <span class="filter-label">Tag</span>
-        <button class="tag-btn active" data-tag="">Todas</button>
+        <button id="tagClear" onclick="clearAllTags()" title="Limpar tags"
+          style="display:none;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:12px;cursor:pointer;flex-shrink:0;padding:0;line-height:1">×</button>
       </div>
       <div class="filter-row" id="dateRow">
         <span class="filter-label">Período</span>
@@ -161,23 +161,17 @@
   // ── Dashboard registry ────────────────────────────────────────────────────
   const DASHBOARDS = [
     {
-      slug:      'suporte-performance',
-      href:      'live/performance.html',
-      title:     'Suporte Performance',
-      desc:      'Respostas, conversões e qualidade das campanhas de disparo em tempo real.',
-      fallbackThumbnail: 'assets/temp_thumbnail.png',
-      roles:     ['analyst', 'editor'],
+      slug:  'suporte-performance',
+      href:  'live/performance.html',
+      title: 'Suporte Performance',
+      desc:  'Respostas, conversões e qualidade das campanhas de disparo em tempo real.',
+      roles: ['analyst', 'editor'],
     },
     {
       slug:  'biblioteca-de-audios',
       href:  'green/biblioteca-de-audios.html',
       title: 'Biblioteca de Áudios',
       desc:  'Acervo de gravações de atendimento para consulta e análise.',
-      fallbackIcon: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
-                <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/>
-                <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-              </svg>`,
       roles: ['employee', 'analyst', 'editor'],
     },
   ]
@@ -185,8 +179,12 @@
   let dashThumbnails = {} // slug → public URL
   let dashSearchTerm = ''
 
+  function normalize(str) {
+    return str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+  }
+
   function onDashSearch(value) {
-    dashSearchTerm = value.trim().toLowerCase()
+    dashSearchTerm = normalize(value.trim())
     renderDashboards(userRole)
   }
 
@@ -207,8 +205,8 @@
     let visible = DASHBOARDS.filter(d => d.roles.includes(role))
     if (dashSearchTerm) {
       visible = visible.filter(d =>
-        d.title.toLowerCase().includes(dashSearchTerm) ||
-        d.desc.toLowerCase().includes(dashSearchTerm)
+        normalize(d.title).includes(dashSearchTerm) ||
+        normalize(d.desc).includes(dashSearchTerm)
       )
     }
     if (!visible.length) {
@@ -230,12 +228,12 @@
     }).join('')
   }
 
-  let allPages = []
-  let activeCategory = ''
-  let activeTag = ''
-  let activeDateFrom = ''
-  let activeDateTo   = ''
-  let userRole = 'employee'
+  let allPages        = []
+  let activeCategories = new Set()
+  let activeTags       = new Set()
+  let activeDateFrom   = ''
+  let activeDateTo     = ''
+  let userRole         = 'employee'
 
   const CAT_STYLES = {
     'Relatório': { bg: 'rgba(76,175,50,0.13)',   color: '#4caf32',  border: 'rgba(76,175,50,0.28)'   },
@@ -295,8 +293,8 @@
 
   function applyFilters() {
     let result = allPages
-    if (activeCategory) result = result.filter(p => p.category === activeCategory)
-    if (activeTag)      result = result.filter(p => (p.tags || []).includes(activeTag))
+    if (activeCategories.size) result = result.filter(p => activeCategories.has(p.category))
+    if (activeTags.size)       result = result.filter(p => (p.tags || []).some(t => activeTags.has(t)))
     if (activeDateFrom) result = result.filter(p => p.created_at.slice(0,10) >= activeDateFrom)
     if (activeDateTo)   result = result.filter(p => p.created_at.slice(0,10) <= activeDateTo)
     renderCards(result)
@@ -305,8 +303,9 @@
   function buildFilters(pages) {
     const filterBar = document.getElementById('filterBar')
     const tagBar    = document.getElementById('tagBar')
+    const tagClear  = document.getElementById('tagClear')
 
-    filterBar.querySelectorAll('[data-cat]:not([data-cat=""])').forEach(b => b.remove())
+    filterBar.querySelectorAll('.filter-btn').forEach(b => b.remove())
     const cats = [...new Set(pages.map(p => p.category).filter(Boolean))]
     cats.forEach(cat => {
       const btn = document.createElement('button')
@@ -317,7 +316,7 @@
       filterBar.appendChild(btn)
     })
 
-    tagBar.querySelectorAll('[data-tag]:not([data-tag=""])').forEach(b => b.remove())
+    tagBar.querySelectorAll('.tag-btn').forEach(b => b.remove())
     const tags = [...new Set(pages.flatMap(p => p.tags || []).filter(Boolean))].sort()
     if (tags.length) {
       tagBar.style.display = 'flex'
@@ -335,18 +334,29 @@
   }
 
   function setCategory(cat) {
-    activeCategory = cat
+    if (activeCategories.has(cat)) activeCategories.delete(cat)
+    else activeCategories.add(cat)
     document.querySelectorAll('.filter-btn').forEach(b =>
-      b.classList.toggle('active', b.dataset.cat === cat)
+      b.classList.toggle('active', activeCategories.has(b.dataset.cat))
     )
     applyFilters()
   }
 
   function setTag(tag) {
-    activeTag = tag
+    if (activeTags.has(tag)) activeTags.delete(tag)
+    else activeTags.add(tag)
     document.querySelectorAll('.tag-btn').forEach(b =>
-      b.classList.toggle('active', b.dataset.tag === tag)
+      b.classList.toggle('active', activeTags.has(b.dataset.tag))
     )
+    const tagClear = document.getElementById('tagClear')
+    tagClear.style.display = activeTags.size > 0 ? 'inline-flex' : 'none'
+    applyFilters()
+  }
+
+  function clearAllTags() {
+    activeTags.clear()
+    document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'))
+    document.getElementById('tagClear').style.display = 'none'
     applyFilters()
   }
 
@@ -463,8 +473,6 @@
   }
 
 
-  document.querySelector('[data-cat=""]').addEventListener('click', () => setCategory(''))
-  document.querySelector('[data-tag=""]').addEventListener('click', () => setTag(''))
 
   // ── Calendar Picker ───────────────────────────────────────────────────────
   ;(function () {
