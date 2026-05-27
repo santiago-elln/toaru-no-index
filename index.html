@@ -189,14 +189,35 @@
   }
 
   async function loadDashboardThumbnails() {
-    const slugs = DASHBOARDS.map(d => d.slug)
-    const { data } = await client.from('pages').select('slug, thumbnail_path').in('slug', slugs)
+    const slugs    = DASHBOARDS.map(d => d.slug)
+    const needFetch = []
+
+    slugs.forEach(slug => {
+      const raw = sessionStorage.getItem(`thumb_${slug}`)
+      if (raw) {
+        try {
+          const { url, exp } = JSON.parse(raw)
+          if (Date.now() < exp) { dashThumbnails[slug] = url; return }
+        } catch (_) {}
+      }
+      needFetch.push(slug)
+    })
+
+    if (!needFetch.length) return
+
+    const { data } = await client.from('pages').select('slug, thumbnail_path').in('slug', needFetch)
     if (!data) return
     await Promise.all(data.map(async p => {
       if (!p.thumbnail_path) return
       const { data: signed } = await client.storage
         .from('thumbnails').createSignedUrl(p.thumbnail_path, 3600)
-      if (signed?.signedUrl) dashThumbnails[p.slug] = signed.signedUrl
+      if (signed?.signedUrl) {
+        dashThumbnails[p.slug] = signed.signedUrl
+        sessionStorage.setItem(`thumb_${p.slug}`, JSON.stringify({
+          url: signed.signedUrl,
+          exp: Date.now() + 3540000  // 59 min — expire before Supabase's 60-min TTL
+        }))
+      }
     }))
   }
 
@@ -388,15 +409,22 @@
     }
   }
 
-  // onAuthStateChange com INITIAL_SESSION garante que o token OAuth
-  // do redirect já foi processado antes de decidir mostrar o modal.
+  // Guard prevents SIGNED_IN from double-firing when INITIAL_SESSION already
+  // handled a post-OAuth redirect (both events fire in that scenario).
+  let initHandled = false
+
   client.auth.onAuthStateChange((event, session) => {
     if (event === 'INITIAL_SESSION') {
+      initHandled = !!(session || IS_LOCAL)
       if (session || IS_LOCAL) { hideModal(); loadUserRole(session).then(loadPagesData) }
       else showModal()
     } else if (event === 'SIGNED_IN') {
+      if (initHandled) return
       hideModal(); loadUserRole(session).then(loadPagesData)
     } else if (event === 'SIGNED_OUT') {
+      initHandled = false
+      sessionStorage.removeItem('user_role')
+      sessionStorage.removeItem('sidebar_pages')
       showModal()
     }
   })
@@ -405,12 +433,19 @@
     if (!session) {
       userRole = devRole  // IS_LOCAL: use current devRole value; otherwise never reached
     } else {
-      const { data } = await client
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id)
-        .single()
-      userRole = data?.role ?? 'employee'
+      const cacheKey = `user_role_${session.user.id}`
+      const cached   = sessionStorage.getItem(cacheKey)
+      if (cached) {
+        userRole = cached
+      } else {
+        const { data } = await client
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single()
+        userRole = data?.role ?? 'employee'
+        sessionStorage.setItem(cacheKey, userRole)
+      }
     }
     await loadDashboardThumbnails()
     renderDashboards(userRole)
@@ -440,6 +475,8 @@
 
   async function loadPagesData() {
     let data, error
+    const PAGES_CACHE_KEY = 'sidebar_pages'
+    const PAGES_CACHE_TTL = 5 * 60 * 1000  // 5 minutes
 
     if (IS_LOCAL) {
       try {
@@ -451,12 +488,27 @@
         error = e
       }
     } else {
-      ;({ data, error } = await client
-        .from('pages')
-        .select('*')
-        .eq('published', true)
-        .eq('show_in_sidebar', true)
-        .order('created_at', { ascending: false }))
+      const raw = sessionStorage.getItem(PAGES_CACHE_KEY)
+      if (raw) {
+        try {
+          const { pages, exp } = JSON.parse(raw)
+          if (Date.now() < exp) { data = pages }
+        } catch (_) {}
+      }
+      if (!data) {
+        ;({ data, error } = await client
+          .from('pages')
+          .select('*')
+          .eq('published', true)
+          .eq('show_in_sidebar', true)
+          .order('created_at', { ascending: false }))
+        if (data && !error) {
+          sessionStorage.setItem(PAGES_CACHE_KEY, JSON.stringify({
+            pages: data,
+            exp: Date.now() + PAGES_CACHE_TTL
+          }))
+        }
+      }
     }
 
     if (error) {
