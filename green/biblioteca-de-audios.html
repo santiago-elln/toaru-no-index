@@ -148,6 +148,30 @@
       border-color: rgba(76,175,50,0.3);
       color: #4caf32;
     }
+    .sort-group {
+      display: flex;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 6px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .sort-btn {
+      padding: 5px 10px;
+      background: transparent;
+      border: none;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      color: #444;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .sort-btn:last-child { border-right: none; }
+    .sort-btn:hover { color: #888; background: rgba(255,255,255,0.04); }
+    .sort-btn.active { background: rgba(76,175,50,0.1); color: #4caf32; }
     .gpill {
       padding: 6px 14px;
       border-radius: 20px;
@@ -431,9 +455,9 @@
       padding: 22px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 24px;
     }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
     .form-label {
       font-size: 9px;
       font-weight: 700;
@@ -454,7 +478,7 @@
       width: 100%;
     }
     .form-input:focus, .form-textarea:focus { border-color: rgba(76,175,50,0.4); }
-    .form-textarea { min-height: 88px; resize: vertical; }
+    .form-textarea { min-height: 140px; resize: vertical; }
 
     .file-drop {
       border: 2px dashed rgba(255,255,255,0.08);
@@ -719,6 +743,11 @@
                  placeholder="Buscar por título, transcrição ou shortcut…">
         </div>
         <button class="speed-btn" id="speedBtn" title="Velocidade de reprodução">1×</button>
+        <div class="sort-group" id="sortGroup">
+          <button class="sort-btn active" data-sort="az">A–Z</button>
+          <button class="sort-btn" data-sort="replayed">↑ Tocados</button>
+          <button class="sort-btn" data-sort="used">↑ Usados</button>
+        </div>
       </div>
 
       <div class="list-meta" id="listMeta"></div>
@@ -891,6 +920,8 @@
   let currentPlayBtn = null
   let playbackRate   = 1
   let allAudioEls    = []
+  let audioStats     = {}   // audio id → { play_count, copy_count }
+  let sortOrder      = 'az'
 
   // ── AUTH ──────────────────────────────────────────────────────────────────
   client.auth.onAuthStateChange((event, session) => {
@@ -932,11 +963,12 @@
     setupTabs()
     setupSearch()
     setupSpeedBtn()
+    setupSortGroup()
     setupGenderModal()
     if (!IS_LOCAL && session) logDashboardAccess(session)
 
-    // Load audios in background while modal may be open
-    const audioPromise = loadAudios()
+    // Load audios and stats in parallel while modal may be open
+    const audioPromise = Promise.all([loadAudios(), loadAudioStats()])
 
     const savedGender = await fetchGenderPref(session)
     if (savedGender) {
@@ -1041,6 +1073,51 @@
     })
   }
 
+  // ── SORT ──────────────────────────────────────────────────────────────────
+  function setupSortGroup() {
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sortOrder = btn.dataset.sort
+        document.querySelectorAll('.sort-btn').forEach(b =>
+          b.classList.toggle('active', b === btn)
+        )
+        renderAudios()
+      })
+    })
+  }
+
+  function applySortOrder(list) {
+    const sorted = [...list]
+    if (sortOrder === 'replayed') {
+      sorted.sort((a, b) => {
+        const diff = (audioStats[b.id]?.play_count ?? 0) - (audioStats[a.id]?.play_count ?? 0)
+        return diff !== 0 ? diff : (a.shortcut || '').localeCompare(b.shortcut || '')
+      })
+    } else if (sortOrder === 'used') {
+      sorted.sort((a, b) => {
+        const diff = (audioStats[b.id]?.copy_count ?? 0) - (audioStats[a.id]?.copy_count ?? 0)
+        return diff !== 0 ? diff : (a.shortcut || '').localeCompare(b.shortcut || '')
+      })
+    } else {
+      sorted.sort((a, b) => (a.shortcut || '').localeCompare(b.shortcut || ''))
+    }
+    return sorted
+  }
+
+  // ── EVENT LOGGING ─────────────────────────────────────────────────────────
+  function logAudioEvent(audioId, eventType) {
+    if (!audioId) return
+    if (!audioStats[audioId]) audioStats[audioId] = { play_count: 0, copy_count: 0 }
+    if (eventType === 'play') audioStats[audioId].play_count++
+    else                      audioStats[audioId].copy_count++
+
+    client.from('audio_events').insert({
+      audio_id:   audioId,
+      event_type: eventType,
+      user_id:    activeSession?.user?.id ?? null,
+    }).then(() => {}).catch(() => {})
+  }
+
   // ── LOAD ──────────────────────────────────────────────────────────────────
   async function loadAudios() {
     const { data, error } = await client
@@ -1056,6 +1133,16 @@
     // Caller is responsible for calling renderAudios() after this
   }
 
+  async function loadAudioStats() {
+    const { data } = await client.from('audio_events').select('audio_id, event_type')
+    audioStats = {}
+    for (const e of (data ?? [])) {
+      if (!audioStats[e.audio_id]) audioStats[e.audio_id] = { play_count: 0, copy_count: 0 }
+      if (e.event_type === 'play') audioStats[e.audio_id].play_count++
+      else                         audioStats[e.audio_id].copy_count++
+    }
+  }
+
   // ── RENDER ────────────────────────────────────────────────────────────────
   function renderAudios() {
     let list = allAudios
@@ -1066,6 +1153,8 @@
       (a.transcription || '').toLowerCase().includes(filterQuery) ||
       (a.shortcut || '').toLowerCase().includes(filterQuery)
     )
+
+    list = applySortOrder(list)
 
     document.getElementById('listMeta').textContent =
       list.length ? `${list.length} áudio${list.length !== 1 ? 's' : ''}` : ''
@@ -1147,7 +1236,7 @@
       </div>` : ''}
     `
 
-    card.querySelector('.copy-btn').addEventListener('click', () => copyShortcut(audio.shortcut, card))
+    card.querySelector('.copy-btn').addEventListener('click', () => copyShortcut(audio.shortcut, audio.id, card))
     setupPlayer(card, audio)
 
     const tBtn = card.querySelector('.transcript-toggle-btn')
@@ -1164,8 +1253,9 @@
   }
 
   // ── COPY SHORTCUT ─────────────────────────────────────────────────────────
-  function copyShortcut(shortcut, card) {
+  function copyShortcut(shortcut, audioId, card) {
     navigator.clipboard.writeText(shortcut).then(() => {
+      logAudioEvent(audioId, 'copy')
       const btn = card.querySelector('.copy-btn')
       const orig = btn.innerHTML
       btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4caf32" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
@@ -1236,6 +1326,7 @@
       if (audioEl.paused) {
         audioEl.play()
         setPlaying(true)
+        logAudioEvent(audio.id, 'play')
         currentAudio   = audioEl
         currentPlayBtn = playBtn
       } else {
