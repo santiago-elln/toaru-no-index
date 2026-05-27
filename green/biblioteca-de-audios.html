@@ -94,6 +94,11 @@
       border-bottom: 1px solid rgba(255,255,255,0.04);
       flex-shrink: 0;
       flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(10,10,10,0.98);
+      backdrop-filter: blur(6px);
     }
     .search-wrap {
       flex: 1;
@@ -123,6 +128,26 @@
     .search-input:focus { border-color: rgba(76,175,50,0.35); }
     .search-input::placeholder { color: #282828; }
     .gender-pills { display: flex; gap: 6px; flex-shrink: 0; }
+    .speed-btn {
+      padding: 6px 11px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: transparent;
+      color: #4a4a4a;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .speed-btn:hover { border-color: rgba(76,175,50,0.3); color: #4caf32; }
+    .speed-btn.active {
+      background: rgba(76,175,50,0.08);
+      border-color: rgba(76,175,50,0.3);
+      color: #4caf32;
+    }
     .gpill {
       padding: 6px 14px;
       border-radius: 20px;
@@ -163,24 +188,52 @@
       overflow-y: auto;
       scrollbar-width: thin;
       scrollbar-color: rgba(255,255,255,0.06) transparent;
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
       padding: 8px 22px 28px;
+      align-content: start;
+    }
+    @media (max-width: 580px) {
+      .audio-list { grid-template-columns: 1fr; }
     }
 
     /* ── AUDIO CARD ── */
     .audio-card {
-      background: #111;
+      background: #131313;
       border: 1px solid rgba(255,255,255,0.07);
       border-radius: 10px;
       padding: 15px 18px;
       display: flex;
       flex-direction: column;
       gap: 11px;
-      transition: border-color 0.15s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .audio-card:hover { border-color: rgba(255,255,255,0.12); }
+    .audio-card:hover { border-color: rgba(255,255,255,0.14); }
+    .audio-card.gender-m {
+      background: #101418;
+      border-color: rgba(91,155,213,0.18);
+      box-shadow: 0 2px 18px rgba(91,155,213,0.07);
+    }
+    .audio-card.gender-m:hover {
+      border-color: rgba(91,155,213,0.35);
+      box-shadow: 0 2px 22px rgba(91,155,213,0.14);
+    }
+    .audio-card.gender-f {
+      background: #140d12;
+      border-color: rgba(213,91,155,0.18);
+      box-shadow: 0 2px 18px rgba(213,91,155,0.07);
+    }
+    .audio-card.gender-f:hover {
+      border-color: rgba(213,91,155,0.35);
+      box-shadow: 0 2px 22px rgba(213,91,155,0.14);
+    }
+    mark {
+      background: rgba(76,175,50,0.25);
+      color: inherit;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
 
     .audio-card-top {
       display: flex;
@@ -308,7 +361,7 @@
       font-weight: 700;
       letter-spacing: 0.07em;
       text-transform: uppercase;
-      color: #2e2e2e;
+      color: #4caf32;
       cursor: pointer;
       padding: 0;
       transition: color 0.15s;
@@ -319,7 +372,7 @@
     .transcript-text {
       margin-top: 10px;
       font-size: 12px;
-      color: #4a4a4a;
+      color: #888;
       line-height: 1.65;
     }
 
@@ -665,6 +718,7 @@
           <input class="search-input" id="searchInput" type="search"
                  placeholder="Buscar por título, transcrição ou shortcut…">
         </div>
+        <button class="speed-btn" id="speedBtn" title="Velocidade de reprodução">1×</button>
       </div>
 
       <div class="list-meta" id="listMeta"></div>
@@ -826,6 +880,7 @@
 
   const BUCKET          = 'audios'
   const GENDER_PREF_KEY = 'audiobib_gender'
+  const SPEED_STEPS     = [1, 1.25, 1.5, 2]
 
   let allAudios      = []
   let userRole       = 'employee'
@@ -834,6 +889,8 @@
   let filterQuery    = ''
   let currentAudio   = null
   let currentPlayBtn = null
+  let playbackRate   = 1
+  let allAudioEls    = []
 
   // ── AUTH ──────────────────────────────────────────────────────────────────
   client.auth.onAuthStateChange((event, session) => {
@@ -874,6 +931,7 @@
 
     setupTabs()
     setupSearch()
+    setupSpeedBtn()
     setupGenderModal()
     if (!IS_LOCAL && session) logDashboardAccess(session)
 
@@ -971,6 +1029,18 @@
     })
   }
 
+  // ── SPEED CONTROL ─────────────────────────────────────────────────────────
+  function setupSpeedBtn() {
+    const btn = document.getElementById('speedBtn')
+    btn.addEventListener('click', () => {
+      const idx = SPEED_STEPS.indexOf(playbackRate)
+      playbackRate = SPEED_STEPS[(idx + 1) % SPEED_STEPS.length]
+      btn.textContent = `${playbackRate}×`
+      btn.classList.toggle('active', playbackRate !== 1)
+      allAudioEls.forEach(el => { el.playbackRate = playbackRate })
+    })
+  }
+
   // ── LOAD ──────────────────────────────────────────────────────────────────
   async function loadAudios() {
     const { data, error } = await client
@@ -1013,19 +1083,34 @@
     list.forEach(audio => el.appendChild(buildCard(audio)))
   }
 
+  // ── HIGHLIGHT HELPER ──────────────────────────────────────────────────────
+  function highlightText(text, query) {
+    const str = String(text ?? '')
+    if (!query) return esc(str)
+    const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
+    let result = '', lastIndex = 0, match
+    while ((match = re.exec(str)) !== null) {
+      if (match[0].length === 0) { re.lastIndex++; continue }
+      result += esc(str.slice(lastIndex, match.index))
+      result += `<mark>${esc(match[0])}</mark>`
+      lastIndex = re.lastIndex
+    }
+    return result + esc(str.slice(lastIndex))
+  }
+
   // ── CARD ──────────────────────────────────────────────────────────────────
   function buildCard(audio) {
     const name        = audio.title || audio.filename
-    const genderLabel = audio.gender === 'masculino' ? 'Masc.'
-                      : audio.gender === 'feminino'  ? 'Fem.' : null
-    const genderClass = audio.gender === 'masculino' ? 'gender-m' : 'gender-f'
+    const cardGender  = audio.gender === 'masculino' ? 'gender-m'
+                      : audio.gender === 'feminino'  ? 'gender-f' : ''
+    const transcriptionMatch = !!(filterQuery &&
+      (audio.transcription || '').toLowerCase().includes(filterQuery))
 
     const card = document.createElement('div')
-    card.className = 'audio-card'
+    card.className = `audio-card${cardGender ? ' ' + cardGender : ''}`
     card.innerHTML = `
       <div class="audio-card-top">
-        ${genderLabel ? `<span class="gender-badge ${genderClass}">${genderLabel}</span>` : ''}
-        <span class="audio-name" title="${esc(name)}">${esc(name)}</span>
+        <span class="audio-name" title="${esc(name)}">${highlightText(name, filterQuery)}</span>
         <div class="shortcut-group">
           <code class="shortcut-code">${esc(audio.shortcut)}</code>
           <button class="copy-btn" title="Copiar shortcut">
@@ -1052,13 +1137,13 @@
       </div>
       ${audio.transcription ? `
       <div class="transcript-section">
-        <button class="transcript-toggle-btn">
+        <button class="transcript-toggle-btn${transcriptionMatch ? ' open' : ''}">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
           Transcrição
         </button>
-        <div class="transcript-text" style="display:none">${esc(audio.transcription)}</div>
+        <div class="transcript-text" style="${transcriptionMatch ? 'display:block' : 'display:none'}">${highlightText(audio.transcription, filterQuery)}</div>
       </div>` : ''}
     `
 
@@ -1116,6 +1201,8 @@
       const { data, error } = await client.storage.from(BUCKET).createSignedUrl(audio.storage_path, 3600)
       if (error || !data?.signedUrl) { timeDisp.textContent = 'Erro'; return null }
       const el = new Audio(data.signedUrl)
+      el.playbackRate = playbackRate
+      allAudioEls.push(el)
       el.addEventListener('loadedmetadata', () => { timeDisp.textContent = fmt(el.duration) })
       el.addEventListener('timeupdate', () => {
         if (!isFinite(el.duration)) return
