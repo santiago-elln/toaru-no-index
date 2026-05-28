@@ -393,6 +393,30 @@
     .transcript-toggle-btn:hover { color: #555; }
     .transcript-toggle-btn svg { transition: transform 0.2s; flex-shrink: 0; }
     .transcript-toggle-btn.open svg { transform: rotate(180deg); }
+    .transcript-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .copy-transcript-btn {
+      width: 24px;
+      height: 24px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.02);
+      border-radius: 5px;
+      cursor: pointer;
+      color: #2e2e2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .copy-transcript-btn:hover {
+      background: rgba(76,175,50,0.1);
+      border-color: rgba(76,175,50,0.3);
+      color: #4caf32;
+    }
     .transcript-text {
       margin-top: 10px;
       font-size: 12px;
@@ -1226,12 +1250,20 @@
       </div>
       ${audio.transcription ? `
       <div class="transcript-section">
-        <button class="transcript-toggle-btn${transcriptionMatch ? ' open' : ''}">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-          Transcrição
-        </button>
+        <div class="transcript-header">
+          <button class="transcript-toggle-btn${transcriptionMatch ? ' open' : ''}">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+            Transcrição
+          </button>
+          <button class="copy-transcript-btn" title="Copiar transcrição">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+        </div>
         <div class="transcript-text" style="${transcriptionMatch ? 'display:block' : 'display:none'}">${highlightText(audio.transcription, filterQuery)}</div>
       </div>` : ''}
     `
@@ -1246,6 +1278,19 @@
         const open = body.style.display !== 'none'
         body.style.display = open ? 'none' : 'block'
         tBtn.classList.toggle('open', !open)
+      })
+    }
+
+    const tCopyBtn = card.querySelector('.copy-transcript-btn')
+    if (tCopyBtn) {
+      tCopyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(audio.transcription).then(() => {
+          logAudioEvent(audio.id, 'copy')
+          const orig = tCopyBtn.innerHTML
+          tCopyBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4caf32" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
+          tCopyBtn.style.borderColor = 'rgba(76,175,50,0.5)'
+          setTimeout(() => { tCopyBtn.innerHTML = orig; tCopyBtn.style.borderColor = '' }, 1500)
+        })
       })
     }
 
