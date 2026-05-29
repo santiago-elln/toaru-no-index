@@ -1327,6 +1327,7 @@
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
+      logAudioEvent(audio.id, 'play')
     })
 
     const tBtn = card.querySelector('.transcript-toggle-btn')
