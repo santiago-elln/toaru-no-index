@@ -321,6 +321,27 @@
       color: #4caf32;
     }
 
+    .download-btn {
+      width: 26px;
+      height: 26px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.02);
+      border-radius: 6px;
+      cursor: pointer;
+      color: #2e2e2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .download-btn:hover {
+      background: rgba(76,175,50,0.1);
+      border-color: rgba(76,175,50,0.3);
+      color: #4caf32;
+    }
+    .download-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
     /* ── PLAYER ── */
     .player-row {
       display: flex;
@@ -363,6 +384,7 @@
     .time-disp {
       font-size: 10px;
       color: #333;
+      min-width: 36px;
       font-family: monospace;
       flex-shrink: 0;
       min-width: 38px;
@@ -1247,6 +1269,12 @@
           <div class="progress-fill" style="width:0%"></div>
         </div>
         <span class="time-disp">—:——</span>
+        <button class="download-btn" title="Baixar áudio">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M12 3v13M7 11l5 5 5-5"/>
+            <line x1="5" y1="21" x2="19" y2="21"/>
+          </svg>
+        </button>
       </div>
       ${audio.transcription ? `
       <div class="transcript-section">
@@ -1270,6 +1298,36 @@
 
     card.querySelector('.copy-btn').addEventListener('click', () => copyShortcut(audio.shortcut, audio.id, card))
     setupPlayer(card, audio)
+
+    card.querySelector('.download-btn').addEventListener('click', async function () {
+      this.disabled = true
+
+      let url = card._signedUrl
+      if (!url) {
+        const { data, error } = await client.storage.from(BUCKET)
+          .createSignedUrl(audio.storage_path, 3600)
+        if (!error && data?.signedUrl) {
+          url = data.signedUrl
+          card._signedUrl = url
+        }
+      }
+
+      this.disabled = false
+
+      if (!url) {
+        this.style.borderColor = 'rgba(224,82,82,0.45)'
+        this.style.color = '#e05252'
+        setTimeout(() => { this.style.borderColor = ''; this.style.color = '' }, 2000)
+        return
+      }
+
+      const filename = audio.filename || (audio.title + '.m4a') || 'audio.m4a'
+      const a = document.createElement('a')
+      a.href = url + '&download=' + encodeURIComponent(filename)
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    })
 
     const tBtn = card.querySelector('.transcript-toggle-btn')
     if (tBtn) {
@@ -1335,6 +1393,7 @@
       if (audioEl) return audioEl
       const { data, error } = await client.storage.from(BUCKET).createSignedUrl(audio.storage_path, 3600)
       if (error || !data?.signedUrl) { timeDisp.textContent = 'Erro'; return null }
+      card._signedUrl = data.signedUrl
       const el = new Audio(data.signedUrl)
       el.playbackRate = playbackRate
       allAudioEls.push(el)
