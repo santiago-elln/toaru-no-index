@@ -951,9 +951,9 @@
   client.auth.onAuthStateChange((event, session) => {
     if (event === 'INITIAL_SESSION') {
       if (session || IS_LOCAL) initPage(session)
-      else showAuthError('401', 'Acesso negado', 'Você precisa estar autenticado para acessar este recurso.')
+      else location.replace('../index.html')
     } else if (event === 'SIGNED_OUT') {
-      showAuthError('401', 'Sessão encerrada', 'Volte ao índice para fazer login novamente.')
+      location.replace('../index.html')
     }
   })
 

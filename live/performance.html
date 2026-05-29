@@ -973,9 +973,9 @@
   client.auth.onAuthStateChange((event, session) => {
     if (event === 'INITIAL_SESSION') {
       if (session || IS_LOCAL) initDashboard(session)
-      else showAuthError('401', 'Acesso negado', 'Você precisa estar autenticado para ver este dashboard.')
+      else location.replace('../index.html')
     } else if (event === 'SIGNED_OUT') {
-      showAuthError('401', 'Acesso negado', 'Sessão encerrada. Volte ao índice para fazer login.')
+      location.replace('../index.html')
     }
   })
 
