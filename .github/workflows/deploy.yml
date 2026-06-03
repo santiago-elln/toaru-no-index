@@ -30,12 +30,14 @@ jobs:
 
       - name: Inject environment variables
         env:
-          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_PUBLIC_KEY }}
+          SUPABASE_URL:         ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_KEY:         ${{ secrets.VITE_SUPABASE_PUBLIC_KEY }}
+          SUPABASE_PRIVATE_KEY: ${{ secrets.VITE_SUPABASE_PRIVATE_KEY }}
         run: |
           HTML_FILES=$(find . -name "*.html" -not -path "./.git/*")
           echo "$HTML_FILES" | xargs sed -i "s|__SUPABASE_URL__|$SUPABASE_URL|g"
           echo "$HTML_FILES" | xargs sed -i "s|__SUPABASE_KEY__|$SUPABASE_KEY|g"
+          echo "$HTML_FILES" | xargs sed -i "s|__SUPABASE_PRIVATE_KEY__|$SUPABASE_PRIVATE_KEY|g"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

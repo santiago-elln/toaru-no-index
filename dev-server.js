@@ -38,8 +38,9 @@ function loadEnv() {
 }
 
 const env = loadEnv()
-const SUPABASE_URL = env.VITE_SUPABASE_URL        || ''
-const SUPABASE_KEY = env.VITE_SUPABASE_PUBLIC_KEY  || ''
+const SUPABASE_URL         = env.VITE_SUPABASE_URL         || ''
+const SUPABASE_KEY         = env.VITE_SUPABASE_PUBLIC_KEY  || ''
+const SUPABASE_PRIVATE_KEY = env.VITE_SUPABASE_PRIVATE_KEY || ''
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   console.warn('⚠️  VITE_SUPABASE_URL ou VITE_SUPABASE_PUBLIC_KEY ausentes no .env — placeholders não serão substituídos.')
@@ -85,6 +86,13 @@ const DASHBOARD_METADATA = {
     title:           'Biblioteca de Áudios',
     description:     'Acervo de gravações de atendimento para consulta e análise.',
     analyst_only:    false,
+    show_in_sidebar: false,
+  },
+  'gestao-a-vista': {
+    slug:            'gestao-a-vista',
+    title:           'Gestão à Vista',
+    description:     'Dashboard de suporte ao licenciado: atendimentos, tickets, CSAT, fornecedoras e pesquisas de campo.',
+    analyst_only:    true,
     show_in_sidebar: false,
   },
 }
@@ -223,8 +231,9 @@ const server = http.createServer((req, res) => {
   if (ext === '.html') {
     let content = fs.readFileSync(filePath, 'utf8')
     content = content
-      .replace(/__SUPABASE_URL__/g,  SUPABASE_URL)
-      .replace(/__SUPABASE_KEY__/g,  SUPABASE_KEY)
+      .replace(/__SUPABASE_URL__/g,          SUPABASE_URL)
+      .replace(/__SUPABASE_KEY__/g,          SUPABASE_KEY)
+      .replace(/__SUPABASE_PRIVATE_KEY__/g,  SUPABASE_PRIVATE_KEY)
     res.writeHead(200, { 'Content-Type': mime })
     res.end(content)
     return

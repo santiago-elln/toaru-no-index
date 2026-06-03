@@ -1,0 +1,1269 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard de Suporte — iGreen Energy</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --green:#4caf32;--green-bright:#5ecf43;--green-dark:#2e6b1e;--green-dim:#3a8028;
+  --green-glow:rgba(76,175,50,0.18);--green-line:rgba(76,175,50,0.35);
+  --black:#0a0a0a;--dark:#111111;--dark2:#161616;--dark3:#1c1c1c;--mid:#222222;
+  --card:#181818;--border:rgba(255,255,255,0.07);--border-green:rgba(76,175,50,0.22);
+  --text:#e8e8e8;--text-dim:#9a9a9a;--text-muted:#636363;--white:#ffffff;
+  --warn:#f5a623;--red:#e05252;--red-dim:rgba(224,82,82,0.14);
+  --blue:#5096dc;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,10,0.97);border-bottom:1px solid var(--border-green);backdrop-filter:blur(12px);height:56px;display:flex;align-items:center}
+.nav-logo{padding:0 20px;border-right:1px solid var(--border);height:100%;display:flex;align-items:center;flex-shrink:0}
+.nav-logo img{height:28px;mix-blend-mode:lighten;filter:brightness(1.1)}
+.nav-pages{display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;flex:1}
+.nav-pages::-webkit-scrollbar{display:none}
+.nav-btn{padding:0 18px;height:56px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:.04em;color:var(--text-dim);background:transparent;border:none;border-right:1px solid var(--border);cursor:pointer;white-space:nowrap;transition:color .2s,background .2s;display:flex;align-items:center;gap:7px}
+.nav-btn:hover{color:var(--green-bright);background:rgba(76,175,50,0.06)}
+.nav-btn.active{color:var(--green-bright);background:rgba(76,175,50,0.1);border-bottom:2px solid var(--green)}
+.nav-num{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--green-dim);opacity:.7}
+.nav-btn.active .nav-num{opacity:1;color:var(--green-bright)}
+
+/* PAGES */
+.page{display:none;min-height:100vh;padding-top:56px}
+.page.active{display:flex;flex-direction:column}
+
+/* COVER */
+#p0{background:var(--black);position:relative;overflow:hidden}
+.cover-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 70% 40%,rgba(76,175,50,0.12) 0%,transparent 70%),radial-gradient(ellipse 40% 60% at 20% 80%,rgba(76,175,50,0.07) 0%,transparent 60%);pointer-events:none}
+.cover-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border-green) 1px,transparent 1px),linear-gradient(90deg,var(--border-green) 1px,transparent 1px);background-size:60px 60px;opacity:.3;pointer-events:none}
+.cover-inner{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 56px);padding:60px 80px;max-width:1100px}
+.cover-tag{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.cover-tag::before{content:'';display:block;width:28px;height:1px;background:var(--green)}
+.cover-title{font-family:'Syne',sans-serif;font-size:clamp(36px,5vw,68px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:20px}
+.cover-title em{color:var(--green);font-style:normal}
+.cover-sub{font-size:16px;font-weight:300;color:var(--text-dim);max-width:520px;line-height:1.6;margin-bottom:48px}
+.cover-stats{display:flex;gap:40px;flex-wrap:wrap}
+.cover-stat{display:flex;flex-direction:column;gap:4px;border-left:2px solid var(--green);padding-left:16px}
+.cover-stat-val{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--white);letter-spacing:-.02em}
+.cover-stat-val.warn{color:var(--warn)}
+.cover-stat-val.red{color:var(--red)}
+.cover-stat-lbl{font-size:11px;font-weight:500;letter-spacing:.1em;color:var(--text-muted);text-transform:uppercase}
+.cover-period{position:absolute;bottom:40px;right:80px;font-size:11px;color:var(--text-muted);text-align:right;letter-spacing:.06em}
+
+/* PAGE INNER */
+.page-inner{padding:44px 60px;flex:1;max-width:1280px;width:100%;margin:0 auto}
+.page-header{margin-bottom:36px;border-bottom:1px solid var(--border);padding-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.page-eyebrow{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.page-eyebrow::before{content:'';display:block;width:16px;height:1px;background:var(--green)}
+.page-title{font-family:'Syne',sans-serif;font-size:clamp(22px,3vw,34px);font-weight:700;color:var(--white);letter-spacing:-.01em;line-height:1.15}
+.page-badge{background:rgba(76,175,50,0.1);border:1px solid var(--border-green);border-radius:4px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--green);letter-spacing:.05em;align-self:flex-start;white-space:nowrap}
+.page-badge.red{background:rgba(224,82,82,0.08);border-color:rgba(224,82,82,0.3);color:var(--red)}
+
+/* SECTION TITLE */
+.section-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--green);margin-bottom:14px;margin-top:28px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* CARDS */
+.cards-row{display:grid;gap:16px;margin-bottom:28px}
+.cards-4{grid-template-columns:repeat(4,1fr)}
+.cards-3{grid-template-columns:repeat(3,1fr)}
+.cards-2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 22px;text-align:center}
+.card-label{font-size:10.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
+.card-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--white);letter-spacing:-.02em;line-height:1}
+.card-sub{font-size:12px;color:var(--text-dim);margin-top:6px}
+.card-green{border-color:var(--border-green);background:rgba(76,175,50,0.06)}
+.card-green .card-value{color:var(--green-bright)}
+.card-warn{border-color:rgba(245,166,35,0.3);background:rgba(245,166,35,0.06)}
+.card-warn .card-value{color:var(--warn)}
+.card-red{border-color:rgba(224,82,82,0.3);background:rgba(224,82,82,0.06)}
+.card-red .card-value{color:var(--red)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;margin-bottom:24px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background .15s}
+tbody tr:hover{background:rgba(255,255,255,0.03)}
+tbody td{padding:10px 14px;color:var(--text);vertical-align:middle}
+td.num{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--white);text-align:right}
+td.pct{font-size:12px;color:var(--text-dim);text-align:right;font-weight:500}
+td.warn-val{color:var(--warn)!important}
+td.red-val{color:var(--red)!important}
+td.green-val{color:var(--green)!important}
+td.blue-val{color:var(--blue)!important}
+tr.hi-red{background:rgba(224,82,82,0.04)}
+
+/* BAR INLINE */
+.bar-wrap{display:flex;align-items:center;gap:10px;min-width:120px}
+.bar-track{flex:1;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;background:var(--green);transition:width .4s}
+.bar-fill.warn{background:var(--warn)}
+.bar-fill.red{background:var(--red)}
+.bar-fill.blue{background:var(--blue)}
+.bar-pct{font-size:11px;color:var(--text-dim);min-width:36px;text-align:right}
+
+/* PILL */
+.pill{display:inline-block;padding:3px 9px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.pill-green{background:rgba(76,175,50,0.15);color:var(--green-bright)}
+.pill-warn{background:rgba(245,166,35,0.15);color:var(--warn)}
+.pill-red{background:rgba(224,82,82,0.15);color:var(--red)}
+.pill-blue{background:rgba(80,150,220,0.15);color:#6ab0f5}
+.pill-gray{background:rgba(255,255,255,0.07);color:var(--text-dim)}
+
+/* LAYOUT */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.split-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.sep{height:1px;background:var(--border);margin:24px 0}
+
+/* ALERT */
+.alert-banner{background:rgba(224,82,82,0.08);border:1px solid rgba(224,82,82,0.25);border-left:3px solid var(--red);border-radius:6px;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.alert-icon{width:28px;height:28px;border-radius:50%;background:rgba(224,82,82,0.15);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.alert-text{font-size:13px;color:var(--text)}
+.alert-text strong{color:var(--red)}
+
+/* INSIGHT CARD */
+.insight-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 22px;display:flex;gap:16px;margin-bottom:16px}
+.insight-icon{width:36px;height:36px;border-radius:8px;background:rgba(76,175,50,0.12);border:1px solid var(--border-green);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.insight-icon.red{background:rgba(224,82,82,0.12);border-color:rgba(224,82,82,0.3)}
+.insight-icon.warn{background:rgba(245,166,35,0.12);border-color:rgba(245,166,35,0.3)}
+.insight-title{font-weight:600;font-size:14px;color:var(--white);margin-bottom:5px}
+.insight-desc{font-size:12.5px;color:var(--text-dim);line-height:1.55}
+
+/* CHART WRAPPER */
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:24px}
+.chart-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px}
+
+/* FEELING CHIP */
+.feeling-grid{display:flex;flex-wrap:wrap;gap:10px;padding:8px 0}
+.feeling-chip{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:13px}
+.feeling-chip .fc-label{color:var(--text);font-weight:500}
+.feeling-chip .fc-count{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.feeling-chip.pos{border-color:rgba(76,175,50,0.3);background:rgba(76,175,50,0.05)}
+.feeling-chip.pos .fc-count{color:var(--green-bright)}
+.feeling-chip.neg{border-color:rgba(224,82,82,0.3);background:rgba(224,82,82,0.05)}
+.feeling-chip.neg .fc-count{color:var(--red)}
+.feeling-chip.neu{border-color:rgba(255,255,255,0.1)}
+.feeling-chip.neu .fc-count{color:var(--text-dim)}
+
+/* COMMENT CARD */
+.comment-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;margin-bottom:10px}
+.comment-meta{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.comment-nota{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--red)}
+.comment-grupo{font-size:11px;color:var(--text-muted);letter-spacing:.05em}
+.comment-text{font-size:13px;color:var(--text-dim);line-height:1.55;font-style:italic}
+.comment-feelings{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+
+/* QUOTE CARD */
+.quote-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;margin-bottom:10px}
+.quote-card.neg-quote{border-left:3px solid var(--red);background:rgba(224,82,82,0.04)}
+.quote-date{font-size:10px;color:var(--green-dim);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.quote-text{font-size:13px;color:var(--text-dim);line-height:1.55;font-style:italic}
+
+/* FILA BAR */
+.fila-bar-row{display:grid;grid-template-columns:160px 1fr 80px 80px;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.fila-bar-row:last-child{border-bottom:none}
+.fila-label{font-size:12px;color:var(--text-dim)}
+.fila-label.highlight{color:var(--warn);font-weight:600}
+.fila-bar-track{height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.fila-bar-fill{height:100%;border-radius:4px;background:var(--green);transition:width .5s}
+.fila-bar-fill.dominant{background:var(--warn)}
+.fila-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--white);text-align:right}
+.fila-val.dominant{color:var(--warn)}
+.fila-pct{font-size:11px;color:var(--text-muted);text-align:right}
+
+/* NOTA BAR */
+.nota-row{display:grid;grid-template-columns:60px 1fr 80px;align-items:center;gap:12px;padding:6px 0}
+.nota-label{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-dim);text-align:center}
+.nota-fill{height:10px;border-radius:5px;transition:width .4s}
+.nota-count{font-size:12px;color:var(--text-dim);text-align:right}
+
+/* COVER SPLIT */
+.cover-split{flex-direction:row!important;align-items:stretch;gap:60px;max-width:none;height:calc(100vh - 56px);min-height:unset}
+.cover-left{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.cover-right{flex:0 0 44%;max-width:44%;display:flex;flex-direction:column}
+/* KPI TOOLTIPS */
+.has-kpi-tt{position:relative;cursor:default}
+.kpi-tt{position:absolute;bottom:calc(100% + 14px);left:0;z-index:200;
+  background:#1c1c1c;border:1px solid rgba(76,175,50,0.3);border-radius:8px;
+  padding:14px 16px;min-width:240px;max-width:320px;
+  opacity:0;pointer-events:none;transition:opacity .18s;
+  font-family:'DM Sans',sans-serif;font-size:12.5px;color:var(--text-dim);
+  box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+.has-kpi-tt:hover .kpi-tt{opacity:1}
+.kpi-tt-row{display:flex;align-items:center;gap:8px;padding:4px 0}
+.kpi-tt-row span:nth-child(2){flex:1}
+.kpi-tt-row strong{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--white)}
+.kpi-tt-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.kpi-tt-note{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--text-muted)}
+.kpi-tt-text{line-height:1.6;max-width:300px}
+.kpi-tt-text strong{color:var(--white)}
+
+.cover-period-label{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.cover-period-label::before{content:'';display:block;width:20px;height:1px;background:var(--green)}
+.cover-stat-sub{font-size:10.5px;color:var(--text-muted);margin-top:1px;letter-spacing:.03em;line-height:1.4}
+.cover-chart-box{background:transparent;border:none;padding:0 0 0 8px;flex:1;display:flex;flex-direction:column;min-height:0}
+.cover-chart-box canvas{flex:1;min-height:0;display:block}
+.cover-chart-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px;flex-shrink:0}
+.cover-chart-legend{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);margin-top:14px;flex-shrink:0}
+.cover-legend-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <img src="../assets/footericon.png" alt="iGreen Energy" style="height:22px;display:block">
+  </div>
+  <div class="nav-pages">
+    <button class="nav-btn active" onclick="goTo('p0')"><span class="nav-num">00</span> Capa</button>
+    <button class="nav-btn" onclick="goTo('p1')"><span class="nav-num">01</span> Visão Geral</button>
+    <button class="nav-btn" onclick="goTo('p2')"><span class="nav-num">02</span> Demandas</button>
+    <button class="nav-btn" onclick="goTo('p3')"><span class="nav-num">03</span> Tickets & Ops</button>
+    <button class="nav-btn" onclick="goTo('p4')"><span class="nav-num">04</span> Fornecedoras</button>
+    <button class="nav-btn" onclick="goTo('p5')"><span class="nav-num">05</span> CSAT & Sentimentos</button>
+    <button class="nav-btn" onclick="goTo('p6')"><span class="nav-num">06</span> Agentes</button>
+    <button class="nav-btn" onclick="goTo('p7')"><span class="nav-num">07</span> Pesquisas Live</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════ COVER ══ -->
+<div id="p0" class="page active">
+  <div class="cover-bg"></div>
+  <div class="cover-grid"></div>
+  <div class="cover-inner cover-split">
+    <div class="cover-left">
+      <div class="cover-tag"><img src="../assets/favicon.png" alt="iGreen Energy" style="height:30px;vertical-align:middle;margin-right:2px"> — Conexão Green</div>
+      <h1 class="cover-title">Suporte ao <br><em>Licenciado</em></h1>
+      <p class="cover-sub">Levantamento de dores do licenciado<br>Dados históricos de atendimentos, tickets, CSAT e pesquisas de live</p>
+      <div class="cover-period-label">Período de Referência — Maio 2026</div>
+      <div class="cover-stats">
+
+        <div class="cover-stat has-kpi-tt">
+          <span id="capa-total" class="cover-stat-val">20.084</span>
+          <span class="cover-stat-lbl">Atendimentos</span>
+          <div class="kpi-tt">
+            <div class="kpi-tt-row"><span class="kpi-tt-dot" style="background:#4caf32"></span><span>Gestores &amp; Abaixo</span><strong id="capa-tt-gest">13.107</strong></div>
+            <div class="kpi-tt-row"><span class="kpi-tt-dot" style="background:#f5a623"></span><span>Executivos &amp; Acima</span><strong id="capa-tt-exec">6.977</strong></div>
+          </div>
+        </div>
+
+        <div class="cover-stat has-kpi-tt">
+          <span id="capa-csat" class="cover-stat-val">79,1%</span>
+          <span class="cover-stat-lbl">CSAT</span>
+          <div class="kpi-tt">
+            <div class="kpi-tt-row"><span class="kpi-tt-dot" style="background:#4caf32"></span><span>Gestores &amp; Abaixo</span><strong id="capa-tt-csat-gest">79,1%</strong></div>
+            <div class="kpi-tt-row"><span class="kpi-tt-dot" style="background:#f5a623"></span><span>Executivos &amp; Acima</span><strong id="capa-tt-csat-exec">—</strong></div>
+            <div id="capa-tt-csat-note" class="kpi-tt-note">7.259 avaliações no período</div>
+          </div>
+        </div>
+
+        <div class="cover-stat has-kpi-tt">
+          <span id="capa-esc-frac" class="cover-stat-val warn">1/4</span>
+          <span class="cover-stat-lbl">Restrições N1 ao Suporte</span>
+          <span id="capa-esc-sub" class="cover-stat-sub">68,1% dos escalados sem SLA no prazo</span>
+          <div id="capa-tt-esc" class="kpi-tt kpi-tt-text">
+            <strong>23,2% dos 20.084 atendimentos</strong> precisaram de um ticket para resolução — um total de <strong>4.654 tickets</strong> abertos no período.<br><br>
+            Desses, <strong style="color:var(--red)">68,1%</strong> não foram resolvidos dentro do prazo de SLA (3 dias úteis).
+          </div>
+        </div>
+
+        <div class="cover-stat has-kpi-tt">
+          <span id="capa-recur" class="cover-stat-val">2,1×</span>
+          <span class="cover-stat-lbl">Recorrência por Problema</span>
+          <span id="capa-recur-sub" class="cover-stat-sub">7,6% dos clientes com demanda repetida</span>
+          <div id="capa-tt-recur" class="kpi-tt kpi-tt-text">
+            Média de contatos pelo mesmo cliente para o <strong>mesmo tipo de problema dentro de 2 dias</strong>. Janela curta para filtrar casos de contratos distintos.<br><br>
+            <strong style="color:var(--warn)">7,6% dos clientes atendidos</strong> (197 de 2.591) reabriram suporte para a mesma tabulação em menos de 2 dias — sinal de não-resolução na primeira interação.
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="cover-right">
+      <div class="cover-chart-box">
+        <div class="cover-chart-title">Atendimentos a cada 3 dias — Maio 2026</div>
+        <canvas id="monthlyChart"></canvas>
+        <div class="cover-chart-legend">
+          <span class="cover-legend-dot" style="background:#4caf32"></span>Gestores &amp; Abaixo
+          &nbsp;&nbsp;&nbsp;
+          <span class="cover-legend-dot" style="background:#f5a623"></span>Executivos &amp; Acima
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ P1: VISÃO GERAL ══ -->
+<div id="p1" class="page">
+  <div class="page-inner">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">01 — Visão Geral</div>
+        <h2 class="page-title">Panorama do Período</h2>
+      </div>
+      <div class="page-badge">Mar — Jun 2026</div>
+    </div>
+
+    <div class="cards-row cards-4">
+      <div class="card card-green">
+        <div class="card-label">Atendimentos</div>
+        <div id="ov-total" class="card-value">53.827</div>
+        <div id="ov-tma" class="card-sub">176 min TMA médio</div>
+      </div>
+      <div class="card">
+        <div class="card-label">CSAT Geral</div>
+        <div id="ov-csat" class="card-value" style="color:var(--green-bright)">79,4%</div>
+        <div id="ov-csat-n" class="card-sub">21.450 avaliações</div>
+      </div>
+      <div class="card card-red">
+        <div class="card-label">SLA Estourado</div>
+        <div id="ov-sla" class="card-value">63,1%</div>
+        <div id="ov-sla-sub" class="card-sub">7.274 de 11.527 tickets</div>
+      </div>
+      <div class="card card-warn">
+        <div class="card-label">Taxa de Escalonamento</div>
+        <div id="ov-esc" class="card-value">21,4%</div>
+        <div id="ov-esc-sub" class="card-sub">11.527 tickets gerados</div>
+      </div>
+    </div>
+
+    <div class="split" style="margin-bottom:24px">
+      <div>
+        <div class="chart-box">
+          <div class="chart-title">Volume Semanal de Atendimentos</div>
+          <canvas id="weeklyChart" height="200"></canvas>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Distribuição por Grupo de Cliente</div>
+        <div class="cards-row cards-2" style="margin-bottom:16px">
+          <div class="card card-green">
+            <div class="card-label">Gestores & Abaixo</div>
+            <div id="ov-gest" class="card-value">35.527</div>
+            <div id="ov-gest-pct" class="card-sub">66% dos atendimentos</div>
+          </div>
+          <div class="card card-warn">
+            <div class="card-label">Executivos & Acima</div>
+            <div id="ov-exec" class="card-value">18.300</div>
+            <div id="ov-exec-pct" class="card-sub">34% dos atendimentos</div>
+          </div>
+        </div>
+        <div class="section-title">Clientes Únicos Atendidos</div>
+        <div class="cards-row cards-3">
+          <div class="card">
+            <div class="card-label">Total Clientes</div>
+            <div id="ov-custs" class="card-value" style="font-size:22px">10.383</div>
+          </div>
+          <div class="card card-warn">
+            <div class="card-label">Retorno ≥ 5×</div>
+            <div id="ov-ret5" class="card-value" style="font-size:22px">2.631</div>
+          </div>
+          <div class="card card-red">
+            <div class="card-label">Retorno ≥ 10×</div>
+            <div id="ov-ret10" class="card-value" style="font-size:22px">1.219</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="section-title">Top 5 Tabulações por Volume</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Código</th><th>Grupo</th><th style="text-align:right">Total</th></tr></thead>
+            <tbody id="p1-tabs-tbody">
+              <tr><td>Fornecedora: atraso na injeção</td><td><span class="pill pill-green">Gestores</span></td><td class="num">1.002</td></tr>
+              <tr><td>Cancelamento de cliente/licenciado</td><td><span class="pill pill-green">Gestores</span></td><td class="num">993</td></tr>
+              <tr><td>Repasse: Conexão Expansão</td><td><span class="pill pill-green">Gestores</span></td><td class="num">834</td></tr>
+              <tr><td>Envio de fatura</td><td><span class="pill pill-warn">Executivos</span></td><td class="num">773</td></tr>
+              <tr><td>Solicitação de Cancelamento</td><td><span class="pill pill-warn">Executivos</span></td><td class="num">768</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Top Tags de Atendimento (categorias)</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tag</th><th>Volume</th><th style="text-align:right">%</th></tr></thead>
+            <tbody id="p1-tags-tbody">
+              <tr><td>DUVIDAS_GERAIS</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div></td><td class="num">4.663</td></tr>
+              <tr><td>VALIDACAO</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:94%"></div></div></div></td><td class="num">4.370</td></tr>
+              <tr><td>FATURAMENTO</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:51%"></div></div></div></td><td class="num">2.368</td></tr>
+              <tr><td>INJEÇÃO</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:17%"></div></div></div></td><td class="num">810</td></tr>
+              <tr><td>EXPANSAO</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill blue" style="width:8%"></div></div></div></td><td class="num">368</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:16px">
+          <div class="alert-banner">
+            <div class="alert-icon">⚠</div>
+            <div class="alert-text"><strong>63,1% de SLA estourado</strong> — o gargalo central está na fila Relacionamentos (média 1,93 DU vs 0,14–0,33 DU das demais filas). Ver Página 03.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ P2: DEMANDAS ══ -->
+<div id="p2" class="page">
+  <div class="page-inner">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">02 — Demandas</div>
+        <h2 class="page-title">O Que os Clientes Precisam</h2>
+      </div>
+      <div class="page-badge">28.434 tabulações · 21.328 tags</div>
+    </div>
+
+    <div class="split" style="margin-bottom:8px">
+      <div class="insight-card">
+        <div class="insight-icon warn">🔁</div>
+        <div>
+          <div class="insight-title">Grupo Devolutiva</div>
+          <div class="insight-desc"><strong style="color:var(--warn)">3.264 atendimentos</strong> envolvem o ciclo de devolutiva (cliente reenviando documentos rejeitados). TMA médio: <strong style="color:var(--text)">155 min</strong>. Um em cada 8,7 atendimentos é deste tipo.</div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-icon red">🚪</div>
+        <div>
+          <div class="insight-title">Sinal de Cancelamento</div>
+          <div class="insight-desc"><strong style="color:var(--red)">2.717 atendimentos</strong> com tabulação de cancelamento ou solicitação de saída — equivale a <strong style="color:var(--text)">5% do total</strong>. TMA médio dos cancelamentos solicitados: 381 min.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Top 25 Tabulações por Volume (separadas por grupo)</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Tabulação</th><th>Grupo</th><th style="text-align:right">Total</th><th style="text-align:right">TMA Médio</th><th style="min-width:120px">Proporção</th></tr></thead>
+        <tbody id="tab-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="split" style="margin-top:8px">
+      <div>
+        <div class="section-title">Top 20 Tabulações por TMA Médio</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Tabulação</th><th style="text-align:right">Total</th><th style="text-align:right">TMA (min)</th></tr></thead>
+            <tbody id="tma-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Clientes que Mais Retornam (proxy sem resolução)</div>
+        <div class="cards-row cards-3">
+          <div class="card card-red"><div class="card-label">Maior retorno</div><div class="card-value">176×</div><div class="card-sub">atendimentos</div></div>
+          <div class="card card-warn"><div class="card-label">2º lugar</div><div class="card-value">175×</div><div class="card-sub">atendimentos</div></div>
+          <div class="card"><div class="card-label">3º lugar</div><div class="card-value" style="color:var(--text-dim)">162×</div><div class="card-sub">atendimentos</div></div>
+        </div>
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <thead><tr><th>Rank</th><th style="text-align:right">Atendimentos</th><th style="min-width:120px">Frequência</th></tr></thead>
+            <tbody id="returning-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ P3: TICKETS ══ -->
+<div id="p3" class="page">
+  <div class="page-inner">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">03 — Tickets & Operações</div>
+        <h2 class="page-title">Onde o Processo Trava</h2>
+      </div>
+      <div class="page-badge red">63,1% SLA Estourado</div>
+    </div>
+
+    <div class="cards-row cards-4">
+      <div class="card card-red"><div class="card-label">Total de Tickets</div><div class="card-value">11.527</div><div class="card-sub">de 53.827 atendimentos</div></div>
+      <div class="card card-red"><div class="card-label">SLA Estourado</div><div class="card-value">63,1%</div><div class="card-sub">7.274 tickets acima de 3 DU</div></div>
+      <div class="card card-warn"><div class="card-label">Tickets Em Aberto</div><div class="card-value">2.693</div><div class="card-sub">Não finalizados nem cancelados</div></div>
+      <div class="card"><div class="card-label">Reportes de Erro</div><div class="card-value" style="color:var(--text-dim)">362</div><div class="card-sub">3,1% de todos os tickets</div></div>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="section-title">Gargalo de Filas — Dias Úteis por Departamento</div>
+        <div style="padding:4px 0" id="fila-bars"></div>
+      </div>
+      <div>
+        <div class="section-title">Status dos Tickets</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Status</th><th style="text-align:right">Tickets</th><th style="min-width:100px">Proporção</th></tr></thead>
+            <tbody id="status-tbody"></tbody>
+          </table>
+        </div>
+        <div class="section-title">Tipos de Reporte</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tipo de Reporte</th><th style="text-align:right">Qtd</th><th style="text-align:right">%</th></tr></thead>
+            <tbody id="reporte-type-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Top 20 Tipos de Ticket — Volume, SLA e Tempo Médio</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Tipo de Solicitação</th>
+            <th style="text-align:right">Tickets</th>
+            <th style="text-align:right">SLA%</th>
+            <th style="text-align:right">Tempo Médio (DU)</th>
+            <th style="text-align:right">Rel. (DU)</th>
+          </tr>
+        </thead>
+        <tbody id="ticket-tipo-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="section-title">Tickets Em Aberto — Envelhecimento por Tipo</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tipo</th><th style="text-align:right">Em aberto</th><th style="text-align:right">Idade Média</th><th style="text-align:right">Máx.</th></tr></thead>
+            <tbody id="aging-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Clientes com Mais Tickets Gerados</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Rank</th><th style="text-align:right">Tickets</th><th style="text-align:right">Atendimentos</th><th style="text-align:right">Taxa</th></tr></thead>
+            <tbody id="cust-ticket-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Reporte por Tipo de Ticket (qualidade de abertura)</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Tipo de Solicitação</th><th style="text-align:right">Tickets</th><th style="text-align:right">Reportados</th><th style="text-align:right">Taxa</th><th style="min-width:100px">Barra</th></tr></thead>
+        <tbody id="reporte-rate-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ P4: FORNECEDORAS ══ -->
+<div id="p4" class="page">
+  <div class="page-inner">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">04 — Fornecedoras</div>
+        <h2 class="page-title">Impacto das Parceiras</h2>
+      </div>
+      <div class="page-badge red">THOPEN: 500 tickets aguardando</div>
+    </div>
+
+    <div class="alert-banner">
+      <div class="alert-icon">⚠</div>
+      <div class="alert-text"><strong>THOPEN</strong> concentra 500 tickets aguardando resposta, 80% de SLA estourado e é a 2ª maior fonte de tickets (2.477). <strong>GV</strong> tem o menor CSAT entre fornecedoras com dados (58%). Clientes mencionam THOPEN explicitamente nas Pesquisas Live como motivo de insatisfação.</div>
+    </div>
+
+    <div class="section-title">Painel de Fornecedoras — Visão Completa</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fornecedora</th>
+            <th style="text-align:right">Menções</th>
+            <th style="text-align:right">Tickets</th>
+            <th style="text-align:right">SLA%</th>
+            <th style="text-align:right">Aguardando</th>
+            <th style="text-align:right">Fila Forn. (DU)</th>
+            <th style="text-align:right">CSAT%</th>
+            <th style="min-width:80px">Severidade</th>
+          </tr>
+        </thead>
+        <tbody id="forn-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="section-title">Fornecedoras com Maior SLA Estourado</div>
+        <div id="forn-sla-bars"></div>
+      </div>
+      <div>
+        <div class="section-title">Fornecedoras por CSAT (menções em atendimentos)</div>
+        <div id="forn-csat-bars"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ P5: CSAT ══ -->
+<div id="p5" class="page">
+  <div class="page-inner">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">05 — CSAT & Sentimentos</div>
+        <h2 class="page-title">Como os Clientes se Sentem</h2>
+      </div>
+      <div class="page-badge">21.450 avaliações coletadas</div>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="cards-row cards-2">
+          <div class="card card-green"><div class="card-label">CSAT Geral</div><div class="card-value">79,4%</div><div class="card-sub">notas 4 e 5</div></div>
+          <div class="card card-warn"><div class="card-label">Notas 1 e 2</div><div class="card-value">15,3%</div><div class="card-sub">3.194 avaliações negativas</div></div>
+        </div>
+        <div class="section-title">Distribuição das Notas</div>
+        <div id="nota-bars"></div>
+        <div class="section-title">CSAT por Grupo de Cliente</div>
+        <div class="cards-row cards-2">
+          <div class="card card-green" style="text-align:left;padding:16px 20px">
+            <div class="card-label">Executivos & Acima</div>
+            <div class="card-value">91,0%</div>
+            <div class="card-sub">2.548 avaliações</div>
+          </div>
+          <div class="card" style="text-align:left;padding:16px 20px">
+            <div class="card-label">Gestores & Abaixo</div>
+            <div class="card-value" style="color:var(--warn)">77,9%</div>
+            <div class="card-sub">18.902 avaliações · diferença de 13,1pp</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Sentimentos nas Avaliações (CSAT Sentimentos)</div>
+        <div class="feeling-grid" id="feeling-grid"></div>
+        <div style="margin-top:16px">
+          <div class="cards-row cards-2">
+            <div class="card card-green"><div class="card-label">Positivos</div><div class="card-value">675</div><div class="card-sub">Elogio, Encantado, Gratidão…</div></div>
+            <div class="card card-red"><div class="card-label">Negativos</div><div class="card-value">268</div><div class="card-sub">Crítico, Frustrado, Revoltado…</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">15 Tabulações com Menor CSAT (mín. 20 avaliações)</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Tabulação</th><th style="text-align:right">Avaliações</th><th style="text-align:right">CSAT%</th><th style="min-width:140px">Barra</th></tr></thead>
+        <tbody id="csat-tab-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="section-title">Comentários com Nota 1 ou 2 (amostra)</div>
+    <div id="comments-container"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ P6: AGENTES ══ -->
+<div id="p6" class="page">
+  <div class="page-inner">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">06 — Agentes</div>
+        <h2 class="page-title">Desempenho Individual</h2>
+      </div>
+      <div class="page-badge">51 agentes com dados</div>
+    </div>
+
+    <div class="alert-banner">
+      <div class="alert-icon">⚠</div>
+      <div class="alert-text"><strong>João Gabriel Santos</strong>: CSAT 50% com 2.449 atendimentos — outlier crítico. <strong>Matheus Cortés & Karine Mayra</strong>: taxa de escalonamento ~41–42% (2× acima da média de 1 em cada 5 atendimentos). TMA varia de 14 min a 732 min — dispersão expressiva.</div>
+    </div>
+
+    <div class="section-title">Todos os Agentes — Volume, TMA, CSAT e Taxa de Escalonamento</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Agente</th>
+            <th style="text-align:right">Atendimentos</th>
+            <th style="text-align:right">TMA (min)</th>
+            <th style="text-align:right">CSAT%</th>
+            <th style="text-align:right">Tickets</th>
+            <th style="text-align:right">Escal.%</th>
+            <th style="min-width:80px">Escal. Barra</th>
+          </tr>
+        </thead>
+        <tbody id="agentes-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ P7: PESQUISAS LIVE ══ -->
+<div id="p7" class="page">
+  <div class="page-inner">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">07 — Pesquisas Live</div>
+        <h2 class="page-title">Voz dos Licenciados</h2>
+      </div>
+      <div class="page-badge">277 respostas · 4 sessões</div>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="chart-box">
+          <div class="chart-title">Notas por Sessão</div>
+          <canvas id="liveChart" height="200"></canvas>
+        </div>
+        <div class="section-title">Ações Selecionadas após a Live</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ação</th><th style="text-align:right">Votos</th><th style="min-width:100px">Proporção</th></tr></thead>
+            <tbody id="acoes-tbody"></tbody>
+          </table>
+        </div>
+        <div class="cards-row cards-3" style="margin-top:16px">
+          <div class="card card-green"><div class="card-label">Utilidade Média</div><div class="card-value">9,2/10</div></div>
+          <div class="card card-warn"><div class="card-label">Clareza Média</div><div class="card-value">4,5/5</div></div>
+          <div class="card card-red"><div class="card-label">Ainda Inseguros</div><div class="card-value">15</div><div class="card-sub">para indicar <img src="../assets/favicon.png" alt="iGreen" style="height:11px;vertical-align:middle;margin-left:1px"></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">Temas Recorrentes Identificados</div>
+        <div class="insight-card">
+          <div class="insight-icon warn">📋</div>
+          <div><div class="insight-title">Devolutivas & Cadastro</div><div class="insight-desc">Tema mais frequente em todas as sessões. Licenciados relatam devolutivas indevidas, app não lendo documentos e ciclos de reenvio infindáveis.</div></div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon red">⏱</div>
+          <div><div class="insight-title">Atrasos de Injeção</div><div class="insight-desc">Clientes com 120+ dias validados sem receber desconto. Menções de casos acima de 10–11 meses. Causa direta de cancelamentos.</div></div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon red">🏭</div>
+          <div><div class="insight-title">Qualidade de Parceiros</div><div class="insight-desc">THOPEN explicitamente mencionada como "péssimo serviço". Pedidos de substituição por parte de licenciados de múltiplas regiões.</div></div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon warn">🔧</div>
+          <div><div class="insight-title">Suporte ao Licenciado</div><div class="insight-desc">"Inadmissível o licenciado ficar horas esperando atendimento." Reclamações de abandono de chat e protocolos sem retorno.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Comentários Críticos — Valor Aberto & Dúvidas</div>
+    <div id="live-quotes-container"></div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// SUPABASE LIVE DASHBOARD — in-memory cache until page refresh
+// ─────────────────────────────────────────────────────────────────────────────
+const { createClient } = window.supabase;
+const _SB = createClient(
+  '__SUPABASE_URL__',
+  '__SUPABASE_PRIVATE_KEY__'
+);
+const _P_START = new Date('2026-04-26T00:00:00Z');
+const _P_END   = new Date('2026-05-25T23:59:59Z');
+const _SEG_TAGS = new Set(['CONSULTOR SENIOR','LICENCIADO PRO','LICENCIADO PLUS',
+  'CONSULTOR INICIANTE','GOLD','VISIONARIO','EXECUTIVO','EXECUTIVO SENIOR',
+  'LICENCIADO ELITE','LICENCIADO OURO','PARTNER','BRONZE','SILVER']);
+window.__dashCache = null;
+let WEEKS, TABULACOES, TOP_TMA, RETURNING, TICKET_TIPOS, GLOBAL_FILAS,
+    STATUS_DIST, OPEN_AGING, CUST_TICKETS, REPORTE_TYPES, REPORTE_RATE,
+    FORNECEDORAS, NOTA_DIST, FEELINGS, CSAT_BY_TAB, COMMENTS,
+    AGENTES, LIVE_SESSIONS, ACOES, NEG_QUOTES, MONTHLY;
+
+async function _fetchAll(table, cols) {
+  const out = []; let offset = 0;
+  for (;;) {
+    const { data, error } = await _SB.from(table).select(cols).range(offset, offset + 999);
+    if (error || !data) break;
+    out.push(...data);
+    if (data.length < 1000) break;
+    offset += 1000;
+  }
+  return out;
+}
+function _prog(pct, msg) {
+  const bar = document.getElementById('_lb'), txt = document.getElementById('_lm');
+  if (bar) bar.style.width = pct + '%';
+  if (txt) txt.textContent = msg;
+}
+function _grp(r) {
+  const g = (r?.grupo_cliente || '').toUpperCase();
+  if (g.includes('GESTOR')) return 'Gestores';
+  if (g.includes('EXECUT')) return 'Executivos';
+  return 'Outros';
+}
+function _inP(iso) { if (!iso) return false; const dt = new Date(iso); return dt >= _P_START && dt <= _P_END; }
+function _isoWk(dt) {
+  const d = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+  const day = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - day);
+  const ys = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return 'W' + String(Math.ceil(((d - ys) / 86400000 + 1) / 7)).padStart(2, '0');
+}
+function _avg(arr) { return arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0; }
+function _fmt(n) { return Math.round(n).toLocaleString('pt-BR'); }
+
+async function _loadData() {
+  if (window.__dashCache) return window.__dashCache;
+  _prog(5, 'Buscando atendimentos...');
+  const atend = await _fetchAll('atendimentos', 'id,criado_em,tma_minutos,grupo_cliente,cliente_id,id_agente');
+  const atendById = Object.fromEntries(atend.map(r => [r.id, r]));
+  _prog(18, 'Buscando tabulações e tickets...');
+  const [tabs, tkts] = await Promise.all([
+    _fetchAll('tabulacoes', 'atendimento_id,codigo'),
+    _fetchAll('tickets', 'id,atendimento_id,tipo_solicitacao,sla_estourado,tempo_total_du,fila_triagem_du,fila_suporte_ao_licenciado_du,fila_relacionamentos_du,fila_operacoes_du,fila_contratos_du,fila_fornecedora_du,fila_aguardando_cliente_du,status,criado_em'),
+  ]);
+  _prog(40, 'Buscando CSAT e tags...');
+  const [csatR, csatSent, tagsR] = await Promise.all([
+    _fetchAll('csat', 'id,atendimento_id,nota,nota_calculo,comentario,grupo_cliente'),
+    _fetchAll('csat_sentimentos', 'csat_id,feeling'),
+    _fetchAll('tags', 'atendimento_id,valor'),
+  ]);
+  _prog(60, 'Buscando fornecedoras e pesquisas...');
+  const [mencoes, pesquisas, reportes] = await Promise.all([
+    _fetchAll('mencoes_fornecedora', 'atendimento_id,fornecedora_id'),
+    _fetchAll('pesquisas_live', 'sessao_em,nota_utilidade,nota_clareza,valor_aberto,duvidas,acoes_selecionadas'),
+    _fetchAll('reportes', 'ticket_id,tipo_reporte'),
+  ]);
+  let agtRef = {};
+  try { const { data } = await _SB.from('agentes').select('id,nome').range(0, 999); if (data) agtRef = Object.fromEntries(data.map(r => [String(r.id), r.nome])); } catch (_) {}
+  let fornRef = {};
+  try { const { data } = await _SB.from('fornecedoras').select('id,nome').range(0, 999); if (data) fornRef = Object.fromEntries(data.map(r => [String(r.id), r.nome])); } catch (_) {}
+  _prog(78, 'Calculando métricas...');
+  const m = _compute({ atend, atendById, tabs, tkts, csatR, csatSent, tagsR, mencoes, pesquisas, reportes, agtRef, fornRef });
+  window.__dashCache = m;
+  return m;
+}
+
+function _compute({ atend, atendById, tabs, tkts, csatR, csatSent, tagsR, mencoes, pesquisas, reportes, agtRef, fornRef }) {
+  const pA = atend.filter(r => _inP(r.criado_em));
+  const pIds = new Set(pA.map(r => r.id));
+  const csatByAtend = {};
+  for (const r of csatR) {
+    if (r.nota_calculo == null) continue;
+    if (!csatByAtend[r.atendimento_id]) csatByAtend[r.atendimento_id] = [];
+    csatByAtend[r.atendimento_id].push(r.nota_calculo);
+  }
+  // CSAT by grupo — use csat.grupo_cliente directly (always populated, no join needed)
+  const _csatIsExec = r => (r.grupo_cliente || '').toUpperCase().includes('EXECUT');
+  const csatGest = csatR.filter(r => r.nota_calculo != null && !_csatIsExec(r)).map(r => r.nota_calculo);
+  const csatExec = csatR.filter(r => r.nota_calculo != null &&  _csatIsExec(r)).map(r => r.nota_calculo);
+  const gestCsatPct = (_avg(csatGest) * 100).toFixed(1);
+  const execCsatPct = (_avg(csatExec) * 100).toFixed(1);
+  // Period CSAT by grupo (filter by period atendimento_id; orphan CSATs excluded from period slice)
+  const pCsatG = [], pCsatE = [];
+  for (const r of csatR) {
+    if (r.nota_calculo == null || !pIds.has(r.atendimento_id)) continue;
+    if (_csatIsExec(r)) pCsatE.push(r.nota_calculo);
+    else pCsatG.push(r.nota_calculo);
+  }
+  const pCsatNc = [...pCsatG, ...pCsatE];
+  const pTkts = tkts.filter(r => pIds.has(r.atendimento_id));
+  const escPct = pA.length ? pTkts.length / pA.length : 0;
+  const slaBP = pTkts.filter(r => r.sla_estourado).length;
+  const escDenom = Math.max(2, Math.round(1 / Math.max(escPct, 0.001)));
+  const BK = 3 * 86400000;
+  const bkts = [];
+  let cur = new Date(_P_START);
+  while (cur <= _P_END) {
+    const be = new Date(Math.min(cur.getTime() + BK - 1, _P_END.getTime()));
+    bkts.push({ lbl: cur.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), s: new Date(cur), e: be, g: 0, ex: 0 });
+    cur = new Date(cur.getTime() + BK);
+  }
+  for (const r of pA) { const dt = new Date(r.criado_em); for (const b of bkts) if (dt >= b.s && dt <= b.e) { _grp(r) === 'Gestores' ? b.g++ : b.ex++; break; } }
+  const WIN = 2 * 86400000;
+  const ctd = new Map();
+  for (const r of tabs) {
+    if (!pIds.has(r.atendimento_id) || !r.codigo) continue;
+    const a = atendById[r.atendimento_id];
+    if (!a?.cliente_id) continue;
+    const k = `${a.cliente_id}||${r.codigo}`;
+    if (!ctd.has(k)) ctd.set(k, []);
+    ctd.get(k).push(new Date(a.criado_em).getTime());
+  }
+  const rCusts = new Set(); const rVals = [];
+  const totCusts = new Set(pA.map(r => r.cliente_id).filter(Boolean)).size;
+  for (const [k, ts] of ctd) {
+    ts.sort((a, b) => a - b); const cid = k.split('||')[0]; let mx = 1;
+    for (let i = 0; i < ts.length; i++) { const cnt = ts.slice(i).filter(t => t - ts[i] <= WIN).length; if (cnt > mx) mx = cnt; }
+    if (mx > 1) { rCusts.add(cid); rVals.push(mx); }
+  }
+  const capa = {
+    total: pA.length, gest: pA.filter(r => _grp(r) === 'Gestores').length, exec: pA.filter(r => _grp(r) === 'Executivos').length,
+    csatPct: (_avg(pCsatNc) * 100).toFixed(1), csatN: pCsatNc.length,
+    csatGestPct: pCsatG.length ? (_avg(pCsatG) * 100).toFixed(1) : null, csatGestN: pCsatG.length,
+    csatExecPct: pCsatE.length ? (_avg(pCsatE) * 100).toFixed(1) : null, csatExecN: pCsatE.length,
+    escFrac: `1/${escDenom}`, slaBreachPct: (pTkts.length ? slaBP / pTkts.length * 100 : 0).toFixed(1), escN: pTkts.length,
+    recurAvg: rVals.length ? _avg(rVals).toFixed(1) : '0', recurPct: totCusts ? (rCusts.size / totCusts * 100).toFixed(1) : '0', recurN: rCusts.size, recurTotal: totCusts,
+    chart: { labels: bkts.map(b => b.lbl), gest: bkts.map(b => b.g), exec: bkts.map(b => b.ex) },
+  };
+  // Overview
+  const allNc = [...csatGest, ...csatExec];
+  const slaAllB = tkts.filter(r => r.sla_estourado).length;
+  const custAtend = {};
+  for (const r of atend) { if (r.cliente_id) custAtend[r.cliente_id] = (custAtend[r.cliente_id] || 0) + 1; }
+  const overview = {
+    total: atend.length, avgTma: Math.round(_avg(atend.filter(r => r.tma_minutos > 0).map(r => r.tma_minutos))),
+    csatPct: (_avg(allNc) * 100).toFixed(1), csatN: allNc.length,
+    gestCsatPct, execCsatPct, gestCsatN: csatGest.length, execCsatN: csatExec.length,
+    slaBreachN: slaAllB, slaTotalN: tkts.length,
+    slaBreachPct: (tkts.length ? slaAllB / tkts.length * 100 : 0).toFixed(1),
+    escPct: (atend.length ? tkts.length / atend.length * 100 : 0).toFixed(1),
+    grupoG: atend.filter(r => _grp(r) === 'Gestores').length,
+    grupoE: atend.filter(r => _grp(r) === 'Executivos').length,
+    uniqueCusts: Object.keys(custAtend).length,
+    ret5: Object.values(custAtend).filter(v => v >= 5).length,
+    ret10: Object.values(custAtend).filter(v => v >= 10).length,
+  };
+  // Weekly
+  const wkMap = {};
+  for (const r of atend) { if (r.criado_em) { const lbl = _isoWk(new Date(r.criado_em)); wkMap[lbl] = (wkMap[lbl] || 0) + 1; } }
+  const wkSorted = Object.entries(wkMap).sort();
+  WEEKS = { labels: wkSorted.map(([k]) => k), data: wkSorted.map(([, v]) => v) };
+  // Tabulacoes
+  const tabFreq = {};
+  for (const r of tabs) {
+    const cod = r.codigo; if (!cod) continue;
+    const a = atendById[r.atendimento_id] || {}; const g = _grp(a); const tma = a.tma_minutos || 0;
+    if (!tabFreq[cod]) tabFreq[cod] = { tot: 0, ge: 0, ex: 0, ts: 0, tc: 0 };
+    tabFreq[cod].tot++; if (g === 'Gestores') tabFreq[cod].ge++; else if (g === 'Executivos') tabFreq[cod].ex++;
+    if (tma > 0) { tabFreq[cod].ts += tma; tabFreq[cod].tc++; }
+  }
+  const tabsSorted = Object.entries(tabFreq).map(([c, v]) => ({ c, t: v.tot, g: v.ge > v.ex ? 'Gestores' : v.ex > v.ge ? 'Executivos' : 'Misto', tma: v.tc ? Math.round(v.ts / v.tc) : null })).sort((a, b) => b.t - a.t);
+  TABULACOES = tabsSorted.slice(0, 25);
+  TOP_TMA = [...tabsSorted].filter(r => r.tma).sort((a, b) => b.tma - a.tma).slice(0, 20);
+  const devRows = Object.entries(tabFreq).filter(([c]) => c.toLowerCase().includes('devolutiva'));
+  const cancelRows = Object.entries(tabFreq).filter(([c]) => c.toLowerCase().includes('cancelamento'));
+  const _gs = rows => { let ts = 0, tc = 0; rows.forEach(([, v]) => { ts += v.ts; tc += v.tc; }); return { n: rows.reduce((s, [, v]) => s + v.tot, 0), tma: tc ? Math.round(ts / tc) : null }; };
+  const devStat = _gs(devRows); const cancelStat = _gs(cancelRows);
+  RETURNING = Object.values(custAtend).sort((a, b) => b - a).slice(0, 20);
+  // Tickets
+  const FILA_KEYS = ['triagem','suporte_ao_licenciado','relacionamentos','operacoes','contratos','fornecedora','aguardando_cliente'];
+  const FILA_LBLS = ['Triagem','Suporte ao Licenciado','Relacionamentos','Operações','Contratos','Fornecedora','Aguardando Cliente'];
+  GLOBAL_FILAS = FILA_KEYS.map((f, i) => {
+    const vals = tkts.map(r => r[`fila_${f}_du`]).filter(v => v != null); const nz = vals.filter(v => v > 0);
+    return { l: FILA_LBLS[i], mean: vals.length ? Math.round(_avg(vals) * 100) / 100 : 0, max: vals.length ? Math.round(Math.max(...vals) * 10) / 10 : 0, pct: tkts.length ? Math.round(nz.length / tkts.length * 100) : 0, dominant: f === 'relacionamentos' };
+  });
+  const stCnt = {}; for (const r of tkts) { const s = r.status || ''; stCnt[s] = (stCnt[s] || 0) + 1; }
+  STATUS_DIST = Object.entries(stCnt).sort((a, b) => b[1] - a[1]).map(([s, n]) => ({ s, n }));
+  const tipoMap = {};
+  for (const r of tkts) {
+    const t = r.tipo_solicitacao; if (!t) continue;
+    if (!tipoMap[t]) tipoMap[t] = { n: 0, sb: 0, rs: 0, rc: 0, ts2: 0, tc2: 0 };
+    tipoMap[t].n++; if (r.sla_estourado) tipoMap[t].sb++;
+    if (r.fila_relacionamentos_du != null) { tipoMap[t].rs += r.fila_relacionamentos_du; tipoMap[t].rc++; }
+    if (r.tempo_total_du != null) { tipoMap[t].ts2 += r.tempo_total_du; tipoMap[t].tc2++; }
+  }
+  TICKET_TIPOS = Object.entries(tipoMap).map(([t, v]) => ({ t, n: v.n, sla: v.n ? Math.round(v.sb / v.n * 100) : null, rel: v.rc ? Math.round(v.rs / v.rc * 100) / 100 : 0, tempo: v.tc2 ? Math.round(v.ts2 / v.tc2 * 100) / 100 : 0 })).sort((a, b) => b.n - a.n).slice(0, 20);
+  const nowMs = Date.now();
+  const OPEN_ST = new Set(['Em Análise','Enviado p/ Fornecedora','Aguard. resposta fornecedora','Respondido','Andamento Interno','Contato com cliente','Aguard. setor interno','Cliente Aguard. Atendimento','Em revisão','iniciado']);
+  const agingByTipo = {};
+  for (const r of tkts) { if (!OPEN_ST.has(r.status) || !r.criado_em) continue; const t = r.tipo_solicitacao || ''; const days = Math.floor((nowMs - new Date(r.criado_em)) / 86400000); if (!agingByTipo[t]) agingByTipo[t] = []; agingByTipo[t].push(days); }
+  OPEN_AGING = Object.entries(agingByTipo).map(([t, d]) => ({ t, n: d.length, avg: Math.round(_avg(d)), max: Math.max(...d) })).sort((a, b) => b.n - a.n).slice(0, 15);
+  const custTk = {};
+  for (const r of tkts) { const cid = atendById[r.atendimento_id]?.cliente_id; if (!cid) continue; custTk[cid] = (custTk[cid] || 0) + 1; }
+  CUST_TICKETS = Object.entries(custTk).sort((a, b) => b[1] - a[1]).slice(0, 20).map(([cid, tk], i) => ({ r: i + 1, tk, at: custAtend[cid] || 0 }));
+  // Reportes: join reportes.ticket_id → tickets.id
+  const repTipoByTkId = {};
+  for (const r of reportes) { if (r.ticket_id && r.tipo_reporte) repTipoByTkId[r.ticket_id] = r.tipo_reporte; }
+  const repTypes = {};
+  for (const r of tkts) { const rt = repTipoByTkId[r.id]; if (rt) repTypes[rt] = (repTypes[rt] || 0) + 1; }
+  REPORTE_TYPES = Object.entries(repTypes).sort((a, b) => b[1] - a[1]).map(([t, n]) => ({ t, n }));
+  const repByTipo = {};
+  for (const r of tkts) {
+    const t = r.tipo_solicitacao || ''; if (!t) continue;
+    if (!repByTipo[t]) repByTipo[t] = { n: 0, rep: 0 };
+    repByTipo[t].n++;
+    if (repTipoByTkId[r.id]) repByTipo[t].rep++;
+  }
+  REPORTE_RATE = Object.entries(repByTipo).filter(([, v]) => v.rep > 0).map(([t, v]) => ({ t, n: v.n, rep: v.rep, rate: Math.round(v.rep / v.n * 1000) / 10 })).sort((a, b) => b.rep - a.rep).slice(0, 15);
+  // Fornecedoras
+  const tktsByAtend = {};
+  for (const r of tkts) { if (!tktsByAtend[r.atendimento_id]) tktsByAtend[r.atendimento_id] = []; tktsByAtend[r.atendimento_id].push(r); }
+  const fornS = {};
+  for (const r of mencoes) {
+    const fn = r.fornecedora || (r.fornecedora_id != null ? (fornRef[String(r.fornecedora_id)] || `F${r.fornecedora_id}`) : null);
+    if (!fn) continue;
+    if (!fornS[fn]) fornS[fn] = { men: 0, aids: new Set() };
+    fornS[fn].men++; fornS[fn].aids.add(r.atendimento_id);
+  }
+  FORNECEDORAS = Object.entries(fornS).map(([n, d]) => {
+    let tk = 0, sb = 0, st = 0, wt = 0, fds = 0, fdc = 0, cs = 0, cc = 0;
+    for (const aid of d.aids) {
+      const tks = tktsByAtend[aid] || []; tk += tks.length;
+      for (const t of tks) { st++; if (t.sla_estourado) sb++; if ((t.status || '').toLowerCase().includes('aguard')) wt++; if (t.fila_fornecedora_du != null) { fds += t.fila_fornecedora_du; fdc++; } }
+      (csatByAtend[aid] || []).forEach(v => { cs += v; cc++; });
+    }
+    return { n, men: d.men, tk, sla: st ? Math.round(sb / st * 100) : null, wait: wt, forn: fdc ? Math.round(fds / fdc * 100) / 100 : 0, csat: cc >= 5 ? Math.round(cs / cc * 100) : null };
+  }).sort((a, b) => b.men - a.men).slice(0, 22);
+  // CSAT
+  const notaMap = {}; for (const r of csatR) { if (r.nota != null) notaMap[r.nota] = (notaMap[r.nota] || 0) + 1; }
+  NOTA_DIST = [1, 2, 3, 4, 5].map(n => ({ nota: n, n: notaMap[n] || 0 }));
+  const feelMap = {}; for (const r of csatSent) { if (r.feeling) feelMap[r.feeling] = (feelMap[r.feeling] || 0) + 1; }
+  const POS = new Set(['Elogio','Encantado','Gratidão','Contentado','Parabéns','Satisfeito']);
+  const NEG = new Set(['Crítico','Frustrado','Insatisfeito','Ansioso','Revoltado','Descontente']);
+  FEELINGS = Object.entries(feelMap).sort((a, b) => b[1] - a[1]).map(([f, n]) => ({ f, n, t: POS.has(f) ? 'pos' : NEG.has(f) ? 'neg' : 'neu' }));
+  const tabCsat = {};
+  for (const r of tabs) { const c = r.codigo; if (!c) continue; const ncs = csatByAtend[r.atendimento_id] || []; if (!tabCsat[c]) tabCsat[c] = { s: 0, n: 0 }; tabCsat[c].s += ncs.reduce((x, v) => x + v, 0); tabCsat[c].n += ncs.length; }
+  CSAT_BY_TAB = Object.entries(tabCsat).filter(([, v]) => v.n >= 20).map(([c, v]) => ({ c, pct: Math.round(v.s / v.n * 100), n: v.n })).sort((a, b) => a.pct - b.pct).slice(0, 15);
+  const csatFeelings = {};
+  for (const r of csatSent) { if (!csatFeelings[r.csat_id]) csatFeelings[r.csat_id] = []; csatFeelings[r.csat_id].push(r.feeling); }
+  COMMENTS = csatR.filter(r => r.nota != null && r.nota <= 2 && r.comentario).slice(0, 12).map(r => ({ nota: r.nota, text: r.comentario, feelings: csatFeelings[r.id] || [], grupo: _grp(atendById[r.atendimento_id] || {}) === 'Executivos' ? 'Executivos & Acima' : 'Gestores & Abaixo' }));
+  // Agentes
+  const agMap = {};
+  for (const r of atend) { const id = r.id_agente; if (!id) continue; if (!agMap[id]) agMap[id] = { at: 0, ts: 0, tc: 0, tk: 0, aids: [] }; agMap[id].at++; agMap[id].aids.push(r.id); if (r.tma_minutos > 0) { agMap[id].ts += r.tma_minutos; agMap[id].tc++; } }
+  for (const r of tkts) { const id = atendById[r.atendimento_id]?.id_agente; if (id && agMap[id]) agMap[id].tk++; }
+  AGENTES = Object.entries(agMap).filter(([, v]) => v.at >= 10).map(([id, v]) => { const ncs = v.aids.flatMap(aid => csatByAtend[aid] || []); return { n: agtRef[String(id)] || `ID ${id}`, at: v.at, tma: v.tc ? Math.round(v.ts / v.tc) : null, csat: ncs.length >= 5 ? Math.round(_avg(ncs) * 100) : null, tk: v.tk, esc: Math.round(v.tk / v.at * 1000) / 10 }; }).sort((a, b) => b.at - a.at).slice(0, 51);
+  // Pesquisas
+  const sesMap = {};
+  for (const r of pesquisas) { const d = (r.sessao_em || '').slice(0, 10); if (!d) continue; if (!sesMap[d]) sesMap[d] = { u: [], c: [], n: 0 }; sesMap[d].n++; if (r.nota_utilidade != null) sesMap[d].u.push(r.nota_utilidade); if (r.nota_clareza != null) sesMap[d].c.push(r.nota_clareza); }
+  LIVE_SESSIONS = Object.entries(sesMap).sort().map(([d, v]) => ({ d, util: v.u.length ? Math.round(_avg(v.u) * 10) / 10 : null, clar: v.c.length ? Math.round(_avg(v.c) * 10) / 10 : null, n: v.n }));
+  const acaoCnt = {};
+  for (const r of pesquisas) {
+    if (!r.acoes_selecionadas) continue;
+    for (const a of r.acoes_selecionadas.split(',').map(s => s.trim()).filter(Boolean)) {
+      acaoCnt[a] = (acaoCnt[a] || 0) + 1;
+    }
+  }
+  ACOES = Object.entries(acaoCnt).sort((a, b) => b[1] - a[1]).map(([a, n]) => ({ a, n }));
+  NEG_QUOTES = pesquisas.filter(r => r.valor_aberto || r.duvidas).slice(0, 12).map(r => ({ d: (r.sessao_em || '').slice(0, 10), t: r.valor_aberto || r.duvidas }));
+  // Top5 for P1
+  const tagCnt = {}; for (const r of tagsR) { if (!r.valor || _SEG_TAGS.has(r.valor.toUpperCase())) continue; tagCnt[r.valor] = (tagCnt[r.valor] || 0) + 1; }
+  const top5Tags = Object.entries(tagCnt).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const top5Tabs = tabsSorted.slice(0, 5);
+  MONTHLY = capa.chart;
+  return { capa, overview, top5Tabs, top5Tags, devStat, cancelStat };
+}
+
+// ── Render helpers ─────────────────────────────────────────────────────────────────────
+function pill(g) { if(g==='Gestores') return '<span class="pill pill-green">Gestores</span>'; if(g==='Executivos') return '<span class="pill pill-warn">Executivos</span>'; return '<span class="pill pill-blue">Misto</span>'; }
+function tmaColor(v) { if(!v) return 'var(--text-dim)'; if(v>400) return 'var(--red)'; if(v>250) return 'var(--warn)'; return 'var(--text)'; }
+function slaColor(v) { if(v===null) return 'var(--text-muted)'; if(v>=70) return 'var(--red)'; if(v>=50) return 'var(--warn)'; return 'var(--green)'; }
+function csatColor(v) { if(!v) return 'var(--text-muted)'; if(v<65) return 'var(--red)'; if(v<75) return 'var(--warn)'; return 'var(--green-bright)'; }
+
+function renderCapa(capa) {
+  document.getElementById('capa-total').textContent = _fmt(capa.total);
+  document.getElementById('capa-tt-gest').textContent = _fmt(capa.gest);
+  document.getElementById('capa-tt-exec').textContent = _fmt(capa.exec);
+  document.getElementById('capa-csat').textContent = capa.csatPct.replace('.', ',') + '%';
+  document.getElementById('capa-tt-csat-gest').textContent = capa.csatGestPct ? capa.csatGestPct.replace('.', ',') + '%' : '—';
+  document.getElementById('capa-tt-csat-exec').textContent = capa.csatExecPct ? capa.csatExecPct.replace('.', ',') + '%' : '—';
+  document.getElementById('capa-tt-csat-note').textContent = _fmt(capa.csatN) + ' avaliações · ' + _fmt(capa.csatGestN) + ' Gestores · ' + _fmt(capa.csatExecN) + ' Executivos';
+  document.getElementById('capa-esc-frac').textContent = capa.escFrac;
+  document.getElementById('capa-esc-sub').textContent = capa.slaBreachPct.replace('.', ',') + '% dos escalados sem SLA no prazo';
+  document.getElementById('capa-tt-esc').innerHTML = `<strong>${capa.escFrac}</strong> atendimentos geraram ticket — <strong>${_fmt(capa.escN)}</strong> tickets abertos no período.<br><br>Desses, <strong style="color:var(--red)">${capa.slaBreachPct.replace('.', ',')}%</strong> não foram resolvidos dentro do prazo de SLA (3 dias úteis).`;
+  document.getElementById('capa-recur').textContent = capa.recurAvg.replace('.', ',') + '×';
+  document.getElementById('capa-recur-sub').textContent = capa.recurPct.replace('.', ',') + '% dos clientes com demanda repetida';
+  document.getElementById('capa-tt-recur').innerHTML = `Média de contatos pelo mesmo cliente para o <strong>mesmo tipo de problema dentro de 2 dias</strong>. Janela curta para filtrar casos de contratos distintos.<br><br><strong style="color:var(--warn)">${capa.recurPct.replace('.', ',')}% dos clientes atendidos</strong> (${capa.recurN} de ${_fmt(capa.recurTotal)}) reabriram suporte para a mesma tabulação em menos de 2 dias.`;
+}
+
+function renderP1(m) {
+  const ov = m.overview;
+  document.getElementById('ov-total').textContent = _fmt(ov.total);
+  document.getElementById('ov-tma').textContent = _fmt(ov.avgTma) + ' min TMA médio';
+  document.getElementById('ov-csat').textContent = ov.csatPct.replace('.', ',') + '%';
+  document.getElementById('ov-csat-n').textContent = _fmt(ov.csatN) + ' avaliações';
+  document.getElementById('ov-sla').textContent = ov.slaBreachPct.replace('.', ',') + '%';
+  document.getElementById('ov-sla-sub').textContent = _fmt(ov.slaBreachN) + ' de ' + _fmt(ov.slaTotalN) + ' tickets';
+  document.getElementById('ov-esc').textContent = ov.escPct.replace('.', ',') + '%';
+  document.getElementById('ov-esc-sub').textContent = _fmt(ov.slaTotalN) + ' tickets gerados';
+  document.getElementById('ov-gest').textContent = _fmt(ov.grupoG);
+  const gPct = Math.round(ov.grupoG / ov.total * 100);
+  document.getElementById('ov-gest-pct').textContent = gPct + '% dos atendimentos';
+  document.getElementById('ov-exec').textContent = _fmt(ov.grupoE);
+  document.getElementById('ov-exec-pct').textContent = (100 - gPct) + '% dos atendimentos';
+  document.getElementById('ov-custs').textContent = _fmt(ov.uniqueCusts);
+  document.getElementById('ov-ret5').textContent = _fmt(ov.ret5);
+  document.getElementById('ov-ret10').textContent = _fmt(ov.ret10);
+  const maxTab = m.top5Tabs[0]?.t || 1;
+  document.getElementById('p1-tabs-tbody').innerHTML = m.top5Tabs.map(r => `<tr><td>${r.c}</td><td>${pill(r.g)}</td><td class="num">${_fmt(r.t)}</td></tr>`).join('');
+  const maxTag = m.top5Tags[0]?.[1] || 1;
+  const TC = ['','','warn','blue','blue'];
+  document.getElementById('p1-tags-tbody').innerHTML = m.top5Tags.map(([v, n], i) => `<tr><td>${v}</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${TC[i]||''}" style="width:${Math.round(n/maxTag*100)}%"></div></div></div></td><td class="num">${_fmt(n)}</td></tr>`).join('');
+}
+
+function renderTabulacoes() {
+  const max = TABULACOES[0]?.t || 1;
+  document.getElementById('tab-tbody').innerHTML = TABULACOES.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.c}</td><td>${pill(r.g)}</td><td class="num">${_fmt(r.t)}</td><td class="num" style="color:${tmaColor(r.tma)}">${r.tma ? r.tma+' min' : '—'}</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${r.g==='Executivos'?'warn':''}" style="width:${Math.round(r.t/max*100)}%"></div></div></div></td></tr>`).join('');
+}
+function renderTopTma() {
+  document.getElementById('tma-tbody').innerHTML = TOP_TMA.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.c}</td><td class="pct">${_fmt(r.t)}</td><td class="num" style="color:${tmaColor(r.tma)}">${r.tma}</td></tr>`).join('');
+}
+function renderFilas() {
+  const maxM = Math.max(...GLOBAL_FILAS.map(f => f.mean), 0.01);
+  document.getElementById('fila-bars').innerHTML = GLOBAL_FILAS.map(f => `<div class="fila-bar-row"><div class="fila-label ${f.dominant?'highlight':''}">${f.l}</div><div class="fila-bar-track"><div class="fila-bar-fill ${f.dominant?'dominant':''}" style="width:${Math.round(f.mean/maxM*100)}%"></div></div><div class="fila-val ${f.dominant?'dominant':''}">${f.mean}</div><div class="fila-pct">${f.pct}%</div></div>`).join('');
+}
+function renderStatusDist() {
+  const total = STATUS_DIST.reduce((s, r) => s + r.n, 0), max = STATUS_DIST[0]?.n || 1;
+  document.getElementById('status-tbody').innerHTML = STATUS_DIST.map(r => `<tr><td>${r.s}</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:${Math.round(r.n/max*100)}%"></div></div></div></td><td class="num">${_fmt(r.n)}</td><td class="pct">${Math.round(r.n/total*100)}%</td></tr>`).join('');
+}
+function renderTicketTipos() {
+  document.getElementById('ticket-tipo-tbody').innerHTML = TICKET_TIPOS.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.t}</td><td class="num">${_fmt(r.n)}</td><td class="num" style="color:${slaColor(r.sla)}">${r.sla!==null?r.sla+'%':'—'}</td><td class="num">${r.rel}</td><td class="num">${r.tempo}</td></tr>`).join('');
+}
+function renderOpenAging() {
+  document.getElementById('aging-tbody').innerHTML = OPEN_AGING.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.t}</td><td class="num">${_fmt(r.n)}</td><td class="num" style="color:${r.avg>20?'var(--warn)':'var(--text)'}">${r.avg}d</td><td class="num" style="color:${r.max>30?'var(--red)':'var(--text)'}">${r.max}d</td></tr>`).join('');
+}
+function renderCustTickets() {
+  const maxTk = CUST_TICKETS[0]?.tk || 1;
+  document.getElementById('cust-ticket-tbody').innerHTML = CUST_TICKETS.map(r => {
+    const rate = r.at ? Math.round(r.tk / r.at * 100) : 0;
+    return `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">#${r.r}</td><td class="num">${r.tk}</td><td class="num" style="color:var(--text-dim)">${r.at}</td><td class="pct">${rate}%</td></tr>`;
+  }).join('');
+}
+function renderReporteTypes() {
+  const max = REPORTE_TYPES[0]?.n || 1;
+  document.getElementById('reporte-type-tbody').innerHTML = REPORTE_TYPES.map(r => `<tr><td>${r.t}</td><td class="num">${_fmt(r.n)}</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:${Math.round(r.n/max*100)}%"></div></div></div></td></tr>`).join('');
+}
+function renderReporteRate() {
+  const maxRate = REPORTE_RATE[0]?.rate || 1;
+  document.getElementById('reporte-rate-tbody').innerHTML = REPORTE_RATE.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.t}</td><td class="num">${_fmt(r.n)}</td><td class="num">${r.rep}</td><td class="num ${r.rate>=7?'red-val':r.rate>=4?'warn-val':''}">${r.rate}%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${r.rate>=7?'red':r.rate>=4?'warn':''}" style="width:${Math.round(r.rate/maxRate*100)}%"></div></div></div></td></tr>`).join('');
+}
+function renderFornecedoras() {
+  document.getElementById('forn-tbody').innerHTML = FORNECEDORAS.map(f => {
+    const slaStr = f.sla!==null?`<span style="color:${slaColor(f.sla)}">${f.sla}%</span>`:'<span style="color:var(--text-muted)">—</span>';
+    const csatStr = f.csat!==null?`<span style="color:${csatColor(f.csat)}">${f.csat}%</span>`:'<span style="color:var(--text-muted)">—</span>';
+    const wCls = f.wait>=50?'red-val':f.wait>=10?'warn-val':'';
+    let sev = f.sla===null ? '<span class="pill pill-gray">Sem tickets</span>' : f.wait>=100&&f.sla>=70 ? '<span class="pill pill-red">Crítico</span>' : f.csat!==null&&f.csat<65 ? '<span class="pill pill-red">CSAT Baixo</span>' : f.sla>=80 ? '<span class="pill pill-warn">SLA Alto</span>' : f.sla>=65||f.wait>=10 ? '<span class="pill pill-warn">Atenção</span>' : '<span class="pill pill-green">OK</span>';
+    return `<tr class="${f.wait>=100?'hi-red':''}"><td style="font-weight:600;color:var(--white)">${f.n}</td><td class="num">${_fmt(f.men)}</td><td class="num">${_fmt(f.tk)}</td><td>${slaStr}</td><td class="num ${wCls}">${f.wait}</td><td class="num" style="color:${f.forn>1?'var(--red)':f.forn>0.5?'var(--warn)':'var(--text-dim)'}">${f.forn}</td><td>${csatStr}</td><td>${sev}</td></tr>`;
+  }).join('');
+  const slf = FORNECEDORAS.filter(f=>f.sla!==null&&f.tk>0).sort((a,b)=>b.sla-a.sla).slice(0,10);
+  document.getElementById('forn-sla-bars').innerHTML = slf.map(f=>`<div class="fila-bar-row"><div class="fila-label" style="font-size:11px">${f.n}</div><div class="fila-bar-track"><div class="fila-bar-fill ${f.sla>=70?'dominant':''}" style="width:${f.sla}%"></div></div><div class="fila-val" style="font-size:12px;color:${slaColor(f.sla)}">${f.sla}%</div><div class="fila-pct">${f.tk} tk</div></div>`).join('');
+  const clf = FORNECEDORAS.filter(f=>f.csat!==null&&f.men>50).sort((a,b)=>a.csat-b.csat);
+  document.getElementById('forn-csat-bars').innerHTML = clf.map(f=>`<div class="fila-bar-row"><div class="fila-label" style="font-size:11px">${f.n}</div><div class="fila-bar-track"><div class="fila-bar-fill ${f.csat<70?'red':f.csat<78?'warn':''}" style="width:${f.csat}%"></div></div><div class="fila-val" style="font-size:12px;color:${csatColor(f.csat)}">${f.csat}%</div><div class="fila-pct">${f.men} men.</div></div>`).join('');
+}
+function renderNotaDist() {
+  const colors = ['var(--red)','rgba(224,82,82,0.6)','var(--warn)','rgba(76,175,50,0.6)','var(--green-bright)'];
+  const total = NOTA_DIST.reduce((s,r)=>s+r.n,0), maxN = NOTA_DIST[4].n||1;
+  document.getElementById('nota-bars').innerHTML = NOTA_DIST.map((r,i)=>`<div class="nota-row"><div class="nota-label" style="color:${colors[i]}">★ ${r.nota}</div><div class="bar-track" style="height:12px"><div class="nota-fill" style="width:${Math.round(r.n/maxN*100)}%;background:${colors[i]}"></div></div><div class="nota-count">${_fmt(r.n)} <span style="color:var(--text-muted)">(${total?Math.round(r.n/total*100):0}%)</span></div></div>`).join('');
+}
+function renderFeelings() {
+  document.getElementById('feeling-grid').innerHTML = FEELINGS.map(f=>`<div class="feeling-chip ${f.t}"><span class="fc-count">${f.n}</span><span class="fc-label">${f.f}</span></div>`).join('');
+}
+function renderCsatByTab() {
+  document.getElementById('csat-tab-tbody').innerHTML = CSAT_BY_TAB.map((r,i)=>`<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.c}</td><td class="pct">${r.n}</td><td class="num" style="color:${csatColor(r.pct)}">${r.pct}%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${r.pct<65?'red':r.pct<75?'warn':''}" style="width:${r.pct}%"></div></div></div></td></tr>`).join('');
+}
+function renderComments() {
+  document.getElementById('comments-container').innerHTML = COMMENTS.map(c=>`<div class="comment-card"><div class="comment-meta"><span class="comment-nota">★ ${c.nota}</span><span class="comment-grupo">${c.grupo}</span></div><div class="comment-text">"${c.text}"</div><div class="comment-feelings">${c.feelings.map(f=>`<span class="pill pill-red">${f}</span>`).join('')}</div></div>`).join('');
+}
+function renderAgentes() {
+  const maxEsc = Math.max(...AGENTES.map(a=>a.esc), 1);
+  document.getElementById('agentes-tbody').innerHTML = AGENTES.map((a,i)=>{
+    const csatStr = a.csat!==null?`<span style="color:${csatColor(a.csat)}">${a.csat}%</span>`:'<span style="color:var(--text-muted)">—</span>';
+    const escHi = a.esc>=35?'red-val':a.esc>=25?'warn-val':'';
+    return `<tr class="${a.csat!==null&&a.csat<65?'hi-red':''}"><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td style="font-weight:500">${a.n}</td><td class="num">${_fmt(a.at)}</td><td class="num" style="color:${tmaColor(a.tma)}">${a.tma||'—'}</td><td>${csatStr}</td><td class="pct">${a.tk}</td><td class="num ${escHi}">${a.esc}%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${a.esc>=35?'red':a.esc>=25?'warn':''}" style="width:${Math.round(a.esc/maxEsc*100)}%"></div></div></div></td></tr>`;
+  }).join('');
+}
+function renderAcoes() {
+  const max = ACOES[0]?.n || 1;
+  document.getElementById('acoes-tbody').innerHTML = ACOES.map(a=>`<tr><td>${a.a}</td><td class="num">${a.n}</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${a.a.includes('seguro')?'red':''}" style="width:${Math.round(a.n/max*100)}%"></div></div></div></td></tr>`).join('');
+}
+function renderLiveQuotes() {
+  document.getElementById('live-quotes-container').innerHTML = NEG_QUOTES.map(q=>`<div class="quote-card neg-quote"><div class="quote-date">${q.d}</div><div class="quote-text">"${q.t}"</div></div>`).join('');
+}
+
+// ── Charts ────────────────────────────────────────────────────────────────────
+Chart.defaults.color = '#636363';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+let _wkChart, _liveChart, _monthlyChart;
+
+function initCharts() {
+  if (_monthlyChart) _monthlyChart.destroy();
+  if (_wkChart) _wkChart.destroy();
+  if (_liveChart) _liveChart.destroy();
+  _monthlyChart = new Chart(document.getElementById('monthlyChart'), {
+    type: 'line',
+    data: { labels: MONTHLY.labels, datasets: [
+      { label: 'Gestores & Abaixo', data: MONTHLY.gest, borderColor: '#4caf32', backgroundColor: 'rgba(76,175,50,0.15)', borderWidth: 2, pointRadius: 4, pointBackgroundColor: '#4caf32', tension: 0.35, fill: true },
+      { label: 'Executivos & Acima', data: MONTHLY.exec, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, pointRadius: 4, pointBackgroundColor: '#f5a623', tension: 0.35, fill: true },
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1c1c1c', borderColor: 'rgba(76,175,50,0.3)', borderWidth: 1, titleColor: '#e8e8e8', bodyColor: '#9a9a9a', footerColor: '#e8e8e8', padding: 12, titleFont: { family: "'Syne',sans-serif", size: 11, weight: '700' }, bodyFont: { family: "'DM Sans',sans-serif", size: 12 }, footerFont: { family: "'Syne',sans-serif", size: 12, weight: '700' }, footerMarginTop: 8, callbacks: { title: items => items[0].label, label: item => '  ' + item.dataset.label + ': ' + item.parsed.y.toLocaleString('pt-BR'), footer: items => 'Total: ' + items.reduce((s, i) => s + i.parsed.y, 0).toLocaleString('pt-BR') } } },
+      scales: { x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 11 }, color: '#636363' } }, y: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#636363' }, beginAtZero: true } } },
+  });
+  _wkChart = new Chart(document.getElementById('weeklyChart'), {
+    type: 'bar',
+    data: { labels: WEEKS.labels, datasets: [{ label: 'Atendimentos', data: WEEKS.data, backgroundColor: 'rgba(76,175,50,0.35)', borderColor: '#4caf32', borderWidth: 1, borderRadius: 3 }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } } } },
+  });
+  _liveChart = new Chart(document.getElementById('liveChart'), {
+    type: 'line',
+    data: { labels: LIVE_SESSIONS.map(s => s.d.slice(5)), datasets: [
+      { label: 'Utilidade (/10)', data: LIVE_SESSIONS.map(s => s.util), borderColor: '#4caf32', backgroundColor: 'rgba(76,175,50,0.1)', tension: 0.3, pointRadius: 5, pointBackgroundColor: '#4caf32', yAxisID: 'y' },
+      { label: 'Clareza (/5)', data: LIVE_SESSIONS.map(s => s.clar), borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', tension: 0.3, pointRadius: 5, pointBackgroundColor: '#f5a623', yAxisID: 'y2' },
+    ]},
+    options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 12 } } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' } }, y: { min: 0, max: 10, position: 'left', grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } }, y2: { min: 0, max: 5, position: 'right', grid: { display: false }, ticks: { font: { size: 10 } } } } },
+  });
+}
+
+function renderAll(m) {
+  renderCapa(m.capa); renderP1(m);
+  renderTabulacoes(); renderTopTma();
+  renderFilas(); renderStatusDist(); renderTicketTipos(); renderOpenAging(); renderCustTickets(); renderReporteTypes(); renderReporteRate();
+  renderFornecedoras();
+  renderNotaDist(); renderFeelings(); renderCsatByTab(); renderComments();
+  renderAgentes();
+  renderAcoes(); renderLiveQuotes();
+  initCharts();
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────────────────
+function goTo(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const pages = ['p0','p1','p2','p3','p4','p5','p6','p7'];
+  document.querySelectorAll('.nav-btn')[pages.indexOf(id)].classList.add('active');
+  window.scrollTo(0, 0);
+}
+(function () {
+  const nav = document.querySelector('.nav-pages');
+  let dragging = false, startX, startScroll, moved;
+  nav.addEventListener('mousedown', e => { dragging = true; moved = false; startX = e.clientX; startScroll = nav.scrollLeft; nav.style.cursor = 'grabbing'; });
+  window.addEventListener('mousemove', e => { if (!dragging) return; const dx = e.clientX - startX; if (Math.abs(dx) > 4) moved = true; nav.scrollLeft = startScroll - dx; });
+  window.addEventListener('mouseup', () => { dragging = false; nav.style.cursor = ''; });
+  nav.addEventListener('click', e => { if (moved) e.stopPropagation(); }, true);
+})();
+
+// ── Init ───────────────────────────────────────────────────────────────────────────────
+async function _init() {
+  const overlay = document.getElementById('_load-overlay');
+  if (overlay) overlay.style.display = 'flex';
+  try {
+    const m = await _loadData();
+    _prog(95, 'Renderizando...');
+    renderAll(m);
+    _prog(100, 'Pronto!');
+    await new Promise(r => setTimeout(r, 250));
+  } catch (err) {
+    console.error('Dashboard load error:', err);
+    _prog(100, 'Erro — verifique o console.');
+    await new Promise(r => setTimeout(r, 2500));
+  }
+  if (overlay) { overlay.style.opacity = '0'; overlay.style.transition = 'opacity .4s'; setTimeout(() => overlay.style.display = 'none', 400); }
+}
+document.addEventListener('DOMContentLoaded', _init);
+
+</script>
+
+<div id="_load-overlay" style="position:fixed;inset:0;z-index:9999;background:var(--black);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px">
+  <img src="../assets/footericon.png" alt="iGreen Energy" style="height:40px">
+  <div style="font-size:13px;color:var(--text-dim);letter-spacing:.05em">Carregando dados de suporte...</div>
+  <div style="width:260px;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden">
+    <div id="_lb" style="height:100%;width:0%;background:var(--green);border-radius:2px;transition:width .3s ease"></div>
+  </div>
+  <div id="_lm" style="font-size:11px;color:var(--text-muted);letter-spacing:.04em">Inicializando...</div>
+</div>
+</body>
+</html>
