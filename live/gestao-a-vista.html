@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard de Suporte — iGreen Energy</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<title>Oportunidades de Melhoria — Fornecedoras</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <style>
@@ -20,35 +20,39 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,10,0.97);border-bottom:1px solid var(--border-green);backdrop-filter:blur(12px);height:56px;display:flex;align-items:center}
-.nav-logo{padding:0 20px;border-right:1px solid var(--border);height:100%;display:flex;align-items:center;flex-shrink:0}
-.nav-logo img{height:28px;mix-blend-mode:lighten;filter:brightness(1.1)}
-.nav-pages{display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;flex:1}
+/* TOPBAR */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:48px;display:flex;align-items:center;gap:12px;padding:0 16px;background:rgba(10,10,10,0.98);border-bottom:1px solid rgba(76,175,50,0.22);backdrop-filter:blur(12px)}
+.back-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.1);color:#9a9a9a;font-size:13px;text-decoration:none;transition:all 0.18s;white-space:nowrap;flex-shrink:0}
+.back-btn:hover{border-color:rgba(76,175,50,0.35);color:#e8e8e8}
+.topbar-sep{width:1px;height:20px;flex-shrink:0;background:rgba(255,255,255,0.09)}
+.topbar-cat{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);flex-shrink:0}
+.topbar-title{font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+/* TABS */
+.nav-pages{position:fixed;top:48px;left:0;right:0;z-index:99;display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;background:rgba(10,10,10,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
 .nav-pages::-webkit-scrollbar{display:none}
-.nav-btn{padding:0 18px;height:56px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:.04em;color:var(--text-dim);background:transparent;border:none;border-right:1px solid var(--border);cursor:pointer;white-space:nowrap;transition:color .2s,background .2s;display:flex;align-items:center;gap:7px}
+.nav-btn{padding:0 18px;height:44px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:.04em;color:var(--text-dim);background:transparent;border:none;border-right:1px solid var(--border);cursor:pointer;white-space:nowrap;transition:color .2s,background .2s;display:flex;align-items:center;gap:7px}
 .nav-btn:hover{color:var(--green-bright);background:rgba(76,175,50,0.06)}
 .nav-btn.active{color:var(--green-bright);background:rgba(76,175,50,0.1);border-bottom:2px solid var(--green)}
-.nav-num{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--green-dim);opacity:.7}
+.nav-num{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;color:var(--green-dim);opacity:.7}
 .nav-btn.active .nav-num{opacity:1;color:var(--green-bright)}
 
 /* PAGES */
-.page{display:none;min-height:100vh;padding-top:56px}
+.page{display:none;min-height:100vh;padding-top:92px}
 .page.active{display:flex;flex-direction:column}
 
 /* COVER */
-#p0{background:var(--black);position:relative;overflow:hidden}
+#p0{background:var(--black);position:relative;overflow:visible}
 .cover-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 70% 40%,rgba(76,175,50,0.12) 0%,transparent 70%),radial-gradient(ellipse 40% 60% at 20% 80%,rgba(76,175,50,0.07) 0%,transparent 60%);pointer-events:none}
 .cover-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border-green) 1px,transparent 1px),linear-gradient(90deg,var(--border-green) 1px,transparent 1px);background-size:60px 60px;opacity:.3;pointer-events:none}
-.cover-inner{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 56px);padding:60px 80px;max-width:1100px}
-.cover-tag{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.cover-inner{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 92px);padding:60px 80px;max-width:1100px}
+.cover-tag{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:24px;display:flex;align-items:center;gap:10px}
 .cover-tag::before{content:'';display:block;width:28px;height:1px;background:var(--green)}
-.cover-title{font-family:'Syne',sans-serif;font-size:clamp(36px,5vw,68px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:20px}
+.cover-title{font-family:'Outfit',sans-serif;font-size:clamp(36px,5vw,68px);font-weight:800;line-height:1.05;color:var(--white);margin-bottom:20px}
 .cover-title em{color:var(--green);font-style:normal}
 .cover-sub{font-size:16px;font-weight:300;color:var(--text-dim);max-width:520px;line-height:1.6;margin-bottom:48px}
 .cover-stats{display:flex;gap:40px;flex-wrap:wrap}
 .cover-stat{display:flex;flex-direction:column;gap:4px;border-left:2px solid var(--green);padding-left:16px}
-.cover-stat-val{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--white);letter-spacing:-.02em}
+.cover-stat-val{font-family:'Outfit',sans-serif;font-size:34px;font-weight:800;color:var(--white);letter-spacing:-.02em}
 .cover-stat-val.warn{color:var(--warn)}
 .cover-stat-val.red{color:var(--red)}
 .cover-stat-lbl{font-size:11px;font-weight:500;letter-spacing:.1em;color:var(--text-muted);text-transform:uppercase}
@@ -57,14 +61,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,10,0.9
 /* PAGE INNER */
 .page-inner{padding:44px 60px;flex:1;max-width:1280px;width:100%;margin:0 auto}
 .page-header{margin-bottom:36px;border-bottom:1px solid var(--border);padding-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.page-eyebrow{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.page-eyebrow{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--green);margin-bottom:8px;display:flex;align-items:center;gap:8px}
 .page-eyebrow::before{content:'';display:block;width:16px;height:1px;background:var(--green)}
-.page-title{font-family:'Syne',sans-serif;font-size:clamp(22px,3vw,34px);font-weight:700;color:var(--white);letter-spacing:-.01em;line-height:1.15}
+.page-title{font-family:'Outfit',sans-serif;font-size:clamp(22px,3vw,34px);font-weight:700;color:var(--white);letter-spacing:-.01em;line-height:1.15}
 .page-badge{background:rgba(76,175,50,0.1);border:1px solid var(--border-green);border-radius:4px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--green);letter-spacing:.05em;align-self:flex-start;white-space:nowrap}
 .page-badge.red{background:rgba(224,82,82,0.08);border-color:rgba(224,82,82,0.3);color:var(--red)}
 
 /* SECTION TITLE */
-.section-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--green);margin-bottom:14px;margin-top:28px;display:flex;align-items:center;gap:8px}
+.section-title{font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--green);margin-bottom:14px;margin-top:28px;display:flex;align-items:center;gap:8px}
 .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
 
 /* CARDS */
@@ -74,7 +78,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,10,0.9
 .cards-2{grid-template-columns:repeat(2,1fr)}
 .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 22px;text-align:center}
 .card-label{font-size:10.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
-.card-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--white);letter-spacing:-.02em;line-height:1}
+.card-value{font-family:'Outfit',sans-serif;font-size:34px;font-weight:800;color:var(--white);letter-spacing:-.02em;line-height:1}
 .card-sub{font-size:12px;color:var(--text-dim);margin-top:6px}
 .card-green{border-color:var(--border-green);background:rgba(76,175,50,0.06)}
 .card-green .card-value{color:var(--green-bright)}
@@ -84,13 +88,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,10,0.9
 .card-red .card-value{color:var(--red)}
 
 /* TABLE */
-.table-wrap{overflow-x:auto;margin-bottom:24px}
+.table-wrap{overflow-x:auto;overflow-y:visible;margin-bottom:24px}
 table{width:100%;border-collapse:collapse;font-size:13px}
-thead th{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+thead th{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
 tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background .15s}
 tbody tr:hover{background:rgba(255,255,255,0.03)}
 tbody td{padding:10px 14px;color:var(--text);vertical-align:middle}
-td.num{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--white);text-align:right}
+td.num{font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:var(--white);text-align:right}
 td.pct{font-size:12px;color:var(--text-dim);text-align:right;font-weight:500}
 td.warn-val{color:var(--warn)!important}
 td.red-val{color:var(--red)!important}
@@ -136,13 +140,13 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
 
 /* CHART WRAPPER */
 .chart-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:24px}
-.chart-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px}
+.chart-title{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px}
 
 /* FEELING CHIP */
 .feeling-grid{display:flex;flex-wrap:wrap;gap:10px;padding:8px 0}
 .feeling-chip{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:13px}
 .feeling-chip .fc-label{color:var(--text);font-weight:500}
-.feeling-chip .fc-count{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.feeling-chip .fc-count{font-family:'Outfit',sans-serif;font-weight:700;font-size:14px}
 .feeling-chip.pos{border-color:rgba(76,175,50,0.3);background:rgba(76,175,50,0.05)}
 .feeling-chip.pos .fc-count{color:var(--green-bright)}
 .feeling-chip.neg{border-color:rgba(224,82,82,0.3);background:rgba(224,82,82,0.05)}
@@ -153,7 +157,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
 /* COMMENT CARD */
 .comment-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;margin-bottom:10px}
 .comment-meta{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.comment-nota{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--red)}
+.comment-nota{font-family:'Outfit',sans-serif;font-size:12px;font-weight:800;color:var(--red)}
 .comment-grupo{font-size:11px;color:var(--text-muted);letter-spacing:.05em}
 .comment-text{font-size:13px;color:var(--text-dim);line-height:1.55;font-style:italic}
 .comment-feelings{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
@@ -172,64 +176,73 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
 .fila-bar-track{height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
 .fila-bar-fill{height:100%;border-radius:4px;background:var(--green);transition:width .5s}
 .fila-bar-fill.dominant{background:var(--warn)}
-.fila-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--white);text-align:right}
+.fila-val{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;color:var(--white);text-align:right}
 .fila-val.dominant{color:var(--warn)}
 .fila-pct{font-size:11px;color:var(--text-muted);text-align:right}
 
 /* NOTA BAR */
 .nota-row{display:grid;grid-template-columns:60px 1fr 80px;align-items:center;gap:12px;padding:6px 0}
-.nota-label{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-dim);text-align:center}
+.nota-label{font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;color:var(--text-dim);text-align:center}
 .nota-fill{height:10px;border-radius:5px;transition:width .4s}
 .nota-count{font-size:12px;color:var(--text-dim);text-align:right}
 
 /* COVER SPLIT */
-.cover-split{flex-direction:row!important;align-items:stretch;gap:60px;max-width:none;height:calc(100vh - 56px);min-height:unset}
+.cover-split{flex-direction:row!important;align-items:stretch;gap:60px;max-width:none;min-height:calc(100vh - 92px)}
 .cover-left{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
-.cover-right{flex:0 0 44%;max-width:44%;display:flex;flex-direction:column}
+.cover-right{flex:0 0 calc(44% - 60px);max-width:calc(44% - 60px);display:flex;flex-direction:column}
+/* TITLE TOOLTIP ICON */
+.tt-icon{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;margin-left:6px;font-size:10px;color:var(--text-muted);cursor:help;vertical-align:middle;position:relative;flex-shrink:0}
+/* SORTABLE TABLE HEADERS */
+.th-sort{cursor:pointer;user-select:none;white-space:nowrap}
+.th-sort:hover{color:var(--green)}
+/* P1 GRUPO FILTER */
+.p1-filter-btn{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:inherit;font-size:11px;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:all .15s}
+.p1-filter-btn:hover{border-color:var(--green-border);color:var(--text)}
+.p1-filter-btn.active{background:rgba(76,175,50,0.12);border-color:var(--green);color:var(--green-bright)}
 /* KPI TOOLTIPS */
 .has-kpi-tt{position:relative;cursor:default}
-.kpi-tt{position:absolute;bottom:calc(100% + 14px);left:0;z-index:200;
-  background:#1c1c1c;border:1px solid rgba(76,175,50,0.3);border-radius:8px;
-  padding:14px 16px;min-width:240px;max-width:320px;
-  opacity:0;pointer-events:none;transition:opacity .18s;
-  font-family:'DM Sans',sans-serif;font-size:12.5px;color:var(--text-dim);
-  box-shadow:0 8px 32px rgba(0,0,0,0.5)}
-.has-kpi-tt:hover .kpi-tt{opacity:1}
+/* .kpi-tt elements are data-only; the visible tooltip is #_gtt (position:fixed via JS) */
+.kpi-tt{display:none}
 .kpi-tt-row{display:flex;align-items:center;gap:8px;padding:4px 0}
 .kpi-tt-row span:nth-child(2){flex:1}
-.kpi-tt-row strong{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--white)}
+.kpi-tt-row strong{font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--white)}
 .kpi-tt-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .kpi-tt-note{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px;color:var(--text-muted)}
 .kpi-tt-text{line-height:1.6;max-width:300px}
 .kpi-tt-text strong{color:var(--white)}
 
-.cover-period-label{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.cover-period-label{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .cover-period-label::before{content:'';display:block;width:20px;height:1px;background:var(--green)}
 .cover-stat-sub{font-size:10.5px;color:var(--text-muted);margin-top:1px;letter-spacing:.03em;line-height:1.4}
-.cover-chart-box{background:transparent;border:none;padding:0 0 0 8px;flex:1;display:flex;flex-direction:column;min-height:0}
+.cover-chart-box{background:transparent;border:none;padding:0 0 0 8px;display:flex;flex-direction:column;height:340px;flex-shrink:0}
 .cover-chart-box canvas{flex:1;min-height:0;display:block}
-.cover-chart-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px;flex-shrink:0}
+.cover-chart-title{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px;flex-shrink:0}
 .cover-chart-legend{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);margin-top:14px;flex-shrink:0}
 .cover-legend-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;flex-shrink:0}
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-logo">
-    <img src="../assets/footericon.png" alt="iGreen Energy" style="height:22px;display:block">
-  </div>
-  <div class="nav-pages">
-    <button class="nav-btn active" onclick="goTo('p0')"><span class="nav-num">00</span> Capa</button>
-    <button class="nav-btn" onclick="goTo('p1')"><span class="nav-num">01</span> Visão Geral</button>
-    <button class="nav-btn" onclick="goTo('p2')"><span class="nav-num">02</span> Demandas</button>
-    <button class="nav-btn" onclick="goTo('p3')"><span class="nav-num">03</span> Tickets & Ops</button>
-    <button class="nav-btn" onclick="goTo('p4')"><span class="nav-num">04</span> Fornecedoras</button>
-    <button class="nav-btn" onclick="goTo('p5')"><span class="nav-num">05</span> CSAT & Sentimentos</button>
-    <button class="nav-btn" onclick="goTo('p6')"><span class="nav-num">06</span> Agentes</button>
-    <button class="nav-btn" onclick="goTo('p7')"><span class="nav-num">07</span> Pesquisas Live</button>
-  </div>
-</nav>
+<div class="topbar">
+  <a href="../index.html" class="back-btn">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"/></svg>
+    Início
+  </a>
+  <div class="topbar-sep"></div>
+  <span class="topbar-cat">Suporte</span>
+  <div class="topbar-sep"></div>
+  <span class="topbar-title">Gestão à Vista</span>
+</div>
+<div class="nav-pages">
+  <button class="nav-btn active" onclick="goTo('p0')"><span class="nav-num">00</span> Capa</button>
+  <button class="nav-btn" onclick="goTo('p1')"><span class="nav-num">01</span> Visão Geral</button>
+  <button class="nav-btn" onclick="goTo('p2')"><span class="nav-num">02</span> Demandas</button>
+  <button class="nav-btn" onclick="goTo('p3')"><span class="nav-num">03</span> Tickets & Ops</button>
+  <button class="nav-btn" onclick="goTo('p4')"><span class="nav-num">04</span> Fornecedoras</button>
+  <button class="nav-btn" onclick="goTo('p5')"><span class="nav-num">05</span> CSAT & Sentimentos</button>
+  <button class="nav-btn" onclick="goTo('p7')"><span class="nav-num">07</span> Pesquisas Live</button>
+  <button class="nav-btn" onclick="goTo('p8')"><span class="nav-num">08</span> Dados a Coletar</button>
+</div>
 
 <!-- ═══════════════════════════════════════════════════ COVER ══ -->
 <div id="p0" class="page active">
@@ -240,7 +253,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
       <div class="cover-tag"><img src="../assets/favicon.png" alt="iGreen Energy" style="height:30px;vertical-align:middle;margin-right:2px"> — Conexão Green</div>
       <h1 class="cover-title">Suporte ao <br><em>Licenciado</em></h1>
       <p class="cover-sub">Levantamento de dores do licenciado<br>Dados históricos de atendimentos, tickets, CSAT e pesquisas de live</p>
-      <div class="cover-period-label">Período de Referência — Maio 2026</div>
+      <div class="cover-period-label">Resumo de Maio 2026<br>Intervalo de dados: 1º de MAR a 31 de MAI</div>
       <div class="cover-stats">
 
         <div class="cover-stat has-kpi-tt">
@@ -265,7 +278,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
         <div class="cover-stat has-kpi-tt">
           <span id="capa-esc-frac" class="cover-stat-val warn">1/4</span>
           <span class="cover-stat-lbl">Restrições N1 ao Suporte</span>
-          <span id="capa-esc-sub" class="cover-stat-sub">68,1% dos escalados sem SLA no prazo</span>
+          <span id="capa-esc-sub" class="cover-stat-sub">68,1% dos tickets fora do SLA</span>
           <div id="capa-tt-esc" class="kpi-tt kpi-tt-text">
             <strong>23,2% dos 20.084 atendimentos</strong> precisaram de um ticket para resolução — um total de <strong>4.654 tickets</strong> abertos no período.<br><br>
             Desses, <strong style="color:var(--red)">68,1%</strong> não foram resolvidos dentro do prazo de SLA (3 dias úteis).
@@ -275,10 +288,10 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
         <div class="cover-stat has-kpi-tt">
           <span id="capa-recur" class="cover-stat-val">2,1×</span>
           <span class="cover-stat-lbl">Recorrência por Problema</span>
-          <span id="capa-recur-sub" class="cover-stat-sub">7,6% dos clientes com demanda repetida</span>
+          <span id="capa-recur-sub" class="cover-stat-sub">7,6% dos licenciados com demanda repetida</span>
           <div id="capa-tt-recur" class="kpi-tt kpi-tt-text">
-            Média de contatos pelo mesmo cliente para o <strong>mesmo tipo de problema dentro de 2 dias</strong>. Janela curta para filtrar casos de contratos distintos.<br><br>
-            <strong style="color:var(--warn)">7,6% dos clientes atendidos</strong> (197 de 2.591) reabriram suporte para a mesma tabulação em menos de 2 dias — sinal de não-resolução na primeira interação.
+            Média de contatos pelo mesmo licenciado para o <strong>mesmo tipo de problema dentro de 2 dias</strong>. Janela curta para filtrar casos de contratos distintos.<br><br>
+            <strong style="color:var(--warn)">7,6% dos licenciados atendidos</strong> (197 de 2.591) reabriram suporte para a mesma tabulação em menos de 2 dias — sinal de não-resolução na primeira interação.
           </div>
         </div>
 
@@ -286,7 +299,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
     </div>
     <div class="cover-right">
       <div class="cover-chart-box">
-        <div class="cover-chart-title">Atendimentos a cada 3 dias — Maio 2026</div>
+        <div class="cover-chart-title">Atendimentos por dia — Maio 2026<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Série temporal de atendimentos no período de referência, agrupados a cada 3 dias.</div></span></div>
         <canvas id="monthlyChart"></canvas>
         <div class="cover-chart-legend">
           <span class="cover-legend-dot" style="background:#4caf32"></span>Gestores &amp; Abaixo
@@ -304,43 +317,42 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
     <div class="page-header">
       <div>
         <div class="page-eyebrow">01 — Visão Geral</div>
-        <h2 class="page-title">Panorama do Período</h2>
+        <h2 class="page-title">Panorama do Trimestre</h2>
       </div>
       <div class="page-badge">Mar — Jun 2026</div>
     </div>
 
-    <div class="cards-row cards-4">
+    <div class="cards-row cards-2">
       <div class="card card-green">
         <div class="card-label">Atendimentos</div>
-        <div id="ov-total" class="card-value">53.827</div>
-        <div id="ov-tma" class="card-sub">176 min TMA médio</div>
+        <div id="ov-total" class="card-value">—</div>
+        <div id="ov-tma" class="card-sub">—</div>
       </div>
       <div class="card">
-        <div class="card-label">CSAT Geral</div>
-        <div id="ov-csat" class="card-value" style="color:var(--green-bright)">79,4%</div>
-        <div id="ov-csat-n" class="card-sub">21.450 avaliações</div>
-      </div>
-      <div class="card card-red">
-        <div class="card-label">SLA Estourado</div>
-        <div id="ov-sla" class="card-value">63,1%</div>
-        <div id="ov-sla-sub" class="card-sub">7.274 de 11.527 tickets</div>
-      </div>
-      <div class="card card-warn">
-        <div class="card-label">Taxa de Escalonamento</div>
-        <div id="ov-esc" class="card-value">21,4%</div>
-        <div id="ov-esc-sub" class="card-sub">11.527 tickets gerados</div>
+        <div class="card-label">CSAT</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin:8px 0 6px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:11px;color:var(--text-muted)">Gestores &amp; Abaixo</span>
+            <span id="ov-csat-gest" style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:var(--green-bright)">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:11px;color:var(--text-muted)">Executivos &amp; Acima</span>
+            <span id="ov-csat-exec" style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:var(--green-bright)">—</span>
+          </div>
+        </div>
+        <div id="ov-csat-n" class="card-sub"></div>
       </div>
     </div>
 
     <div class="split" style="margin-bottom:24px">
       <div>
         <div class="chart-box">
-          <div class="chart-title">Volume Semanal de Atendimentos</div>
+          <div class="chart-title">Volume Semanal de Atendimentos<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Atendimentos por semana ISO, histórico completo, separados por grupo.</div></span></div>
           <canvas id="weeklyChart" height="200"></canvas>
         </div>
       </div>
       <div>
-        <div class="section-title">Distribuição por Grupo de Cliente</div>
+        <div class="section-title">Distribuição por Grupo de Licenciado<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Split entre Gestores &amp; Abaixo e Executivos &amp; Acima no total histórico.</div></span></div>
         <div class="cards-row cards-2" style="margin-bottom:16px">
           <div class="card card-green">
             <div class="card-label">Gestores & Abaixo</div>
@@ -353,59 +365,51 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
             <div id="ov-exec-pct" class="card-sub">34% dos atendimentos</div>
           </div>
         </div>
-        <div class="section-title">Clientes Únicos Atendidos</div>
+        <div class="section-title">Licenciados com Recorrência de Atendimento<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Licenciados que abriram muitos atendimentos — sinal de problema não resolvido.</div></span></div>
+        <p style="font-size:12px;color:var(--text-dim);line-height:1.6;margin-bottom:12px">Licenciados que abriram 4 ou mais atendimentos podem indicar problemas sistêmicos ou dificuldade de autonomia. Quem retornou 12× ou mais merece acompanhamento individual pela equipe de suporte.</p>
         <div class="cards-row cards-3">
-          <div class="card">
-            <div class="card-label">Total Clientes</div>
-            <div id="ov-custs" class="card-value" style="font-size:22px">10.383</div>
-          </div>
           <div class="card card-warn">
-            <div class="card-label">Retorno ≥ 5×</div>
-            <div id="ov-ret5" class="card-value" style="font-size:22px">2.631</div>
+            <div class="card-label">Retorno ≥ 4×</div>
+            <div id="ov-ret4" class="card-value" style="font-size:22px">—</div>
+            <!-- <div class="card-sub">licenciados únicos atendidos</div> -->
           </div>
           <div class="card card-red">
-            <div class="card-label">Retorno ≥ 10×</div>
-            <div id="ov-ret10" class="card-value" style="font-size:22px">1.219</div>
+            <div class="card-label">Retorno ≥ 8×</div>
+            <div id="ov-ret8" class="card-value" style="font-size:22px">—</div>
+            <!-- <div class="card-sub">licenciados únicos atendidos</div> -->
+          </div>
+          <div class="card card-red">
+            <div class="card-label">Retorno ≥ 12×</div>
+            <div id="ov-ret12" class="card-value" style="font-size:22px">—</div>
+            <!-- <div class="card-sub">licenciados únicos atendidos</div> -->
           </div>
         </div>
       </div>
     </div>
 
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);flex-shrink:0">Filtrar grupo</span>
+      <button class="p1-filter-btn active" onclick="setP1Filter('all',this)">Todos</button>
+      <button class="p1-filter-btn" onclick="setP1Filter('gest',this)">Gestores &amp; Abaixo</button>
+      <button class="p1-filter-btn" onclick="setP1Filter('exec',this)">Executivos &amp; Acima</button>
+    </div>
     <div class="split">
       <div>
-        <div class="section-title">Top 5 Tabulações por Volume</div>
+        <div class="section-title">Top 5 Tabulações por Volume<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Motivos mais frequentes no período, filtrados pelo grupo selecionado.</div></span></div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Código</th><th>Grupo</th><th style="text-align:right">Total</th></tr></thead>
-            <tbody id="p1-tabs-tbody">
-              <tr><td>Fornecedora: atraso na injeção</td><td><span class="pill pill-green">Gestores</span></td><td class="num">1.002</td></tr>
-              <tr><td>Cancelamento de cliente/licenciado</td><td><span class="pill pill-green">Gestores</span></td><td class="num">993</td></tr>
-              <tr><td>Repasse: Conexão Expansão</td><td><span class="pill pill-green">Gestores</span></td><td class="num">834</td></tr>
-              <tr><td>Envio de fatura</td><td><span class="pill pill-warn">Executivos</span></td><td class="num">773</td></tr>
-              <tr><td>Solicitação de Cancelamento</td><td><span class="pill pill-warn">Executivos</span></td><td class="num">768</td></tr>
-            </tbody>
+            <tbody id="p1-tabs-tbody"></tbody>
           </table>
         </div>
       </div>
       <div>
-        <div class="section-title">Top Tags de Atendimento (categorias)</div>
+        <div class="section-title">Top Fornecedoras por Menções<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Fornecedoras mais mencionadas em atendimentos, reordenáveis por grupo.</div></span></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Tag</th><th>Volume</th><th style="text-align:right">%</th></tr></thead>
-            <tbody id="p1-tags-tbody">
-              <tr><td>DUVIDAS_GERAIS</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div></div></td><td class="num">4.663</td></tr>
-              <tr><td>VALIDACAO</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:94%"></div></div></div></td><td class="num">4.370</td></tr>
-              <tr><td>FATURAMENTO</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:51%"></div></div></div></td><td class="num">2.368</td></tr>
-              <tr><td>INJEÇÃO</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill warn" style="width:17%"></div></div></div></td><td class="num">810</td></tr>
-              <tr><td>EXPANSAO</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill blue" style="width:8%"></div></div></div></td><td class="num">368</td></tr>
-            </tbody>
+            <thead><tr><th>Fornecedora</th><th style="text-align:right">Menções</th><th style="text-align:right">Tickets</th></tr></thead>
+            <tbody id="p1-forn-tbody"></tbody>
           </table>
-        </div>
-        <div style="margin-top:16px">
-          <div class="alert-banner">
-            <div class="alert-icon">⚠</div>
-            <div class="alert-text"><strong>63,1% de SLA estourado</strong> — o gargalo central está na fila Relacionamentos (média 1,93 DU vs 0,14–0,33 DU das demais filas). Ver Página 03.</div>
-          </div>
         </div>
       </div>
     </div>
@@ -418,57 +422,84 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
     <div class="page-header">
       <div>
         <div class="page-eyebrow">02 — Demandas</div>
-        <h2 class="page-title">O Que os Clientes Precisam</h2>
+        <h2 class="page-title">O Que os Licenciados Precisam</h2>
       </div>
       <div class="page-badge">28.434 tabulações · 21.328 tags</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+      <span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);flex-shrink:0">Filtrar grupo</span>
+      <button class="p1-filter-btn active" onclick="setP2Filter('all',this)">Todos</button>
+      <button class="p1-filter-btn" onclick="setP2Filter('gest',this)">Gestores &amp; Abaixo</button>
+      <button class="p1-filter-btn" onclick="setP2Filter('exec',this)">Executivos &amp; Acima</button>
     </div>
 
     <div class="split" style="margin-bottom:8px">
       <div class="insight-card">
         <div class="insight-icon warn">🔁</div>
         <div>
-          <div class="insight-title">Grupo Devolutiva</div>
-          <div class="insight-desc"><strong style="color:var(--warn)">3.264 atendimentos</strong> envolvem o ciclo de devolutiva (cliente reenviando documentos rejeitados). TMA médio: <strong style="color:var(--text)">155 min</strong>. Um em cada 8,7 atendimentos é deste tipo.</div>
+          <div class="insight-title">Devolutivas</div>
+          <div class="insight-desc"><strong style="color:var(--warn)">3.264 atendimentos</strong> envolvem tratamento ou questões de devolutiva. TMA médio: <strong style="color:var(--text)">155 min</strong>. Um em cada 8,7 atendimentos é deste tipo.</div>
         </div>
       </div>
       <div class="insight-card">
         <div class="insight-icon red">🚪</div>
         <div>
-          <div class="insight-title">Sinal de Cancelamento</div>
+          <div class="insight-title">Risco de Churn</div>
           <div class="insight-desc"><strong style="color:var(--red)">2.717 atendimentos</strong> com tabulação de cancelamento ou solicitação de saída — equivale a <strong style="color:var(--text)">5% do total</strong>. TMA médio dos cancelamentos solicitados: 381 min.</div>
         </div>
       </div>
     </div>
 
-    <div class="section-title">Top 25 Tabulações por Volume (separadas por grupo)</div>
+    <div class="section-title">Top 25 Tabulações por Volume<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Motivos de contato mais frequentes. Grupo = perfil dominante da tabulação. Tickets = tickets gerados via essa tabulação.</div></span></div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>#</th><th>Tabulação</th><th>Grupo</th><th style="text-align:right">Total</th><th style="text-align:right">TMA Médio</th><th style="min-width:120px">Proporção</th></tr></thead>
+        <thead><tr>
+          <th>#</th><th>Tabulação</th><th>Grupo</th>
+          <th class="th-sort" onclick="sortTab('t')"   style="text-align:right">Total<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Hover no valor para ver as 5 fornecedoras mais mencionadas nesta tabulação.</div></span> <span id="ts-t"></span></th>
+          <th class="th-sort" onclick="sortTab('tma')" style="text-align:right">TMA Médio <span id="ts-tma"></span></th>
+          <th class="th-sort" onclick="sortTab('tk')"  style="text-align:right">Tickets <span id="ts-tk"></span></th>
+          <th style="min-width:100px">Proporção<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt" style="text-align:left">Barra proporcional ao volume total da tabulação no filtro atual.</div></span></th>
+        </tr></thead>
         <tbody id="tab-tbody"></tbody>
       </table>
     </div>
 
-    <div class="split" style="margin-top:8px">
+    <div class="section-title" style="margin-top:8px">Top 10 Tabulações por TMA Médio<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Demandas que geram atendimentos mais longos. Indica maior complexidade operacional.</div></span></div>
+    <div class="table-wrap" style="margin-bottom:24px">
+      <table>
+        <thead><tr><th>#</th><th>Tabulação</th><th style="text-align:right">Total</th><th style="text-align:right">TMA (min)</th></tr></thead>
+        <tbody id="tma-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="section-title" style="margin-top:8px">
+      Licenciados que Mais Retornam — Proxy sem Resolução
+      <span class="has-kpi-tt" style="margin-left:6px;font-size:11px;color:var(--text-muted);cursor:help">ⓘ
+        <div class="kpi-tt" style="width:280px;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:0">
+          <strong style="color:var(--text)">O que é "proxy sem resolução"?</strong><br><br>
+          Licenciados que abrem muitos atendimentos para o mesmo perfil de problema sinalizam que o problema não foi resolvido de fato — só encaminhado. O volume de retorno funciona como um proxy para a falta de resolução definitiva.<br><br>
+          A métrica mostra a <strong>média de atendimentos por dia</strong> entre o primeiro e o último contato do licenciado.
+        </div>
+      </span>
+    </div>
+    <div class="split" style="margin-top:4px">
       <div>
-        <div class="section-title">Top 20 Tabulações por TMA Médio</div>
+        <div class="section-title" style="color:var(--warn)">Executivos &amp; Acima</div>
+        <div class="cards-row cards-3" style="margin-bottom:8px" id="ret-exec-cards"></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>#</th><th>Tabulação</th><th style="text-align:right">Total</th><th style="text-align:right">TMA (min)</th></tr></thead>
-            <tbody id="tma-tbody"></tbody>
+            <thead><tr><th>#</th><th style="text-align:right">Atend.</th><th style="text-align:right">Atend./dia<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Atendimentos por dia entre o primeiro e o último contato do licenciado.</div></span></th><th style="text-align:right">TMA/dia<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Minutos totais em atendimento por dia (TMA somado ÷ dias ativos).</div></span></th></tr></thead>
+            <tbody id="ret-exec-tbody"></tbody>
           </table>
         </div>
       </div>
       <div>
-        <div class="section-title">Clientes que Mais Retornam (proxy sem resolução)</div>
-        <div class="cards-row cards-3">
-          <div class="card card-red"><div class="card-label">Maior retorno</div><div class="card-value">176×</div><div class="card-sub">atendimentos</div></div>
-          <div class="card card-warn"><div class="card-label">2º lugar</div><div class="card-value">175×</div><div class="card-sub">atendimentos</div></div>
-          <div class="card"><div class="card-label">3º lugar</div><div class="card-value" style="color:var(--text-dim)">162×</div><div class="card-sub">atendimentos</div></div>
-        </div>
-        <div class="table-wrap" style="margin-top:8px">
+        <div class="section-title" style="color:var(--green)">Gestores &amp; Abaixo</div>
+        <div class="cards-row cards-3" style="margin-bottom:8px" id="ret-gest-cards"></div>
+        <div class="table-wrap">
           <table>
-            <thead><tr><th>Rank</th><th style="text-align:right">Atendimentos</th><th style="min-width:120px">Frequência</th></tr></thead>
-            <tbody id="returning-tbody"></tbody>
+            <thead><tr><th>#</th><th style="text-align:right">Atend.</th><th style="text-align:right">Atend./dia</th><th style="text-align:right">TMA/dia</th></tr></thead>
+            <tbody id="ret-gest-tbody"></tbody>
           </table>
         </div>
       </div>
@@ -482,32 +513,38 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
     <div class="page-header">
       <div>
         <div class="page-eyebrow">03 — Tickets & Operações</div>
-        <h2 class="page-title">Onde o Processo Trava</h2>
+        <h2 class="page-title">Gaps de Processo</h2>
       </div>
-      <div class="page-badge red">63,1% SLA Estourado</div>
+      <!-- <div class="page-badge red" id="p3-badge-sla">—% SLA Estourado</div> -->
     </div>
 
-    <div class="cards-row cards-4">
-      <div class="card card-red"><div class="card-label">Total de Tickets</div><div class="card-value">11.527</div><div class="card-sub">de 53.827 atendimentos</div></div>
-      <div class="card card-red"><div class="card-label">SLA Estourado</div><div class="card-value">63,1%</div><div class="card-sub">7.274 tickets acima de 3 DU</div></div>
-      <div class="card card-warn"><div class="card-label">Tickets Em Aberto</div><div class="card-value">2.693</div><div class="card-sub">Não finalizados nem cancelados</div></div>
-      <div class="card"><div class="card-label">Reportes de Erro</div><div class="card-value" style="color:var(--text-dim)">362</div><div class="card-sub">3,1% de todos os tickets</div></div>
+    <div class="cards-row cards-3">
+      <div class="card card-red"><div class="card-label">Total de Tickets</div><div id="p3-total" class="card-value">—</div><div id="p3-total-sub" class="card-sub">—</div></div>
+      <div class="card card-red"><div class="card-label">SLA Estourado</div><div id="p3-sla" class="card-value">—</div><div id="p3-sla-sub" class="card-sub">—</div></div>
+      <div class="card card-warn"><div class="card-label">Tickets Em Aberto</div><div id="p3-open" class="card-value">—</div><div class="card-sub">Não finalizados nem cancelados</div></div>
     </div>
 
     <div class="split">
       <div>
-        <div class="section-title">Gargalo de Filas — Dias Úteis por Departamento</div>
+        <div class="section-title">Gargalo de Filas — Dias Úteis por Departamento<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Tempo médio em dias úteis que cada ticket passa em cada fila.</div></span></div>
         <div style="padding:4px 0" id="fila-bars"></div>
       </div>
       <div>
-        <div class="section-title">Status dos Tickets</div>
+        <div class="section-title">Status dos Tickets<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Distribuição dos tickets por status atual. Hover na linha para ver os tipos mais frequentes naquele status.</div></span></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Status</th><th style="text-align:right">Tickets</th><th style="min-width:100px">Proporção</th></tr></thead>
+            <thead><tr><th>Status<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Hover para ver os 3 tipos mais frequentes em cada status.</div></span></th><th style="text-align:right">Tickets</th><th style="min-width:120px">Proporção</th></tr></thead>
             <tbody id="status-tbody"></tbody>
           </table>
         </div>
-        <div class="section-title">Tipos de Reporte</div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px">
+          <div class="section-title" style="margin-top:0">Tipos de Reporte<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Categorias de erro identificadas nos reportes abertos pelos licenciados.</div></span></div>
+          <div style="text-align:right;flex-shrink:0;padding-left:12px">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)">Reportes de Erro</div>
+            <div id="p3-rep-total" style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:var(--text-dim)">—</div>
+            <div id="p3-rep-pct" style="font-size:11px;color:var(--text-muted)">—% dos tickets</div>
+          </div>
+        </div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Tipo de Reporte</th><th style="text-align:right">Qtd</th><th style="text-align:right">%</th></tr></thead>
@@ -517,16 +554,19 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
       </div>
     </div>
 
-    <div class="section-title">Top 20 Tipos de Ticket — Volume, SLA e Tempo Médio</div>
+    <div class="section-title">Top 20 Tipos de Ticket — Volume, SLA e Tempo Médio<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Clique nos cabeçalhos para ordenar. Forn. = top 3 fornecedoras com mais tickets daquele tipo.</div></span></div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
             <th>#</th><th>Tipo de Solicitação</th>
-            <th style="text-align:right">Tickets</th>
-            <th style="text-align:right">SLA%</th>
-            <th style="text-align:right">Tempo Médio (DU)</th>
-            <th style="text-align:right">Rel. (DU)</th>
+            <th class="th-sort" onclick="sortTkTipo('n')"   style="text-align:right">Tickets <span id="tk-sort-n"></span></th>
+            <th class="th-sort" onclick="sortTkTipo('sla')" style="text-align:right">SLA% <span id="tk-sort-sla"></span></th>
+            <th class="th-sort" onclick="sortTkTipo('tempo')"style="text-align:right">Tempo Médio (DU) <span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt" style="text-align:left">Tempo total médio do ticket em dias úteis, do aberto ao encerrado.</div></span> <span id="tk-sort-tempo"></span></th>
+            <th class="th-sort" onclick="sortTkTipo('rel')" style="text-align:right">Rel. (DU) <span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt" style="text-align:left">Tempo médio em dias úteis na fila de Relacionamentos.</div></span> <span id="tk-sort-rel"></span></th>
+            <th style="text-align:right">1ª Forn.</th>
+            <th style="text-align:right">2ª Forn.</th>
+            <th style="text-align:right">3ª Forn.</th>
           </tr>
         </thead>
         <tbody id="ticket-tipo-tbody"></tbody>
@@ -535,31 +575,56 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
 
     <div class="split">
       <div>
-        <div class="section-title">Tickets Em Aberto — Envelhecimento por Tipo</div>
+        <div class="section-title">Tickets Em Aberto — Envelhecimento por Tipo<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Tickets não finalizados e há quantos dias estão aguardando resolução por tipo.</div></span></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Tipo</th><th style="text-align:right">Em aberto</th><th style="text-align:right">Idade Média</th><th style="text-align:right">Máx.</th></tr></thead>
+            <thead><tr><th></th><th>Tipo</th><th class="th-sort" onclick="sortAging('n')" style="text-align:right">Em aberto <span id="ag-n"></span></th><th class="th-sort" onclick="sortAging('avg')" style="text-align:right">Idade Média<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt" style="text-align:left">Média de dias corridos desde a abertura do ticket até hoje.</div></span> <span id="ag-avg"></span></th><th class="th-sort" onclick="sortAging('max')" style="text-align:right">Máx. <span id="ag-max"></span></th></tr></thead>
             <tbody id="aging-tbody"></tbody>
           </table>
         </div>
       </div>
       <div>
-        <div class="section-title">Clientes com Mais Tickets Gerados</div>
+        <div class="section-title">Licenciados com Mais Tickets Gerados<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Licenciados anônimos com maior volume de tickets. Identifica casos críticos recorrentes.</div></span></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Rank</th><th style="text-align:right">Tickets</th><th style="text-align:right">Atendimentos</th><th style="text-align:right">Taxa</th></tr></thead>
+            <thead><tr><th>Rank</th><th class="th-sort" onclick="sortCustTk('tk')" style="text-align:right">Tickets <span id="ct-tk"></span></th><th class="th-sort" onclick="sortCustTk('at')" style="text-align:right">Atendimentos <span id="ct-at"></span></th><th class="th-sort" onclick="sortCustTk('rate')" style="text-align:right">Taxa <span id="ct-rate"></span></th></tr></thead>
             <tbody id="cust-ticket-tbody"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <div class="section-title">Reporte por Tipo de Ticket (qualidade de abertura)</div>
+    <div class="section-title">Reporte por Tipo de Ticket<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Taxa de tickets reportados como abertos incorretamente, por tipo de solicitação.</div></span></div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>#</th><th>Tipo de Solicitação</th><th style="text-align:right">Tickets</th><th style="text-align:right">Reportados</th><th style="text-align:right">Taxa</th><th style="min-width:100px">Barra</th></tr></thead>
+        <thead><tr><th>#</th><th>Tipo de Solicitação</th><th style="text-align:right">Tickets</th><th style="text-align:right">Reportados</th><th style="text-align:right">Taxa<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt" style="text-align:left">% de tickets deste tipo que foram reportados como incorretos.</div></span></th><th style="min-width:100px">Barra</th></tr></thead>
         <tbody id="reporte-rate-tbody"></tbody>
       </table>
+    </div>
+
+    <div class="split" style="margin-top:24px">
+      <div>
+        <div class="section-title">Taxa Diária de Reportes — Maio 2026<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">% de tickets abertos no dia marcados como incorretos. Identifica picos de erro operacional.</div></span></div>
+        <div class="chart-box" style="height:200px">
+          <canvas id="repDailyChart"></canvas>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px">% de tickets abertos no dia que foram reportados como incorretos.</div>
+      </div>
+      <div>
+        <div class="section-title">Tickets Cancelados — Análise de Justificativa<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Tickets cancelados com ou sem reporte de justificativa registrado.</div></span></div>
+        <div class="cards-row cards-3" style="margin-bottom:12px">
+          <div class="card"><div class="card-label">Total Cancelados</div><div id="canc-total" class="card-value" style="font-size:22px">—</div></div>
+          <div class="card card-green"><div class="card-label">Com Reporte</div><div id="canc-with" class="card-value" style="font-size:22px">—</div><div class="card-sub">justificativa registrada</div></div>
+          <div class="card card-red"><div class="card-label">Sem Reporte</div><div id="canc-without" class="card-value" style="font-size:22px">—</div><div class="card-sub">sem justificativa</div></div>
+        </div>
+        <div class="section-title" style="font-size:10px">Top tipos cancelados sem justificativa</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tipo de Solicitação</th><th style="text-align:right">Qtd</th></tr></thead>
+            <tbody id="canc-no-rep-tbody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -570,28 +635,34 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
     <div class="page-header">
       <div>
         <div class="page-eyebrow">04 — Fornecedoras</div>
-        <h2 class="page-title">Impacto das Parceiras</h2>
+        <h2 class="page-title">Percepções do Atendimento</h2>
       </div>
-      <div class="page-badge red">THOPEN: 500 tickets aguardando</div>
+      <!-- <div class="page-badge red">THOPEN: 500 tickets aguardando</div> -->
     </div>
 
     <div class="alert-banner">
       <div class="alert-icon">⚠</div>
-      <div class="alert-text"><strong>THOPEN</strong> concentra 500 tickets aguardando resposta, 80% de SLA estourado e é a 2ª maior fonte de tickets (2.477). <strong>GV</strong> tem o menor CSAT entre fornecedoras com dados (58%). Clientes mencionam THOPEN explicitamente nas Pesquisas Live como motivo de insatisfação.</div>
+      <div class="alert-text"><strong>THOPEN</strong> concentra 500 tickets aguardando resposta, 80% de SLA estourado e é a 2ª maior fonte de tickets (2.477). Licenciados mencionam THOPEN explicitamente nas Pesquisas Live como motivo de insatisfação.<br><strong>GV</strong> tem o menor CSAT entre fornecedoras com dados (58%).</div>
     </div>
 
-    <div class="section-title">Painel de Fornecedoras — Visão Completa</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="section-title" style="margin:0">Painel de Fornecedoras — Visão Completa</div>
+      <select id="forn-tipo-filter" onchange="onFornTipoFilter(this.value)"
+        style="margin-left:auto;background:var(--card);border:1px solid var(--border);color:var(--text-dim);font-family:inherit;font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer;max-width:280px">
+        <option value="">Todos os tipos de ticket</option>
+      </select>
+    </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
             <th>Fornecedora</th>
-            <th style="text-align:right">Menções</th>
-            <th style="text-align:right">Tickets</th>
-            <th style="text-align:right">SLA%</th>
-            <th style="text-align:right">Aguardando</th>
-            <th style="text-align:right">Fila Forn. (DU)</th>
-            <th style="text-align:right">CSAT%</th>
+            <th class="th-sort" onclick="sortForn('men')"  style="text-align:right">Menções <span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt" style="text-align:left">Atendimentos que mencionaram esta fornecedora (de mencoes_fornecedora).</div></span> <span id="fs-men"></span></th>
+            <th class="th-sort" onclick="sortForn('tk')"   style="text-align:right">Tickets <span id="fs-tk"></span></th>
+            <th class="th-sort" onclick="sortForn('esc')"  style="text-align:right">Esc.%<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Tickets ÷ menções. Alta = maioria dos atendimentos é convertido em ticket.</div></span> <span id="fs-esc"></span></th>
+            <th class="th-sort" onclick="sortForn('sla')"  style="text-align:right">SLA% <span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt" style="text-align:left">% de tickets desta fornecedora com prazo estourado (>3 dias úteis).</div></span> <span id="fs-sla"></span></th>
+            <th class="th-sort" onclick="sortForn('forn')" style="text-align:right">Fila Forn. (DU) <span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt" style="text-align:left">Média de dias úteis que o ticket ficou na fila da fornecedora especificamente.</div></span> <span id="fs-forn"></span></th>
+            <th class="th-sort" onclick="sortForn('csat')" style="text-align:right">CSAT% <span id="fs-csat"></span></th>
             <th style="min-width:80px">Severidade</th>
           </tr>
         </thead>
@@ -599,15 +670,44 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
       </table>
     </div>
 
+    <div class="section-title">Tabulações de Cancelamento por Fornecedora<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Atendimentos que mencionaram esta fornecedora e também foram tabulados como cancelamento. Indica churn ligado ao problema.</div></span></div>
+    <div class="table-wrap" style="margin-bottom:24px">
+      <table>
+        <thead><tr><th>Fornecedora</th>
+          <th class="th-sort" onclick="sortFornCanc('men')"    style="text-align:right">Menções <span id="fc-men"></span></th>
+          <th class="th-sort" onclick="sortFornCanc('canc_n')" style="text-align:right">Canc. Tabulados <span id="fc-canc"></span></th>
+          <th class="th-sort" onclick="sortFornCanc('canc_pct')" style="text-align:right">% Menções <span id="fc-pct"></span></th>
+          <th style="min-width:100px">Proporção</th></tr></thead>
+        <tbody id="forn-canc-tbody"></tbody>
+      </table>
+    </div>
+
     <div class="split">
       <div>
-        <div class="section-title">Fornecedoras com Maior SLA Estourado</div>
+        <div class="section-title">Fornecedoras com Maior SLA Estourado<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">% de tickets fora do prazo (3 DU) por fornecedora, entre as com mais tickets.</div></span></div>
         <div id="forn-sla-bars"></div>
       </div>
       <div>
-        <div class="section-title">Fornecedoras por CSAT (menções em atendimentos)</div>
+        <div class="section-title">Fornecedoras por CSAT<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">CSAT médio das avaliações de atendimentos que mencionaram a fornecedora. Mín. 5 avaliações.</div></span></div>
         <div id="forn-csat-bars"></div>
       </div>
+    </div>
+
+
+    <div class="section-title" style="margin-top:24px">Top 3 Tipos de Ticket por Fornecedora — por Mês<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Tipos de ticket mais frequentes para cada fornecedora em cada mês, com % de SLA estourado.</div></span></div>
+    <div class="table-wrap">
+      <table id="forn-monthly-table">
+        <thead>
+          <tr>
+            <th>Fornecedora</th>
+            <th>Mês</th>
+            <th>1º Tipo</th><th style="text-align:right">Tk</th><th style="text-align:right">SLA%<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt" style="text-align:left">% de tickets deste tipo/mês com SLA estourado (>3 DU).</div></span></th>
+            <th>2º Tipo</th><th style="text-align:right">Tk</th><th style="text-align:right">SLA%</th>
+            <th>3º Tipo</th><th style="text-align:right">Tk</th><th style="text-align:right">SLA%</th>
+          </tr>
+        </thead>
+        <tbody id="forn-monthly-tbody"></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -618,7 +718,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
     <div class="page-header">
       <div>
         <div class="page-eyebrow">05 — CSAT & Sentimentos</div>
-        <h2 class="page-title">Como os Clientes se Sentem</h2>
+        <h2 class="page-title">Como os Licenciados se Sentem</h2>
       </div>
       <div class="page-badge">21.450 avaliações coletadas</div>
     </div>
@@ -626,38 +726,46 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
     <div class="split">
       <div>
         <div class="cards-row cards-2">
-          <div class="card card-green"><div class="card-label">CSAT Geral</div><div class="card-value">79,4%</div><div class="card-sub">notas 4 e 5</div></div>
-          <div class="card card-warn"><div class="card-label">Notas 1 e 2</div><div class="card-value">15,3%</div><div class="card-sub">3.194 avaliações negativas</div></div>
+          <div class="card card-red" style="text-align:left;padding:16px 20px">
+            <div class="card-label">Notas 1 e 2 — Gestores &amp; Abaixo</div>
+            <div id="p5-neg-gest" class="card-value">—</div>
+            <div id="p5-neg-gest-sub" class="card-sub">avaliações negativas</div>
+          </div>
+          <div class="card card-red" style="text-align:left;padding:16px 20px">
+            <div class="card-label">Notas 1 e 2 — Executivos &amp; Acima</div>
+            <div id="p5-neg-exec" class="card-value">—</div>
+            <div id="p5-neg-exec-sub" class="card-sub">avaliações negativas</div>
+          </div>
         </div>
-        <div class="section-title">Distribuição das Notas</div>
+        <div class="section-title">Distribuição das Notas<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Contagem de avaliações CSAT de 5 (melhor) a 1 (pior), com % do total.</div></span></div>
         <div id="nota-bars"></div>
-        <div class="section-title">CSAT por Grupo de Cliente</div>
+        <div class="section-title">CSAT por Grupo de Licenciado<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Média de satisfação por perfil. Executivos tendem a avaliar melhor por menor volume de problemas.</div></span></div>
         <div class="cards-row cards-2">
           <div class="card card-green" style="text-align:left;padding:16px 20px">
-            <div class="card-label">Executivos & Acima</div>
-            <div class="card-value">91,0%</div>
-            <div class="card-sub">2.548 avaliações</div>
+            <div class="card-label">Executivos &amp; Acima</div>
+            <div id="p5-csat-exec" class="card-value">—</div>
+            <div id="p5-csat-exec-sub" class="card-sub">—</div>
           </div>
           <div class="card" style="text-align:left;padding:16px 20px">
-            <div class="card-label">Gestores & Abaixo</div>
-            <div class="card-value" style="color:var(--warn)">77,9%</div>
-            <div class="card-sub">18.902 avaliações · diferença de 13,1pp</div>
+            <div class="card-label">Gestores &amp; Abaixo</div>
+            <div id="p5-csat-gest" class="card-value" style="color:var(--warn)">—</div>
+            <div id="p5-csat-gest-sub" class="card-sub">—</div>
           </div>
         </div>
       </div>
       <div>
-        <div class="section-title">Sentimentos nas Avaliações (CSAT Sentimentos)</div>
+        <div class="section-title">Sentimentos nas Avaliações<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Classificação de sentimento nas respostas abertas do CSAT, identificadas por IA.</div></span></div>
         <div class="feeling-grid" id="feeling-grid"></div>
         <div style="margin-top:16px">
           <div class="cards-row cards-2">
-            <div class="card card-green"><div class="card-label">Positivos</div><div class="card-value">675</div><div class="card-sub">Elogio, Encantado, Gratidão…</div></div>
-            <div class="card card-red"><div class="card-label">Negativos</div><div class="card-value">268</div><div class="card-sub">Crítico, Frustrado, Revoltado…</div></div>
+            <div class="card card-green"><div class="card-label">Positivos</div><div id="p5-feel-pos" class="card-value">—</div><div class="card-sub">Elogio, Encantado, Gratidão…</div></div>
+            <div class="card card-red"><div class="card-label">Negativos</div><div id="p5-feel-neg" class="card-value">—</div><div class="card-sub">Crítico, Frustrado, Revoltado…</div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="section-title">15 Tabulações com Menor CSAT (mín. 20 avaliações)</div>
+    <div class="section-title">15 Tabulações com Menor CSAT<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Tipos de demanda com pior avaliação média. Mínimo de 20 avaliações para evitar distorções.</div></span></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>#</th><th>Tabulação</th><th style="text-align:right">Avaliações</th><th style="text-align:right">CSAT%</th><th style="min-width:140px">Barra</th></tr></thead>
@@ -665,53 +773,21 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
       </table>
     </div>
 
-    <div class="section-title">Comentários com Nota 1 ou 2 (amostra)</div>
+    <div class="section-title">Sentimentos por Fornecedora<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Sentimentos das avaliações CSAT de atendimentos que mencionaram cada fornecedora.</div></span></div>
+    <div id="forn-sent-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:24px"></div>
+
+    <div class="section-title">Comentários com Nota 1 ou 2<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Amostra de avaliações negativas com comentário qualitativo de pelo menos 10 caracteres.</div></span></div>
     <div id="comments-container"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ P6: AGENTES ══ -->
-<div id="p6" class="page">
-  <div class="page-inner">
-    <div class="page-header">
-      <div>
-        <div class="page-eyebrow">06 — Agentes</div>
-        <h2 class="page-title">Desempenho Individual</h2>
-      </div>
-      <div class="page-badge">51 agentes com dados</div>
-    </div>
-
-    <div class="alert-banner">
-      <div class="alert-icon">⚠</div>
-      <div class="alert-text"><strong>João Gabriel Santos</strong>: CSAT 50% com 2.449 atendimentos — outlier crítico. <strong>Matheus Cortés & Karine Mayra</strong>: taxa de escalonamento ~41–42% (2× acima da média de 1 em cada 5 atendimentos). TMA varia de 14 min a 732 min — dispersão expressiva.</div>
-    </div>
-
-    <div class="section-title">Todos os Agentes — Volume, TMA, CSAT e Taxa de Escalonamento</div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th><th>Agente</th>
-            <th style="text-align:right">Atendimentos</th>
-            <th style="text-align:right">TMA (min)</th>
-            <th style="text-align:right">CSAT%</th>
-            <th style="text-align:right">Tickets</th>
-            <th style="text-align:right">Escal.%</th>
-            <th style="min-width:80px">Escal. Barra</th>
-          </tr>
-        </thead>
-        <tbody id="agentes-tbody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
 
 <!-- ═══════════════════════════════════════════════ P7: PESQUISAS LIVE ══ -->
 <div id="p7" class="page">
   <div class="page-inner">
     <div class="page-header">
       <div>
-        <div class="page-eyebrow">07 — Pesquisas Live</div>
+        <div class="page-eyebrow">07 — Lives Conexão Green</div>
         <h2 class="page-title">Voz dos Licenciados</h2>
       </div>
       <div class="page-badge">277 respostas · 4 sessões</div>
@@ -719,11 +795,17 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
 
     <div class="split">
       <div>
-        <div class="chart-box">
-          <div class="chart-title">Notas por Sessão</div>
-          <canvas id="liveChart" height="200"></canvas>
+        <div class="split" style="gap:16px;margin-bottom:0">
+          <div class="chart-box" style="height:180px;flex-shrink:0">
+            <div class="chart-title">Utilidade por Sessão (/10)<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Nota média de utilidade do conteúdo da Live por sessão, escala 0–10.</div></span></div>
+            <canvas id="liveChartUtil" style="flex:1;min-height:0"></canvas>
+          </div>
+          <div class="chart-box" style="height:180px;flex-shrink:0">
+            <div class="chart-title">Clareza por Sessão (/5)<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Nota média de clareza da apresentação por sessão, escala 0–5.</div></span></div>
+            <canvas id="liveChartClar" style="flex:1;min-height:0"></canvas>
+          </div>
         </div>
-        <div class="section-title">Ações Selecionadas após a Live</div>
+        <div class="section-title">Ações Selecionadas após a Live<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">O que os participantes indicaram que vão fazer após assistir à sessão.</div></span></div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Ação</th><th style="text-align:right">Votos</th><th style="min-width:100px">Proporção</th></tr></thead>
@@ -731,20 +813,20 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
           </table>
         </div>
         <div class="cards-row cards-3" style="margin-top:16px">
-          <div class="card card-green"><div class="card-label">Utilidade Média</div><div class="card-value">9,2/10</div></div>
-          <div class="card card-warn"><div class="card-label">Clareza Média</div><div class="card-value">4,5/5</div></div>
+          <div class="card card-green"><div class="card-label">Utilidade Média</div><div id="p7-util-avg" class="card-value">—</div></div>
+          <div class="card card-warn"><div class="card-label">Clareza Média</div><div id="p7-clar-avg" class="card-value">—</div></div>
           <div class="card card-red"><div class="card-label">Ainda Inseguros</div><div class="card-value">15</div><div class="card-sub">para indicar <img src="../assets/favicon.png" alt="iGreen" style="height:11px;vertical-align:middle;margin-left:1px"></div></div>
         </div>
       </div>
       <div>
-        <div class="section-title">Temas Recorrentes Identificados</div>
+        <div class="section-title">Temas Recorrentes Identificados<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Temas identificados manualmente a partir dos comentários abertos das pesquisas de live.</div></span></div>
         <div class="insight-card">
           <div class="insight-icon warn">📋</div>
           <div><div class="insight-title">Devolutivas & Cadastro</div><div class="insight-desc">Tema mais frequente em todas as sessões. Licenciados relatam devolutivas indevidas, app não lendo documentos e ciclos de reenvio infindáveis.</div></div>
         </div>
         <div class="insight-card">
           <div class="insight-icon red">⏱</div>
-          <div><div class="insight-title">Atrasos de Injeção</div><div class="insight-desc">Clientes com 120+ dias validados sem receber desconto. Menções de casos acima de 10–11 meses. Causa direta de cancelamentos.</div></div>
+          <div><div class="insight-title">Atrasos de Injeção</div><div class="insight-desc">Licenciados com 120+ dias validados sem receber desconto. Menções de casos acima de 10–11 meses. Causa direta de cancelamentos.</div></div>
         </div>
         <div class="insight-card">
           <div class="insight-icon red">🏭</div>
@@ -757,8 +839,43 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
       </div>
     </div>
 
-    <div class="section-title">Comentários Críticos — Valor Aberto & Dúvidas</div>
-    <div id="live-quotes-container"></div>
+    <div class="split">
+      <div>
+        <div class="section-title">Comentários Críticos<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Relatos de insatisfação ou problemas operacionais filtrados por palavras-chave negativas.</div></span></div>
+        <div id="live-quotes-container"></div>
+      </div>
+      <div>
+        <div class="section-title">Sugestões de Melhoria<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Pedidos de funcionalidade ou melhoria identificados automaticamente nos comentários abertos.</div></span></div>
+        <div id="live-sugg-container"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ P8: DADOS A COLETAR ══ -->
+<div id="p8" class="page">
+  <div class="page-inner">
+    <div class="page-header">
+      <div>
+        <div class="page-eyebrow">08 — Dados a Coletar</div>
+        <h2 class="page-title">Métricas Ainda Não Disponíveis</h2>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--text-dim);line-height:1.7;max-width:680px;margin-bottom:28px">
+      Lista de informações que seriam valiosas para o dashboard mas que ainda não estão sendo coletadas ou registradas nos sistemas atuais. Use este espaço para catalogar lacunas de dados identificadas durante a análise.
+    </p>
+
+    <div class="section-title">Adicionar necessidade de dado</div>
+    <div style="display:flex;gap:12px;margin-bottom:28px;align-items:flex-start">
+      <textarea id="data-need-input" placeholder="Descreva o dado que precisa ser coletado e por que seria útil..." rows="3"
+        style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-family:inherit;font-size:13px;resize:vertical;line-height:1.55"></textarea>
+      <button onclick="addDataNeed()"
+        style="padding:10px 20px;border-radius:8px;border:none;background:var(--green);color:#000;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;transition:opacity .15s"
+        onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Adicionar</button>
+    </div>
+
+    <div class="section-title">Dados identificados como necessários</div>
+    <div id="data-needs-list"></div>
   </div>
 </div>
 
@@ -771,16 +888,33 @@ const _SB = createClient(
   '__SUPABASE_URL__',
   '__SUPABASE_KEY__'
 );
-const _P_START = new Date('2026-04-26T00:00:00Z');
-const _P_END   = new Date('2026-05-25T23:59:59Z');
+const _P_START = new Date('2026-05-01T00:00:00Z');
+const _P_END   = new Date('2026-06-01T00:00:00Z');
 const _SEG_TAGS = new Set(['CONSULTOR SENIOR','LICENCIADO PRO','LICENCIADO PLUS',
   'CONSULTOR INICIANTE','GOLD','VISIONARIO','EXECUTIVO','EXECUTIVO SENIOR',
   'LICENCIADO ELITE','LICENCIADO OURO','PARTNER','BRONZE','SILVER']);
 window.__dashCache = null;
-let WEEKS, TABULACOES, TOP_TMA, RETURNING, TICKET_TIPOS, GLOBAL_FILAS,
-    STATUS_DIST, OPEN_AGING, CUST_TICKETS, REPORTE_TYPES, REPORTE_RATE,
-    FORNECEDORAS, NOTA_DIST, FEELINGS, CSAT_BY_TAB, COMMENTS,
-    AGENTES, LIVE_SESSIONS, ACOES, NEG_QUOTES, MONTHLY;
+
+// Curated insights — UUID refs only (text loaded from DB at runtime, never hardcoded here)
+const CURATED_INSIGHTS = [
+  { table: 'csat',          id: '2019a85a-b61f-43ac-afe0-1ab1d53d923d', field: 'comentario',  theme: 'SLA & Prazo',           nota: 2,  grupo: 'Executivos & Acima' },
+  { table: 'csat',          id: 'cf49281d-98d7-493e-9524-445a47870cb2', field: 'comentario',  theme: 'Faturamento Cemig',      nota: 2,  grupo: 'Executivos & Acima' },
+  { table: 'csat',          id: '01aa05ff-3093-49f5-9adb-0a0bc2efc377', field: 'comentario',  theme: 'Protocolo sem retorno',  nota: 1,  grupo: 'Executivos & Acima' },
+  { table: 'csat',          id: 'ef3ce561-3b51-4f4b-866c-a58bd2840218', field: 'comentario',  theme: 'Cemig — Simulação',      nota: 1,  grupo: 'Executivos & Acima' },
+  { table: 'csat',          id: 'c4813eb9-9019-4d55-8852-56a5626cf6aa', field: 'comentario',  theme: 'Cancelamentos / Boleto', nota: 1,  grupo: 'Executivos & Acima' },
+  { table: 'csat',          id: 'cfed31d7-d866-42cf-9db9-8767158c9a74', field: 'comentario',  theme: '60 dias sem resolução',  nota: 1,  grupo: 'Executivos & Acima' },
+  { table: 'pesquisas_live', id: '4abbddc6-03bd-46c8-9887-b34f93abb706', field: 'duvidas',     theme: 'Injeção >10 meses',      nota: null, grupo: 'Live' },
+  { table: 'pesquisas_live', id: '28d7512e-3bcc-4a04-a877-440bac651de0', field: 'valor_aberto',theme: 'App + Suporte',          nota: null, grupo: 'Live' },
+  { table: 'pesquisas_live', id: '659e809c-9dd7-4c73-9e98-89e0e748e139', field: 'duvidas',     theme: '6 meses sem desconto',   nota: null, grupo: 'Live' },
+  { table: 'pesquisas_live', id: 'f0ad273d-b008-48c9-a0c2-177c320af8ef', field: 'valor_aberto',theme: 'Thopen — Prazos',        nota: null, grupo: 'Live' },
+  { table: 'pesquisas_live', id: '900af08f-201a-423e-9de7-2b51c503f47f', field: 'duvidas',     theme: 'Thopen — Vendas paradas',nota: null, grupo: 'Live' },
+  { table: 'pesquisas_live', id: 'e1eb0118-553d-4bbc-ba6a-a361e85d163e', field: 'duvidas',     theme: 'Transparência protocolos',nota: null, grupo: 'Live' },
+];
+let WEEKS, TABULACOES, TOP_TMA, TOP_TMA_GEST, TOP_TMA_EXEC, RET_EXEC, RET_GEST, TICKET_TIPOS, GLOBAL_FILAS,
+    STATUS_DIST, OPEN_AGING, CUST_TICKETS, REPORTE_TYPES, REPORTE_RATE, REP_DAILY, CANCELLED,
+    TK_TOTAL, TK_SLA_BREACH_N, TK_MONTHLY,
+    FORNECEDORAS, FORN_MONTHLY, FORN_CANC, FORN_SENT, NOTA_DIST, FEELINGS, CSAT_BY_TAB, COMMENTS,
+    AGENTES, LIVE_SESSIONS, ACOES, NEG_QUOTES, NEG_SUGG, MONTHLY;
 
 async function _fetchAll(table, cols) {
   const out = []; let offset = 0;
@@ -799,7 +933,7 @@ function _prog(pct, msg) {
   if (txt) txt.textContent = msg;
 }
 function _grp(r) {
-  const g = (r?.grupo_cliente || '').toUpperCase();
+  const g = (r?.grupo_licenciado || '').toUpperCase();
   if (g.includes('GESTOR')) return 'Gestores';
   if (g.includes('EXECUT')) return 'Executivos';
   return 'Outros';
@@ -816,233 +950,204 @@ function _fmt(n) { return Math.round(n).toLocaleString('pt-BR'); }
 
 async function _loadData() {
   if (window.__dashCache) return window.__dashCache;
-  _prog(5, 'Buscando atendimentos...');
-  const atend = await _fetchAll('atendimentos', 'id,criado_em,tma_minutos,grupo_cliente,cliente_id,id_agente');
-  const atendById = Object.fromEntries(atend.map(r => [r.id, r]));
-  _prog(18, 'Buscando tabulações e tickets...');
-  const [tabs, tkts] = await Promise.all([
-    _fetchAll('tabulacoes', 'atendimento_id,codigo'),
-    _fetchAll('tickets', 'id,atendimento_id,tipo_solicitacao,sla_estourado,tempo_total_du,fila_triagem_du,fila_suporte_ao_licenciado_du,fila_relacionamentos_du,fila_operacoes_du,fila_contratos_du,fila_fornecedora_du,fila_aguardando_cliente_du,status,criado_em'),
+  _prog(5, 'Carregando dados...');
+  const PS = _P_START.toISOString(), PE = _P_END.toISOString();
+  const [
+    { data: rVG },
+    { data: rCapa },
+    { data: rTabs },
+    { data: rTkts },
+    { data: rCsat },
+    { data: rForn },
+    { data: rTags },
+    { data: rRet },
+    { data: rWeeks },
+    { data: rRepDaily },
+    { data: rCancelled },
+    { data: rFornMonthly },
+    { data: rFornCanc },
+    { data: rFornSent },
+    { data: rDataNeeds },
+    { data: pesquisas = [] },
+  ] = await Promise.all([
+    _SB.rpc('dash_visao_geral'),
+    _SB.rpc('dash_capa_full', { p_start: PS, p_end: PE }),
+    _SB.rpc('dash_tabulacoes_full'),
+    _SB.rpc('dash_tickets_full'),
+    _SB.rpc('dash_csat_full'),
+    _SB.rpc('dash_fornecedoras_full'),
+    _SB.rpc('dash_tags_top', { n: 50 }),
+    _SB.rpc('dash_returning_detail'),
+    _SB.rpc('dash_weekly_split'),
+    _SB.rpc('dash_reporte_daily_may'),
+    _SB.rpc('dash_cancelled_analysis'),
+    _SB.rpc('dash_fornecedoras_monthly_tipos'),
+    _SB.rpc('dash_forn_cancellation'),
+    _SB.rpc('dash_forn_sentimentos'),
+    _SB.from('data_needs').select('id,descricao,criado_em').order('criado_em'),
+    _SB.rpc('dash_pesquisas_live'),
   ]);
-  _prog(40, 'Buscando CSAT e tags...');
-  const [csatR, csatSent, tagsR] = await Promise.all([
-    _fetchAll('csat', 'id,atendimento_id,nota,nota_calculo,comentario,grupo_cliente'),
-    _fetchAll('csat_sentimentos', 'csat_id,feeling'),
-    _fetchAll('tags', 'atendimento_id,valor'),
+  // Fetch curated insight texts by UUID (two tables)
+  _prog(78, 'Carregando depoimentos...');
+  const csatIds  = CURATED_INSIGHTS.filter(c => c.table === 'csat').map(c => c.id);
+  const liveIds  = CURATED_INSIGHTS.filter(c => c.table === 'pesquisas_live').map(c => c.id);
+  const [{ data: csatTexts }, { data: liveTexts }] = await Promise.all([
+    _SB.from('csat').select('id,comentario').in('id', csatIds),
+    Promise.resolve({ data: (pesquisas || []).filter(r => liveIds.includes(String(r.id))), error: null }),
   ]);
-  _prog(60, 'Buscando fornecedoras e pesquisas...');
-  const [mencoes, pesquisas, reportes] = await Promise.all([
-    _fetchAll('mencoes_fornecedora', 'atendimento_id,fornecedora_id'),
-    _fetchAll('pesquisas_live', 'sessao_em,nota_utilidade,nota_clareza,valor_aberto,duvidas,acoes_selecionadas'),
-    _fetchAll('reportes', 'ticket_id,tipo_reporte'),
-  ]);
-  let agtRef = {};
-  try { const { data } = await _SB.from('agentes').select('id,nome').range(0, 999); if (data) agtRef = Object.fromEntries(data.map(r => [String(r.id), r.nome])); } catch (_) {}
-  let fornRef = {};
-  try { const { data } = await _SB.from('fornecedoras').select('id,nome').range(0, 999); if (data) fornRef = Object.fromEntries(data.map(r => [String(r.id), r.nome])); } catch (_) {}
-  _prog(78, 'Calculando métricas...');
-  const m = _compute({ atend, atendById, tabs, tkts, csatR, csatSent, tagsR, mencoes, pesquisas, reportes, agtRef, fornRef });
+  const _textMap = {};
+  (csatTexts || []).forEach(r => { _textMap[r.id] = r.comentario; });
+  (liveTexts || []).forEach(r => { _textMap[r.id + ':valor_aberto'] = r.valor_aberto; _textMap[r.id + ':duvidas'] = r.duvidas; });
+  window.__curatedTexts = _textMap;
+  _prog(80, 'Calculando métricas...');
+  const m = _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas });
+  window.__dataNeedsData = rDataNeeds || [];
   window.__dashCache = m;
   return m;
 }
 
-function _compute({ atend, atendById, tabs, tkts, csatR, csatSent, tagsR, mencoes, pesquisas, reportes, agtRef, fornRef }) {
-  const pA = atend.filter(r => _inP(r.criado_em));
-  const pIds = new Set(pA.map(r => r.id));
-  const csatByAtend = {};
-  for (const r of csatR) {
-    if (r.nota_calculo == null) continue;
-    if (!csatByAtend[r.atendimento_id]) csatByAtend[r.atendimento_id] = [];
-    csatByAtend[r.atendimento_id].push(r.nota_calculo);
-  }
-  // CSAT by grupo — use csat.grupo_cliente directly (always populated, no join needed)
-  const _csatIsExec = r => (r.grupo_cliente || '').toUpperCase().includes('EXECUT');
-  const csatGest = csatR.filter(r => r.nota_calculo != null && !_csatIsExec(r)).map(r => r.nota_calculo);
-  const csatExec = csatR.filter(r => r.nota_calculo != null &&  _csatIsExec(r)).map(r => r.nota_calculo);
-  const gestCsatPct = (_avg(csatGest) * 100).toFixed(1);
-  const execCsatPct = (_avg(csatExec) * 100).toFixed(1);
-  // Period CSAT by grupo (filter by period atendimento_id; orphan CSATs excluded from period slice)
-  const pCsatG = [], pCsatE = [];
-  for (const r of csatR) {
-    if (r.nota_calculo == null || !pIds.has(r.atendimento_id)) continue;
-    if (_csatIsExec(r)) pCsatE.push(r.nota_calculo);
-    else pCsatG.push(r.nota_calculo);
-  }
-  const pCsatNc = [...pCsatG, ...pCsatE];
-  const pTkts = tkts.filter(r => pIds.has(r.atendimento_id));
-  const escPct = pA.length ? pTkts.length / pA.length : 0;
-  const slaBP = pTkts.filter(r => r.sla_estourado).length;
+function _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas }) {
+  // ── Capa ────────────────────────────────────────────────────────────────────
+  const rc = rCapa || {};
+  const capaCsatN = (rc.csat_gest_n || 0) + (rc.csat_exec_n || 0);
+  const capaCsatAvg = capaCsatN
+    ? ((rc.csat_gest_avg || 0) * (rc.csat_gest_n || 0) + (rc.csat_exec_avg || 0) * (rc.csat_exec_n || 0)) / capaCsatN
+    : 0;
+  const escPct = rc.total ? rc.esc_n / rc.total : 0;
   const escDenom = Math.max(2, Math.round(1 / Math.max(escPct, 0.001)));
-  const BK = 3 * 86400000;
-  const bkts = [];
-  let cur = new Date(_P_START);
-  while (cur <= _P_END) {
-    const be = new Date(Math.min(cur.getTime() + BK - 1, _P_END.getTime()));
-    bkts.push({ lbl: cur.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), s: new Date(cur), e: be, g: 0, ex: 0 });
-    cur = new Date(cur.getTime() + BK);
-  }
-  for (const r of pA) { const dt = new Date(r.criado_em); for (const b of bkts) if (dt >= b.s && dt <= b.e) { _grp(r) === 'Gestores' ? b.g++ : b.ex++; break; } }
-  const WIN = 2 * 86400000;
-  const ctd = new Map();
-  for (const r of tabs) {
-    if (!pIds.has(r.atendimento_id) || !r.codigo) continue;
-    const a = atendById[r.atendimento_id];
-    if (!a?.cliente_id) continue;
-    const k = `${a.cliente_id}||${r.codigo}`;
-    if (!ctd.has(k)) ctd.set(k, []);
-    ctd.get(k).push(new Date(a.criado_em).getTime());
-  }
-  const rCusts = new Set(); const rVals = [];
-  const totCusts = new Set(pA.map(r => r.cliente_id).filter(Boolean)).size;
-  for (const [k, ts] of ctd) {
-    ts.sort((a, b) => a - b); const cid = k.split('||')[0]; let mx = 1;
-    for (let i = 0; i < ts.length; i++) { const cnt = ts.slice(i).filter(t => t - ts[i] <= WIN).length; if (cnt > mx) mx = cnt; }
-    if (mx > 1) { rCusts.add(cid); rVals.push(mx); }
-  }
+  const recur = rc.recur || {};
   const capa = {
-    total: pA.length, gest: pA.filter(r => _grp(r) === 'Gestores').length, exec: pA.filter(r => _grp(r) === 'Executivos').length,
-    csatPct: (_avg(pCsatNc) * 100).toFixed(1), csatN: pCsatNc.length,
-    csatGestPct: pCsatG.length ? (_avg(pCsatG) * 100).toFixed(1) : null, csatGestN: pCsatG.length,
-    csatExecPct: pCsatE.length ? (_avg(pCsatE) * 100).toFixed(1) : null, csatExecN: pCsatE.length,
-    escFrac: `1/${escDenom}`, slaBreachPct: (pTkts.length ? slaBP / pTkts.length * 100 : 0).toFixed(1), escN: pTkts.length,
-    recurAvg: rVals.length ? _avg(rVals).toFixed(1) : '0', recurPct: totCusts ? (rCusts.size / totCusts * 100).toFixed(1) : '0', recurN: rCusts.size, recurTotal: totCusts,
-    chart: { labels: bkts.map(b => b.lbl), gest: bkts.map(b => b.g), exec: bkts.map(b => b.ex) },
+    total: rc.total || 0, gest: rc.gest || 0, exec: rc.exec || 0,
+    csatPct: (capaCsatAvg * 100).toFixed(1), csatN: capaCsatN,
+    csatGestPct: rc.csat_gest_n ? (rc.csat_gest_avg * 100).toFixed(1) : null, csatGestN: rc.csat_gest_n || 0,
+    csatExecPct: rc.csat_exec_n ? (rc.csat_exec_avg * 100).toFixed(1) : null, csatExecN: rc.csat_exec_n || 0,
+    escFrac: `1/${escDenom}`,
+    slaBreachPct: (rc.esc_n ? rc.sla_breach_n / rc.esc_n * 100 : 0).toFixed(1), escN: rc.esc_n || 0,
+    recurAvg: recur.recur_avg != null ? String(recur.recur_avg) : '0',
+    recurPct: recur.total_custs ? (recur.recur_n / recur.total_custs * 100).toFixed(1) : '0',
+    recurN: recur.recur_n || 0, recurTotal: recur.total_custs || 0,
+    chart: {
+      labels: (rc.chart || []).map(r => r.lbl),
+      gest:   (rc.chart || []).map(r => r.gestores),
+      exec:   (rc.chart || []).map(r => r.executivos),
+    },
   };
-  // Overview
-  const allNc = [...csatGest, ...csatExec];
-  const slaAllB = tkts.filter(r => r.sla_estourado).length;
-  const custAtend = {};
-  for (const r of atend) { if (r.cliente_id) custAtend[r.cliente_id] = (custAtend[r.cliente_id] || 0) + 1; }
+  MONTHLY = capa.chart;
+
+  // ── Visão Geral (P1) ────────────────────────────────────────────────────────
+  const rv = rVG || {};
   const overview = {
-    total: atend.length, avgTma: Math.round(_avg(atend.filter(r => r.tma_minutos > 0).map(r => r.tma_minutos))),
-    csatPct: (_avg(allNc) * 100).toFixed(1), csatN: allNc.length,
-    gestCsatPct, execCsatPct, gestCsatN: csatGest.length, execCsatN: csatExec.length,
-    slaBreachN: slaAllB, slaTotalN: tkts.length,
-    slaBreachPct: (tkts.length ? slaAllB / tkts.length * 100 : 0).toFixed(1),
-    escPct: (atend.length ? tkts.length / atend.length * 100 : 0).toFixed(1),
-    grupoG: atend.filter(r => _grp(r) === 'Gestores').length,
-    grupoE: atend.filter(r => _grp(r) === 'Executivos').length,
-    uniqueCusts: Object.keys(custAtend).length,
-    ret5: Object.values(custAtend).filter(v => v >= 5).length,
-    ret10: Object.values(custAtend).filter(v => v >= 10).length,
+    total: rv.total || 0, avgTma: rv.avg_tma || 0,
+    csatPct: ((rv.csat_avg || 0) * 100).toFixed(1), csatN: rv.csat_n || 0,
+    gestCsatPct: ((rv.csat_gest_avg || 0) * 100).toFixed(1), gestCsatN: rv.csat_gest_n || 0,
+    execCsatPct: ((rv.csat_exec_avg || 0) * 100).toFixed(1), execCsatN: rv.csat_exec_n || 0,
+    slaBreachN: rv.sla_breach_n || 0, slaTotalN: rv.tkt_total || 0,
+    slaBreachPct: (rv.tkt_total ? rv.sla_breach_n / rv.tkt_total * 100 : 0).toFixed(1),
+    escPct: (rv.total ? rv.tkt_total / rv.total * 100 : 0).toFixed(1),
+    grupoG: rv.grupo_g || 0, grupoE: rv.grupo_e || 0,
+    uniqueCusts: rv.unique_custs || 0, ret4: rv.ret4 || 0, ret8: rv.ret8 || 0, ret12: rv.ret12 || 0,
+    negGestN: rv.neg_gest_n || 0, negExecN: rv.neg_exec_n || 0,
   };
-  // Weekly
-  const wkMap = {};
-  for (const r of atend) { if (r.criado_em) { const lbl = _isoWk(new Date(r.criado_em)); wkMap[lbl] = (wkMap[lbl] || 0) + 1; } }
-  const wkSorted = Object.entries(wkMap).sort();
-  WEEKS = { labels: wkSorted.map(([k]) => k), data: wkSorted.map(([, v]) => v) };
-  // Tabulacoes
-  const tabFreq = {};
-  for (const r of tabs) {
-    const cod = r.codigo; if (!cod) continue;
-    const a = atendById[r.atendimento_id] || {}; const g = _grp(a); const tma = a.tma_minutos || 0;
-    if (!tabFreq[cod]) tabFreq[cod] = { tot: 0, ge: 0, ex: 0, ts: 0, tc: 0 };
-    tabFreq[cod].tot++; if (g === 'Gestores') tabFreq[cod].ge++; else if (g === 'Executivos') tabFreq[cod].ex++;
-    if (tma > 0) { tabFreq[cod].ts += tma; tabFreq[cod].tc++; }
-  }
-  const tabsSorted = Object.entries(tabFreq).map(([c, v]) => ({ c, t: v.tot, g: v.ge > v.ex ? 'Gestores' : v.ex > v.ge ? 'Executivos' : 'Misto', tma: v.tc ? Math.round(v.ts / v.tc) : null })).sort((a, b) => b.t - a.t);
-  TABULACOES = tabsSorted.slice(0, 25);
-  TOP_TMA = [...tabsSorted].filter(r => r.tma).sort((a, b) => b.tma - a.tma).slice(0, 20);
-  const devRows = Object.entries(tabFreq).filter(([c]) => c.toLowerCase().includes('devolutiva'));
-  const cancelRows = Object.entries(tabFreq).filter(([c]) => c.toLowerCase().includes('cancelamento'));
-  const _gs = rows => { let ts = 0, tc = 0; rows.forEach(([, v]) => { ts += v.ts; tc += v.tc; }); return { n: rows.reduce((s, [, v]) => s + v.tot, 0), tma: tc ? Math.round(ts / tc) : null }; };
-  const devStat = _gs(devRows); const cancelStat = _gs(cancelRows);
-  RETURNING = Object.values(custAtend).sort((a, b) => b - a).slice(0, 20);
-  // Tickets
-  const FILA_KEYS = ['triagem','suporte_ao_licenciado','relacionamentos','operacoes','contratos','fornecedora','aguardando_cliente'];
-  const FILA_LBLS = ['Triagem','Suporte ao Licenciado','Relacionamentos','Operações','Contratos','Fornecedora','Aguardando Cliente'];
-  GLOBAL_FILAS = FILA_KEYS.map((f, i) => {
-    const vals = tkts.map(r => r[`fila_${f}_du`]).filter(v => v != null); const nz = vals.filter(v => v > 0);
-    return { l: FILA_LBLS[i], mean: vals.length ? Math.round(_avg(vals) * 100) / 100 : 0, max: vals.length ? Math.round(Math.max(...vals) * 10) / 10 : 0, pct: tkts.length ? Math.round(nz.length / tkts.length * 100) : 0, dominant: f === 'relacionamentos' };
-  });
-  const stCnt = {}; for (const r of tkts) { const s = r.status || ''; stCnt[s] = (stCnt[s] || 0) + 1; }
-  STATUS_DIST = Object.entries(stCnt).sort((a, b) => b[1] - a[1]).map(([s, n]) => ({ s, n }));
-  const tipoMap = {};
-  for (const r of tkts) {
-    const t = r.tipo_solicitacao; if (!t) continue;
-    if (!tipoMap[t]) tipoMap[t] = { n: 0, sb: 0, rs: 0, rc: 0, ts2: 0, tc2: 0 };
-    tipoMap[t].n++; if (r.sla_estourado) tipoMap[t].sb++;
-    if (r.fila_relacionamentos_du != null) { tipoMap[t].rs += r.fila_relacionamentos_du; tipoMap[t].rc++; }
-    if (r.tempo_total_du != null) { tipoMap[t].ts2 += r.tempo_total_du; tipoMap[t].tc2++; }
-  }
-  TICKET_TIPOS = Object.entries(tipoMap).map(([t, v]) => ({ t, n: v.n, sla: v.n ? Math.round(v.sb / v.n * 100) : null, rel: v.rc ? Math.round(v.rs / v.rc * 100) / 100 : 0, tempo: v.tc2 ? Math.round(v.ts2 / v.tc2 * 100) / 100 : 0 })).sort((a, b) => b.n - a.n).slice(0, 20);
-  const nowMs = Date.now();
-  const OPEN_ST = new Set(['Em Análise','Enviado p/ Fornecedora','Aguard. resposta fornecedora','Respondido','Andamento Interno','Contato com cliente','Aguard. setor interno','Cliente Aguard. Atendimento','Em revisão','iniciado']);
-  const agingByTipo = {};
-  for (const r of tkts) { if (!OPEN_ST.has(r.status) || !r.criado_em) continue; const t = r.tipo_solicitacao || ''; const days = Math.floor((nowMs - new Date(r.criado_em)) / 86400000); if (!agingByTipo[t]) agingByTipo[t] = []; agingByTipo[t].push(days); }
-  OPEN_AGING = Object.entries(agingByTipo).map(([t, d]) => ({ t, n: d.length, avg: Math.round(_avg(d)), max: Math.max(...d) })).sort((a, b) => b.n - a.n).slice(0, 15);
-  const custTk = {};
-  for (const r of tkts) { const cid = atendById[r.atendimento_id]?.cliente_id; if (!cid) continue; custTk[cid] = (custTk[cid] || 0) + 1; }
-  CUST_TICKETS = Object.entries(custTk).sort((a, b) => b[1] - a[1]).slice(0, 20).map(([cid, tk], i) => ({ r: i + 1, tk, at: custAtend[cid] || 0 }));
-  // Reportes: join reportes.ticket_id → tickets.id
-  const repTipoByTkId = {};
-  for (const r of reportes) { if (r.ticket_id && r.tipo_reporte) repTipoByTkId[r.ticket_id] = r.tipo_reporte; }
-  const repTypes = {};
-  for (const r of tkts) { const rt = repTipoByTkId[r.id]; if (rt) repTypes[rt] = (repTypes[rt] || 0) + 1; }
-  REPORTE_TYPES = Object.entries(repTypes).sort((a, b) => b[1] - a[1]).map(([t, n]) => ({ t, n }));
-  const repByTipo = {};
-  for (const r of tkts) {
-    const t = r.tipo_solicitacao || ''; if (!t) continue;
-    if (!repByTipo[t]) repByTipo[t] = { n: 0, rep: 0 };
-    repByTipo[t].n++;
-    if (repTipoByTkId[r.id]) repByTipo[t].rep++;
-  }
-  REPORTE_RATE = Object.entries(repByTipo).filter(([, v]) => v.rep > 0).map(([t, v]) => ({ t, n: v.n, rep: v.rep, rate: Math.round(v.rep / v.n * 1000) / 10 })).sort((a, b) => b.rep - a.rep).slice(0, 15);
-  // Fornecedoras
-  const tktsByAtend = {};
-  for (const r of tkts) { if (!tktsByAtend[r.atendimento_id]) tktsByAtend[r.atendimento_id] = []; tktsByAtend[r.atendimento_id].push(r); }
-  const fornS = {};
-  for (const r of mencoes) {
-    const fn = r.fornecedora || (r.fornecedora_id != null ? (fornRef[String(r.fornecedora_id)] || `F${r.fornecedora_id}`) : null);
-    if (!fn) continue;
-    if (!fornS[fn]) fornS[fn] = { men: 0, aids: new Set() };
-    fornS[fn].men++; fornS[fn].aids.add(r.atendimento_id);
-  }
-  FORNECEDORAS = Object.entries(fornS).map(([n, d]) => {
-    let tk = 0, sb = 0, st = 0, wt = 0, fds = 0, fdc = 0, cs = 0, cc = 0;
-    for (const aid of d.aids) {
-      const tks = tktsByAtend[aid] || []; tk += tks.length;
-      for (const t of tks) { st++; if (t.sla_estourado) sb++; if ((t.status || '').toLowerCase().includes('aguard')) wt++; if (t.fila_fornecedora_du != null) { fds += t.fila_fornecedora_du; fdc++; } }
-      (csatByAtend[aid] || []).forEach(v => { cs += v; cc++; });
-    }
-    return { n, men: d.men, tk, sla: st ? Math.round(sb / st * 100) : null, wait: wt, forn: fdc ? Math.round(fds / fdc * 100) / 100 : 0, csat: cc >= 5 ? Math.round(cs / cc * 100) : null };
-  }).sort((a, b) => b.men - a.men).slice(0, 22);
-  // CSAT
-  const notaMap = {}; for (const r of csatR) { if (r.nota != null) notaMap[r.nota] = (notaMap[r.nota] || 0) + 1; }
-  NOTA_DIST = [1, 2, 3, 4, 5].map(n => ({ nota: n, n: notaMap[n] || 0 }));
-  const feelMap = {}; for (const r of csatSent) { if (r.feeling) feelMap[r.feeling] = (feelMap[r.feeling] || 0) + 1; }
-  const POS = new Set(['Elogio','Encantado','Gratidão','Contentado','Parabéns','Satisfeito']);
-  const NEG = new Set(['Crítico','Frustrado','Insatisfeito','Ansioso','Revoltado','Descontente']);
-  FEELINGS = Object.entries(feelMap).sort((a, b) => b[1] - a[1]).map(([f, n]) => ({ f, n, t: POS.has(f) ? 'pos' : NEG.has(f) ? 'neg' : 'neu' }));
-  const tabCsat = {};
-  for (const r of tabs) { const c = r.codigo; if (!c) continue; const ncs = csatByAtend[r.atendimento_id] || []; if (!tabCsat[c]) tabCsat[c] = { s: 0, n: 0 }; tabCsat[c].s += ncs.reduce((x, v) => x + v, 0); tabCsat[c].n += ncs.length; }
-  CSAT_BY_TAB = Object.entries(tabCsat).filter(([, v]) => v.n >= 20).map(([c, v]) => ({ c, pct: Math.round(v.s / v.n * 100), n: v.n })).sort((a, b) => a.pct - b.pct).slice(0, 15);
-  const csatFeelings = {};
-  for (const r of csatSent) { if (!csatFeelings[r.csat_id]) csatFeelings[r.csat_id] = []; csatFeelings[r.csat_id].push(r.feeling); }
-  COMMENTS = csatR.filter(r => r.nota != null && r.nota <= 2 && r.comentario).slice(0, 12).map(r => ({ nota: r.nota, text: r.comentario, feelings: csatFeelings[r.id] || [], grupo: _grp(atendById[r.atendimento_id] || {}) === 'Executivos' ? 'Executivos & Acima' : 'Gestores & Abaixo' }));
-  // Agentes
-  const agMap = {};
-  for (const r of atend) { const id = r.id_agente; if (!id) continue; if (!agMap[id]) agMap[id] = { at: 0, ts: 0, tc: 0, tk: 0, aids: [] }; agMap[id].at++; agMap[id].aids.push(r.id); if (r.tma_minutos > 0) { agMap[id].ts += r.tma_minutos; agMap[id].tc++; } }
-  for (const r of tkts) { const id = atendById[r.atendimento_id]?.id_agente; if (id && agMap[id]) agMap[id].tk++; }
-  AGENTES = Object.entries(agMap).filter(([, v]) => v.at >= 10).map(([id, v]) => { const ncs = v.aids.flatMap(aid => csatByAtend[aid] || []); return { n: agtRef[String(id)] || `ID ${id}`, at: v.at, tma: v.tc ? Math.round(v.ts / v.tc) : null, csat: ncs.length >= 5 ? Math.round(_avg(ncs) * 100) : null, tk: v.tk, esc: Math.round(v.tk / v.at * 1000) / 10 }; }).sort((a, b) => b.at - a.at).slice(0, 51);
-  // Pesquisas
+
+  // ── Weekly chart (P1) ───────────────────────────────────────────────────────
+  WEEKS = { labels: (rWeeks || []).map(r => r.iso_week), gest: (rWeeks || []).map(r => r.gestores), exec: (rWeeks || []).map(r => r.executivos) };
+
+  // ── Tabulacoes (P2) ─────────────────────────────────────────────────────────
+  const rt = rTabs || {};
+  TABULACOES = (rt.top25 || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tk: r.tickets || 0, top_forn: r.top_forn || [], top_men: r.top_men || [] }));
+  TOP_TMA      = (rt.top20_tma     || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tma_gest: r.avg_tma_gest, tma_exec: r.avg_tma_exec }));
+  TOP_TMA_GEST = (rt.top10_tma_gest || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tma_gest: r.avg_tma_gest, tma_exec: r.avg_tma_exec }));
+  TOP_TMA_EXEC = (rt.top10_tma_exec || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tma_gest: r.avg_tma_gest, tma_exec: r.avg_tma_exec }));
+  const devStat    = rt.devolutiva    || { n: 0, tma: null };
+  const cancelStat = rt.cancelamento  || { n: 0, tma: null };
+  RET_EXEC = (rRet || {}).top10_exec || [];
+  RET_GEST = (rRet || {}).top10_gest || [];
+
+  // ── Tickets (P3) ────────────────────────────────────────────────────────────
+  const tk = rTkts || {};
+  const FILA_KEYS = ['triagem','suporte_ao_licenciado','relacionamentos','operacoes','contratos','fornecedora','aguardando_licenciado'];
+  const FILA_LBLS = ['Triagem','Suporte ao Licenciado','Relacionamentos','Operações','Contratos','Fornecedora','Aguardando Licenciado'];
+  GLOBAL_FILAS   = FILA_KEYS.map((f, i) => ({ l: FILA_LBLS[i], mean: tk.filas?.[f]?.mean || 0, max: tk.filas?.[f]?.max || 0, pct: tk.filas?.[f]?.pct || 0, dominant: f === 'relacionamentos' }));
+  STATUS_DIST    = tk.status_dist   || [];
+  TICKET_TIPOS   = tk.tipo_breakdown || [];
+  OPEN_AGING     = (tk.open_aging   || []).map(r => ({ t: r.t, n: r.n, avg: r.avg_days, max: r.max_days }));
+  CUST_TICKETS   = (tk.cust_tickets || []).map(r => ({ r: r.rnk, tk: r.tk, at: r.at }));
+  REPORTE_TYPES    = tk.reporte_types || [];
+  REPORTE_RATE     = tk.reporte_rate  || [];
+  TK_TOTAL         = tk.total         || 0;
+  TK_SLA_BREACH_N  = tk.sla_breach_n  || 0;
+  TK_MONTHLY       = tk.monthly_counts || [];
+  REP_DAILY      = rRepDaily || [];
+  CANCELLED      = rCancelled || {};
+
+  // ── Fornecedoras (P4) ───────────────────────────────────────────────────────
+  FORNECEDORAS = (rForn || []).map(r => ({ ...r, gest_men: r.gest_men || 0, exec_men: r.exec_men || 0 }));
+  FORN_MONTHLY  = rFornMonthly || [];
+  FORN_CANC     = rFornCanc  || [];
+  FORN_SENT     = rFornSent  || [];
+
+  // ── CSAT (P5) ───────────────────────────────────────────────────────────────
+  const cs = rCsat || {};
+  NOTA_DIST  = cs.nota_dist || [];
+  const POS  = new Set(['Elogio','Encantado','Gratidão','Contentado','Parabéns','Satisfeito']);
+  const NEG  = new Set(['Crítico','Frustrado','Insatisfeito','Ansioso','Revoltado','Descontente']);
+  FEELINGS   = (cs.feelings || []).map(r => ({ f: r.f, n: r.n, t: POS.has(r.f) ? 'pos' : NEG.has(r.f) ? 'neg' : 'neu' }));
+  CSAT_BY_TAB = cs.csat_by_tab || [];
+  COMMENTS   = (cs.comments || []).map(r => ({
+    nota: r.nota, text: r.text, feelings: r.feelings || [],
+    grupo: (r.grupo_raw || '').toUpperCase().includes('EXECUT') ? 'Executivos & Acima' : 'Gestores & Abaixo',
+  }));
+
+
+  // ── Pesquisas (P7) — still raw, needed for open-text quotes ─────────────────
   const sesMap = {};
   for (const r of pesquisas) { const d = (r.sessao_em || '').slice(0, 10); if (!d) continue; if (!sesMap[d]) sesMap[d] = { u: [], c: [], n: 0 }; sesMap[d].n++; if (r.nota_utilidade != null) sesMap[d].u.push(r.nota_utilidade); if (r.nota_clareza != null) sesMap[d].c.push(r.nota_clareza); }
   LIVE_SESSIONS = Object.entries(sesMap).sort().map(([d, v]) => ({ d, util: v.u.length ? Math.round(_avg(v.u) * 10) / 10 : null, clar: v.c.length ? Math.round(_avg(v.c) * 10) / 10 : null, n: v.n }));
   const acaoCnt = {};
   for (const r of pesquisas) {
     if (!r.acoes_selecionadas) continue;
-    for (const a of r.acoes_selecionadas.split(',').map(s => s.trim()).filter(Boolean)) {
-      acaoCnt[a] = (acaoCnt[a] || 0) + 1;
-    }
+    for (const a of r.acoes_selecionadas.split(',').map(s => s.trim()).filter(Boolean)) { acaoCnt[a] = (acaoCnt[a] || 0) + 1; }
   }
   ACOES = Object.entries(acaoCnt).sort((a, b) => b[1] - a[1]).map(([a, n]) => ({ a, n }));
-  NEG_QUOTES = pesquisas.filter(r => r.valor_aberto || r.duvidas).slice(0, 12).map(r => ({ d: (r.sessao_em || '').slice(0, 10), t: r.valor_aberto || r.duvidas }));
-  // Top5 for P1
-  const tagCnt = {}; for (const r of tagsR) { if (!r.valor || _SEG_TAGS.has(r.valor.toUpperCase())) continue; tagCnt[r.valor] = (tagCnt[r.valor] || 0) + 1; }
-  const top5Tags = Object.entries(tagCnt).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const top5Tabs = tabsSorted.slice(0, 5);
-  MONTHLY = capa.chart;
+  // Critical: explicit problems, complaints, dissatisfaction
+  const _CRIT = [
+    'problema','ruim','péssim','pessim','demor','atraso','atrasad',
+    'não funciona','nao funciona','difícil','dificil','impossível','impossivel',
+    'frustrad','insatisf','reclamação','reclamacao','thopen','cemig','copel','celesc',
+    'fornecedora','distribuidora','espera','sem retorno','sem resposta',
+    'não resolve','nao resolve','não consegue','nao consegue','perdi cliente','perdendo cliente',
+    'cancelamento','abandono','meses sem','dias sem','bug','erro','falha','travando',
+    'instabilidade','não aceita','nao aceita','devolutiva indevida',
+    'suporte não','suporte nao','péssimo','pessimo','horrível','horrivel',
+    'inadmissível','inadmissivel','impotente','perdemos','piorando'
+  ];
+  // Suggestions: constructive improvement requests only
+  const _SUGG = [
+    'sugiro','sugestão','sugestao','proposta',
+    'poderia ter','seria interessante','seria legal','seria bom','seria ótimo','seria otimo',
+    'seria possível','seria possivel','gostaria que','gostaria de ver',
+    'precisamos de','precisaria de','falta um','falta uma',
+    'adicionar','implementar','disponibilizar','incluir opção','incluir opcao',
+    'mostrar o passo','tutorial','passo a passo','funcionalidade nova','recurso novo',
+    'melhorar o app','melhorar o link','melhorar o acesso','nova função','nova funcao'
+  ];
+  const allQ = (pesquisas || [])
+    .flatMap(r => [
+      r.valor_aberto ? { d: (r.sessao_em||'').slice(0,10), t: r.valor_aberto.trim() } : null,
+      r.duvidas      ? { d: (r.sessao_em||'').slice(0,10), t: r.duvidas.trim()      } : null,
+    ])
+    .filter(r => r && r.t.length > 20);
+  const allCrit = allQ.filter(r => _CRIT.some(w => r.t.toLowerCase().includes(w)));
+  NEG_QUOTES = [...allCrit].sort((a, b) => b.t.length - a.t.length).slice(0, 8);
+  const critSet = new Set(allCrit.map(r => r.t)); // ALL critical matches excluded, not just top 8
+  NEG_SUGG = allQ.filter(r => !critSet.has(r.t) && _SUGG.some(w => r.t.toLowerCase().includes(w)))
+    .sort((a, b) => b.t.length - a.t.length).slice(0, 8);
+
+  // ── Top-5 tags + tabs for P1 ────────────────────────────────────────────────
+  const filteredTags = (rTags || []).filter(r => !_SEG_TAGS.has((r.valor || '').toUpperCase()));
+  const top5Tags = filteredTags.slice(0, 5).map(r => [r.valor, r.cnt]);
+  const top5Tabs = TABULACOES.slice(0, 5);
+
   return { capa, overview, top5Tabs, top5Tags, devStat, cancelStat };
 }
 
@@ -1061,44 +1166,114 @@ function renderCapa(capa) {
   document.getElementById('capa-tt-csat-exec').textContent = capa.csatExecPct ? capa.csatExecPct.replace('.', ',') + '%' : '—';
   document.getElementById('capa-tt-csat-note').textContent = _fmt(capa.csatN) + ' avaliações · ' + _fmt(capa.csatGestN) + ' Gestores · ' + _fmt(capa.csatExecN) + ' Executivos';
   document.getElementById('capa-esc-frac').textContent = capa.escFrac;
-  document.getElementById('capa-esc-sub').textContent = capa.slaBreachPct.replace('.', ',') + '% dos escalados sem SLA no prazo';
+  document.getElementById('capa-esc-sub').textContent = capa.slaBreachPct.replace('.', ',') + '% dos tickets fora do SLA no período';
   document.getElementById('capa-tt-esc').innerHTML = `<strong>${capa.escFrac}</strong> atendimentos geraram ticket — <strong>${_fmt(capa.escN)}</strong> tickets abertos no período.<br><br>Desses, <strong style="color:var(--red)">${capa.slaBreachPct.replace('.', ',')}%</strong> não foram resolvidos dentro do prazo de SLA (3 dias úteis).`;
   document.getElementById('capa-recur').textContent = capa.recurAvg.replace('.', ',') + '×';
-  document.getElementById('capa-recur-sub').textContent = capa.recurPct.replace('.', ',') + '% dos clientes com demanda repetida';
-  document.getElementById('capa-tt-recur').innerHTML = `Média de contatos pelo mesmo cliente para o <strong>mesmo tipo de problema dentro de 2 dias</strong>. Janela curta para filtrar casos de contratos distintos.<br><br><strong style="color:var(--warn)">${capa.recurPct.replace('.', ',')}% dos clientes atendidos</strong> (${capa.recurN} de ${_fmt(capa.recurTotal)}) reabriram suporte para a mesma tabulação em menos de 2 dias.`;
+  document.getElementById('capa-recur-sub').textContent = capa.recurPct.replace('.', ',') + '% dos licenciados com demanda repetida';
+  document.getElementById('capa-tt-recur').innerHTML = `Média de contatos pelo mesmo licenciado para o <strong>mesmo tipo de problema dentro de 2 dias</strong>.<br><br><strong style="color:var(--warn)">${capa.recurPct.replace('.', ',')}% dos licenciados atendidos</strong> (${capa.recurN} de ${_fmt(capa.recurTotal)}) reabriram suporte para a mesma tabulação em menos de 2 dias.`;
 }
 
 function renderP1(m) {
   const ov = m.overview;
   document.getElementById('ov-total').textContent = _fmt(ov.total);
   document.getElementById('ov-tma').textContent = _fmt(ov.avgTma) + ' min TMA médio';
-  document.getElementById('ov-csat').textContent = ov.csatPct.replace('.', ',') + '%';
-  document.getElementById('ov-csat-n').textContent = _fmt(ov.csatN) + ' avaliações';
-  document.getElementById('ov-sla').textContent = ov.slaBreachPct.replace('.', ',') + '%';
-  document.getElementById('ov-sla-sub').textContent = _fmt(ov.slaBreachN) + ' de ' + _fmt(ov.slaTotalN) + ' tickets';
-  document.getElementById('ov-esc').textContent = ov.escPct.replace('.', ',') + '%';
-  document.getElementById('ov-esc-sub').textContent = _fmt(ov.slaTotalN) + ' tickets gerados';
+  document.getElementById('ov-csat-gest').textContent = ov.gestCsatPct.replace('.', ',') + '%';
+  document.getElementById('ov-csat-exec').textContent = ov.execCsatPct.replace('.', ',') + '%';
+  document.getElementById('ov-csat-n').textContent = _fmt(ov.csatN) + ' avaliações · ' + _fmt(ov.gestCsatN) + ' Gestores · ' + _fmt(ov.execCsatN) + ' Executivos';
   document.getElementById('ov-gest').textContent = _fmt(ov.grupoG);
   const gPct = Math.round(ov.grupoG / ov.total * 100);
   document.getElementById('ov-gest-pct').textContent = gPct + '% dos atendimentos';
   document.getElementById('ov-exec').textContent = _fmt(ov.grupoE);
   document.getElementById('ov-exec-pct').textContent = (100 - gPct) + '% dos atendimentos';
-  document.getElementById('ov-custs').textContent = _fmt(ov.uniqueCusts);
-  document.getElementById('ov-ret5').textContent = _fmt(ov.ret5);
-  document.getElementById('ov-ret10').textContent = _fmt(ov.ret10);
-  const maxTab = m.top5Tabs[0]?.t || 1;
-  document.getElementById('p1-tabs-tbody').innerHTML = m.top5Tabs.map(r => `<tr><td>${r.c}</td><td>${pill(r.g)}</td><td class="num">${_fmt(r.t)}</td></tr>`).join('');
-  const maxTag = m.top5Tags[0]?.[1] || 1;
-  const TC = ['','','warn','blue','blue'];
-  document.getElementById('p1-tags-tbody').innerHTML = m.top5Tags.map(([v, n], i) => `<tr><td>${v}</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${TC[i]||''}" style="width:${Math.round(n/maxTag*100)}%"></div></div></div></td><td class="num">${_fmt(n)}</td></tr>`).join('');
+  document.getElementById('ov-ret4').textContent = _fmt(ov.ret4);
+  document.getElementById('ov-ret8').textContent = _fmt(ov.ret8);
+  document.getElementById('ov-ret12').textContent = _fmt(ov.ret12);
+  renderP1Tables('all');
 }
 
+let _p1Filter = 'all';
+function setP1Filter(grupo, btn) {
+  _p1Filter = grupo;
+  document.querySelectorAll('.p1-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderP1Tables(grupo);
+}
+function renderP1Tables(grupo) {
+  // Tabulações — filter by dominant grupo
+  let tabs = TABULACOES;
+  if (grupo === 'gest') tabs = TABULACOES.filter(r => r.g !== 'Executivos');
+  else if (grupo === 'exec') tabs = TABULACOES.filter(r => r.g !== 'Gestores');
+  const top5 = tabs.slice(0, 5);
+  document.getElementById('p1-tabs-tbody').innerHTML = top5.map(r => `<tr><td>${r.c}</td><td>${pill(r.g)}</td><td class="num">${_fmt(r.t)}</td></tr>`).join('');
+  // Fornecedoras — sort by relevant mention count
+  let forn = [...FORNECEDORAS];
+  if (grupo === 'gest') forn.sort((a, b) => b.gest_men - a.gest_men);
+  else if (grupo === 'exec') forn.sort((a, b) => b.exec_men - a.exec_men);
+  const top5f = forn.slice(0, 5);
+  document.getElementById('p1-forn-tbody').innerHTML = top5f.map(r => {
+    const cnt = grupo === 'gest' ? r.gest_men : grupo === 'exec' ? r.exec_men : r.men;
+    return `<tr><td style="font-weight:500">${r.n}</td><td class="num">${_fmt(cnt)}</td><td class="num" style="color:var(--text-dim)">${_fmt(r.tk)}</td></tr>`;
+  }).join('');
+}
+
+let _p2Filter = 'all';
+let _tabSortCol = null, _tabSortDir = 'desc';
+function setP2Filter(grupo, btn) {
+  _p2Filter = grupo;
+  document.querySelectorAll('#p2 .p1-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTabulacoes();
+  renderTopTma();
+}
+function sortTab(col) {
+  if (_tabSortCol === col) _tabSortDir = _tabSortDir === 'desc' ? 'asc' : 'desc';
+  else { _tabSortCol = col; _tabSortDir = 'desc'; }
+  ['t','tma','tk'].forEach(c => { const el = document.getElementById('ts-'+c); if (el) el.textContent = c === _tabSortCol ? (_tabSortDir === 'desc' ? '▾' : '▴') : ''; });
+  renderTabulacoes();
+}
 function renderTabulacoes() {
-  const max = TABULACOES[0]?.t || 1;
-  document.getElementById('tab-tbody').innerHTML = TABULACOES.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.c}</td><td>${pill(r.g)}</td><td class="num">${_fmt(r.t)}</td><td class="num" style="color:${tmaColor(r.tma)}">${r.tma ? r.tma+' min' : '—'}</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${r.g==='Executivos'?'warn':''}" style="width:${Math.round(r.t/max*100)}%"></div></div></div></td></tr>`).join('');
+  let rows = TABULACOES;
+  if (_p2Filter === 'gest') rows = TABULACOES.filter(r => r.g !== 'Executivos');
+  else if (_p2Filter === 'exec') rows = TABULACOES.filter(r => r.g !== 'Gestores');
+  if (_tabSortCol) rows = [...rows].sort((a, b) => _tabSortDir === 'desc' ? (b[_tabSortCol] ?? -1) - (a[_tabSortCol] ?? -1) : (a[_tabSortCol] ?? -1) - (b[_tabSortCol] ?? -1));
+  const max = rows[0]?.t || 1;
+  document.getElementById('tab-tbody').innerHTML = rows.map((r, i) => {
+    const menHover = (r.top_men || []).slice(0,3).map(f => '<div style="display:flex;justify-content:space-between;gap:12px"><span>' + f.n + '</span><strong>' + _fmt(f.men) + ' men.</strong></div>').join('');
+    const totalCell = menHover
+      ? '<td class="num" style="position:relative"><span class="has-kpi-tt" style="cursor:help">' + _fmt(r.t) + '<div class="kpi-tt" style="width:240px;left:auto;right:0;font-family:DM Sans,sans-serif;font-weight:400;font-size:12px;letter-spacing:0"><div style="font-family:Outfit,sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Top fornecedoras mencionadas</div>' + menHover + '</div></span></td>'
+      : '<td class="num">' + _fmt(r.t) + '</td>';
+    const fornTip = (r.top_forn || []).length
+      ? r.top_forn.map(f => `<div style="display:flex;justify-content:space-between;gap:16px"><span>${f.n}</span><strong>${_fmt(f.tk)} tk</strong></div>`).join('')
+      : '<span style="color:var(--text-muted)">Sem dados de fornecedora</span>';
+    const tkCell = `<td class="num" style="position:relative">
+      <span class="has-kpi-tt" style="cursor:help">${_fmt(r.tk)}
+        <div class="kpi-tt" style="width:220px;left:auto;right:0;font-family:'DM Sans',sans-serif;font-weight:400;font-size:12px;letter-spacing:0">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Top fornecedoras</div>
+          ${fornTip}
+        </div>
+      </span>
+    </td>`;
+    return `<tr><td style="color:var(--text-muted);font-family:'Outfit',sans-serif;font-size:11px">${i+1}</td><td>${r.c}</td><td>${pill(r.g)}</td>${totalCell}<td class="num" style="color:${tmaColor(r.tma)}">${r.tma ? r.tma+' min' : '—'}</td>${tkCell}<td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${r.g==='Executivos'?'warn':''}" style="width:${Math.round(r.t/max*100)}%"></div></div></div></td></tr>`;
+  }).join('');
 }
 function renderTopTma() {
-  document.getElementById('tma-tbody').innerHTML = TOP_TMA.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.c}</td><td class="pct">${_fmt(r.t)}</td><td class="num" style="color:${tmaColor(r.tma)}">${r.tma}</td></tr>`).join('');
+  let rows, tmaKey;
+  if (_p2Filter === 'gest') { rows = TOP_TMA_GEST || []; tmaKey = 'tma_gest'; }
+  else if (_p2Filter === 'exec') { rows = TOP_TMA_EXEC || []; tmaKey = 'tma_exec'; }
+  else { rows = TOP_TMA || []; tmaKey = 'tma'; }
+  document.getElementById('tma-tbody').innerHTML = rows.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Outfit',sans-serif;font-size:11px">${i+1}</td><td>${r.c}</td><td class="pct">${_fmt(r.t)}</td><td class="num" style="color:${tmaColor(r[tmaKey])}">${r[tmaKey] ?? '\u2014'}</td></tr>`).join('');
+}
+function renderReturning() {
+  const cardCls = ['card-red','card-warn',''];
+  ['exec','gest'].forEach(g => {
+    const rows = g === 'exec' ? RET_EXEC : RET_GEST;
+    const top3 = rows.slice(0, 3);
+    document.getElementById(`ret-${g}-cards`).innerHTML = top3.map((r, i) => `<div class="card ${cardCls[i]}"><div class="card-label">${i===0?'Maior retorno':`${i+1}º lugar`}</div><div class="card-value" style="font-size:22px">${r.avg_per_day}</div><div class="card-sub">atend/dia · ${_fmt(r.total)} total</div></div>`).join('');
+    document.getElementById(`ret-${g}-tbody`).innerHTML = rows.map(r => {
+      const tmaStr = r.daily_tma_min != null ? (r.daily_tma_min >= 60 ? Math.floor(r.daily_tma_min/60)+'h'+(r.daily_tma_min%60?String(r.daily_tma_min%60).padStart(2,'0')+'min':'') : r.daily_tma_min+'min') : '—';
+      return `<tr><td style="color:var(--text-muted);font-family:'Outfit',sans-serif;font-size:11px">#${r.rnk}</td><td class="num">${_fmt(r.total)}</td><td class="num" style="color:${r.avg_per_day>1?'var(--red)':r.avg_per_day>0.3?'var(--warn)':'var(--text)'}">${r.avg_per_day}</td><td class="num" style="color:${tmaColor(r.avg_tma)}">${tmaStr}</td></tr>`;
+    }).join('');
+  });
 }
 function renderFilas() {
   const maxM = Math.max(...GLOBAL_FILAS.map(f => f.mean), 0.01);
@@ -1106,19 +1281,56 @@ function renderFilas() {
 }
 function renderStatusDist() {
   const total = STATUS_DIST.reduce((s, r) => s + r.n, 0), max = STATUS_DIST[0]?.n || 1;
-  document.getElementById('status-tbody').innerHTML = STATUS_DIST.map(r => `<tr><td>${r.s}</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:${Math.round(r.n/max*100)}%"></div></div></div></td><td class="num">${_fmt(r.n)}</td><td class="pct">${Math.round(r.n/total*100)}%</td></tr>`).join('');
+  document.getElementById('status-tbody').innerHTML = STATUS_DIST.map(r => {
+    const tipRows = (r.top_tipos || []).map(t => `<div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--text-dim)">${t.t}</span><strong>${_fmt(t.n)}</strong></div>`).join('');
+    const tip = tipRows ? `<div class="kpi-tt" style="width:260px;left:0;right:auto;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:0"><div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Top tipos</div>${tipRows}</div>` : '';
+    return `<tr>
+      <td><span class="has-kpi-tt" style="cursor:help">${r.s}${tip}</span></td>
+      <td class="num">${_fmt(r.n)}</td>
+      <td><div class="bar-wrap" style="display:flex;align-items:center;gap:6px"><div class="bar-track" style="flex:1"><div class="bar-fill" style="width:${Math.round(r.n/max*100)}%"></div></div><span style="font-size:10px;color:var(--text-muted);width:28px;text-align:right;flex-shrink:0">${Math.round(r.n/total*100)}%</span></div></td>
+    </tr>`;
+  }).join('');
+}
+let _tkSortCol = null, _tkSortDir = 'desc';
+function sortTkTipo(col) {
+  if (_tkSortCol === col) _tkSortDir = _tkSortDir === 'desc' ? 'asc' : 'desc';
+  else { _tkSortCol = col; _tkSortDir = 'desc'; }
+  ['n','sla','tempo','rel'].forEach(c => { const el = document.getElementById('tk-sort-'+c); if (el) el.textContent = c === _tkSortCol ? (_tkSortDir==='desc'?'▾':'▴') : ''; });
+  renderTicketTipos();
 }
 function renderTicketTipos() {
-  document.getElementById('ticket-tipo-tbody').innerHTML = TICKET_TIPOS.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.t}</td><td class="num">${_fmt(r.n)}</td><td class="num" style="color:${slaColor(r.sla)}">${r.sla!==null?r.sla+'%':'—'}</td><td class="num">${r.rel}</td><td class="num">${r.tempo}</td></tr>`).join('');
+  let rows = [...TICKET_TIPOS];
+  if (_tkSortCol) rows.sort((a, b) => _tkSortDir === 'desc' ? (b[_tkSortCol] ?? -1) - (a[_tkSortCol] ?? -1) : (a[_tkSortCol] ?? -1) - (b[_tkSortCol] ?? -1));
+  document.getElementById('ticket-tipo-tbody').innerHTML = rows.map((r, i) => {
+    const forn = r.top_forn || [];
+    const fc = (idx) => forn[idx] ? `<span style="font-size:10px;color:var(--text-muted);display:block">${forn[idx].n}</span><span style="font-family:'Outfit',sans-serif;font-size:12px;font-weight:700">${_fmt(forn[idx].tk)}</span>` : '<span style="color:var(--text-muted)">—</span>';
+    return `<tr><td style="color:var(--text-muted);font-family:'Outfit',sans-serif;font-size:11px">${i+1}</td><td>${r.t}</td><td class="num">${_fmt(r.n)}</td><td class="num" style="color:${slaColor(r.sla)}">${r.sla!==null?r.sla+'%':'—'}</td><td class="num">${r.tempo}</td><td class="num">${r.rel}</td><td class="num" style="vertical-align:middle">${fc(0)}</td><td class="num" style="vertical-align:middle">${fc(1)}</td><td class="num" style="vertical-align:middle">${fc(2)}</td></tr>`;
+  }).join('');
+}
+let _agingSortCol = null, _agingSortDir = 'desc';
+function sortAging(col) {
+  if (_agingSortCol === col) _agingSortDir = _agingSortDir === 'desc' ? 'asc' : 'desc';
+  else { _agingSortCol = col; _agingSortDir = 'desc'; }
+  ['n','avg','max'].forEach(c => { const el = document.getElementById('ag-'+c); if (el) el.textContent = c === _agingSortCol ? (_agingSortDir==='desc'?'▾':'▴') : ''; });
+  renderOpenAging();
 }
 function renderOpenAging() {
-  document.getElementById('aging-tbody').innerHTML = OPEN_AGING.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.t}</td><td class="num">${_fmt(r.n)}</td><td class="num" style="color:${r.avg>20?'var(--warn)':'var(--text)'}">${r.avg}d</td><td class="num" style="color:${r.max>30?'var(--red)':'var(--text)'}">${r.max}d</td></tr>`).join('');
+  let rows = [...OPEN_AGING];
+  if (_agingSortCol) rows.sort((a, b) => _agingSortDir === 'desc' ? (b[_agingSortCol] ?? -1) - (a[_agingSortCol] ?? -1) : (a[_agingSortCol] ?? -1) - (b[_agingSortCol] ?? -1));
+  document.getElementById('aging-tbody').innerHTML = rows.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Outfit',sans-serif;font-size:11px">${i+1}</td><td>${r.t}</td><td class="num">${_fmt(r.n)}</td><td class="num" style="color:${r.avg>20?'var(--warn)':'var(--text)'}">${r.avg}d</td><td class="num" style="color:${r.max>30?'var(--red)':'var(--text)'}">${r.max}d</td></tr>`).join('');
+}
+let _ctSortCol = null, _ctSortDir = 'desc';
+function sortCustTk(col) {
+  if (_ctSortCol === col) _ctSortDir = _ctSortDir === 'desc' ? 'asc' : 'desc';
+  else { _ctSortCol = col; _ctSortDir = 'desc'; }
+  ['tk','at','rate'].forEach(c => { const el = document.getElementById('ct-'+c); if (el) el.textContent = c === _ctSortCol ? (_ctSortDir==='desc'?'▾':'▴') : ''; });
+  renderCustTickets();
 }
 function renderCustTickets() {
-  const maxTk = CUST_TICKETS[0]?.tk || 1;
-  document.getElementById('cust-ticket-tbody').innerHTML = CUST_TICKETS.map(r => {
-    const rate = r.at ? Math.round(r.tk / r.at * 100) : 0;
-    return `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">#${r.r}</td><td class="num">${r.tk}</td><td class="num" style="color:var(--text-dim)">${r.at}</td><td class="pct">${rate}%</td></tr>`;
+  let rows = CUST_TICKETS.map(r => ({ ...r, rate: r.at ? Math.round(r.tk / r.at * 100) : 0 }));
+  if (_ctSortCol) rows.sort((a, b) => _ctSortDir === 'desc' ? (b[_ctSortCol] ?? -1) - (a[_ctSortCol] ?? -1) : (a[_ctSortCol] ?? -1) - (b[_ctSortCol] ?? -1));
+  document.getElementById('cust-ticket-tbody').innerHTML = rows.map((r, i) => {
+    return `<tr><td style="color:var(--text-muted);font-family:'Outfit',sans-serif;font-size:11px">#${i+1}</td><td class="num">${r.tk}</td><td class="num" style="color:var(--text-dim)">${r.at}</td><td class="pct">${r.rate}%</td></tr>`;
   }).join('');
 }
 function renderReporteTypes() {
@@ -1127,41 +1339,176 @@ function renderReporteTypes() {
 }
 function renderReporteRate() {
   const maxRate = REPORTE_RATE[0]?.rate || 1;
-  document.getElementById('reporte-rate-tbody').innerHTML = REPORTE_RATE.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.t}</td><td class="num">${_fmt(r.n)}</td><td class="num">${r.rep}</td><td class="num ${r.rate>=7?'red-val':r.rate>=4?'warn-val':''}">${r.rate}%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${r.rate>=7?'red':r.rate>=4?'warn':''}" style="width:${Math.round(r.rate/maxRate*100)}%"></div></div></div></td></tr>`).join('');
+  document.getElementById('reporte-rate-tbody').innerHTML = REPORTE_RATE.map((r, i) => `<tr><td style="color:var(--text-muted);font-family:'Outfit',sans-serif;font-size:11px">${i+1}</td><td>${r.t}</td><td class="num">${_fmt(r.n)}</td><td class="num">${r.rep}</td><td class="num ${r.rate>=7?'red-val':r.rate>=4?'warn-val':''}">${r.rate}%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${r.rate>=7?'red':r.rate>=4?'warn':''}" style="width:${Math.round(r.rate/maxRate*100)}%"></div></div></div></td></tr>`).join('');
+  // Reporte de Erro KPI — use TK_TOTAL (exact count from DB, not sum of top-20 tipos)
+  const totalRep = REPORTE_TYPES.reduce((s, r) => s + r.n, 0);
+  const totalTk  = TK_TOTAL || 1;
+  document.getElementById('p3-rep-total').textContent = _fmt(totalRep);
+  document.getElementById('p3-rep-pct').textContent   = (totalRep / totalTk * 100).toFixed(1).replace('.', ',') + '% dos tickets';
+  // Tickets KPIs — TK_TOTAL and TK_SLA_BREACH_N from dash_tickets_full().total
+  document.getElementById('p3-total').textContent     = _fmt(totalTk);
+  const _MESES = {'01':'JAN','02':'FEV','03':'MAR','04':'ABR','05':'MAI','06':'JUN','07':'JUL','08':'AGO','09':'SET','10':'OUT','11':'NOV','12':'DEZ'};
+  document.getElementById('p3-total-sub').textContent = (TK_MONTHLY || []).map(m => (_MESES[m.month.slice(0,2)] || m.month) + ': ' + _fmt(m.n)).join(' · ');
+  const slaPct = totalTk ? (TK_SLA_BREACH_N / totalTk * 100).toFixed(1).replace('.', ',') : '—';
+  document.getElementById('p3-sla').textContent       = slaPct + '%';
+  const bdg = document.getElementById('p3-badge-sla'); if (bdg) bdg.textContent = slaPct + '% SLA Estourado';
+  document.getElementById('p3-sla-sub').textContent   = _fmt(TK_SLA_BREACH_N) + ' de ' + _fmt(totalTk) + ' tickets';
+  const openSt = new Set(['Em Análise','Enviado p/ Fornecedora','Aguard. resposta fornecedora','Respondido','Andamento Interno','Contato com cliente','Aguard. setor interno','Cliente Aguard. Atendimento','Em revisão','iniciado']);
+  const openN = STATUS_DIST.filter(r => openSt.has(r.s)).reduce((s, r) => s + r.n, 0);
+  document.getElementById('p3-open').textContent      = _fmt(openN);
 }
-function renderFornecedoras() {
-  document.getElementById('forn-tbody').innerHTML = FORNECEDORAS.map(f => {
-    const slaStr = f.sla!==null?`<span style="color:${slaColor(f.sla)}">${f.sla}%</span>`:'<span style="color:var(--text-muted)">—</span>';
-    const csatStr = f.csat!==null?`<span style="color:${csatColor(f.csat)}">${f.csat}%</span>`:'<span style="color:var(--text-muted)">—</span>';
-    const wCls = f.wait>=50?'red-val':f.wait>=10?'warn-val':'';
-    let sev = f.sla===null ? '<span class="pill pill-gray">Sem tickets</span>' : f.wait>=100&&f.sla>=70 ? '<span class="pill pill-red">Crítico</span>' : f.csat!==null&&f.csat<65 ? '<span class="pill pill-red">CSAT Baixo</span>' : f.sla>=80 ? '<span class="pill pill-warn">SLA Alto</span>' : f.sla>=65||f.wait>=10 ? '<span class="pill pill-warn">Atenção</span>' : '<span class="pill pill-green">OK</span>';
-    return `<tr class="${f.wait>=100?'hi-red':''}"><td style="font-weight:600;color:var(--white)">${f.n}</td><td class="num">${_fmt(f.men)}</td><td class="num">${_fmt(f.tk)}</td><td>${slaStr}</td><td class="num ${wCls}">${f.wait}</td><td class="num" style="color:${f.forn>1?'var(--red)':f.forn>0.5?'var(--warn)':'var(--text-dim)'}">${f.forn}</td><td>${csatStr}</td><td>${sev}</td></tr>`;
+function renderCancelledAnalysis() {
+  const c = CANCELLED;
+  document.getElementById('canc-total').textContent   = _fmt(c.total   || 0);
+  document.getElementById('canc-with').textContent    = _fmt(c.with_report    || 0);
+  document.getElementById('canc-without').textContent = _fmt(c.without_report || 0);
+  document.getElementById('canc-no-rep-tbody').innerHTML = (c.no_report_by_tipo || []).map(r => `<tr><td>${r.t}</td><td class="num">${_fmt(r.n)}</td></tr>`).join('');
+}
+let _fornSortCol = null, _fornSortDir = 'desc';
+const _fornTipoCache = {};
+
+function sortForn(col) {
+  if (_fornSortCol === col) _fornSortDir = _fornSortDir === 'desc' ? 'asc' : 'desc';
+  else { _fornSortCol = col; _fornSortDir = 'desc'; }
+  ['men','tk','esc','sla','forn','csat'].forEach(c => {
+    const el = document.getElementById('fs-' + c); if (el) el.textContent = c === _fornSortCol ? (_fornSortDir==='desc'?'▾':'▴') : '';
+  });
+  _renderFornTable(_currentFornRows || FORNECEDORAS);
+}
+
+function _renderFornTable(rows) {
+  _currentFornRows = rows;
+  let sorted = [...rows].map(f => ({ ...f, esc: f.men > 0 ? Math.round(f.tk / f.men * 100) : 0 }));
+  if (_fornSortCol) sorted.sort((a, b) => _fornSortDir === 'desc' ? (b[_fornSortCol] ?? -1) - (a[_fornSortCol] ?? -1) : (a[_fornSortCol] ?? -1) - (b[_fornSortCol] ?? -1));
+  document.getElementById('forn-tbody').innerHTML = sorted.map(f => {
+    const slaStr  = f.sla!==null  ? `<span style="color:${slaColor(f.sla)}">${f.sla}%</span>`   : '<span style="color:var(--text-muted)">—</span>';
+    const csatStr = f.csat!==null ? `<span style="color:${csatColor(f.csat)}">${f.csat}%</span>` : '<span style="color:var(--text-muted)">—</span>';
+        const sev = f.sla===null ? '<span class="pill pill-gray">Sem tickets</span>' : f.wait>=100&&f.sla>=70 ? '<span class="pill pill-red">Crítico</span>' : f.csat!==null&&f.csat<65 ? '<span class="pill pill-red">CSAT Baixo</span>' : f.sla>=80 ? '<span class="pill pill-warn">SLA Alto</span>' : f.sla>=65||f.wait>=10 ? '<span class="pill pill-warn">Atenção</span>' : '<span class="pill pill-green">OK</span>';
+    const escPct = f.men > 0 ? Math.round(f.tk / f.men * 100) : 0;
+    const escClr = escPct>=80?'var(--red)':escPct>=50?'var(--warn)':'var(--text-dim)';
+    return `<tr><td style="font-weight:600;color:var(--white)">${f.n}</td><td class="num">${_fmt(f.men)}</td><td class="num">${_fmt(f.tk)}</td><td class="num" style="color:${escClr}">${escPct}%</td><td class="num">${slaStr}</td><td class="num" style="color:${f.forn>1?'var(--red)':f.forn>0.5?'var(--warn)':'var(--text-dim)'}">${f.forn}</td><td class="num">${csatStr}</td><td>${sev}</td></tr>`;
   }).join('');
+}
+
+let _currentFornRows = null;
+function renderFornecedoras() {
+  // Populate tipo filter select with % labels (once)
+  const sel = document.getElementById('forn-tipo-filter');
+  if (sel && sel.options.length === 1 && TICKET_TIPOS.length) {
+    const totalTk = TK_TOTAL || 1;
+    TICKET_TIPOS.forEach(t => {
+      const pct = (t.n / totalTk * 100).toFixed(1).replace('.', ',');
+      const opt = document.createElement('option');
+      opt.value = t.t; opt.textContent = `${t.t} — ${pct}%`;
+      sel.appendChild(opt);
+    });
+  }
+  _renderFornTable(FORNECEDORAS);
   const slf = FORNECEDORAS.filter(f=>f.sla!==null&&f.tk>0).sort((a,b)=>b.sla-a.sla).slice(0,10);
   document.getElementById('forn-sla-bars').innerHTML = slf.map(f=>`<div class="fila-bar-row"><div class="fila-label" style="font-size:11px">${f.n}</div><div class="fila-bar-track"><div class="fila-bar-fill ${f.sla>=70?'dominant':''}" style="width:${f.sla}%"></div></div><div class="fila-val" style="font-size:12px;color:${slaColor(f.sla)}">${f.sla}%</div><div class="fila-pct">${f.tk} tk</div></div>`).join('');
   const clf = FORNECEDORAS.filter(f=>f.csat!==null&&f.men>50).sort((a,b)=>a.csat-b.csat);
   document.getElementById('forn-csat-bars').innerHTML = clf.map(f=>`<div class="fila-bar-row"><div class="fila-label" style="font-size:11px">${f.n}</div><div class="fila-bar-track"><div class="fila-bar-fill ${f.csat<70?'red':f.csat<78?'warn':''}" style="width:${f.csat}%"></div></div><div class="fila-val" style="font-size:12px;color:${csatColor(f.csat)}">${f.csat}%</div><div class="fila-pct">${f.men} men.</div></div>`).join('');
 }
+
+async function onFornTipoFilter(tipo) {
+  if (!tipo) { _renderFornTable(FORNECEDORAS); return; }
+  if (_fornTipoCache[tipo]) { _renderFornTable(_fornTipoCache[tipo]); return; }
+  document.getElementById('forn-tbody').innerHTML = '<tr><td colspan="8" style="color:var(--text-muted);padding:16px">Carregando...</td></tr>';
+  const { data } = await _SB.rpc('dash_fornecedoras_by_tipo', { p_tipo: tipo });
+  const rows = (data?.rows || []).map(r => ({ ...r, gest_men: r.gest_men || 0, exec_men: r.exec_men || 0 }));
+  _fornTipoCache[tipo] = rows;
+  _renderFornTable(rows);
+}
+function renderP5Cards(ov) {
+  const negGestPct = ov.gestCsatN ? (ov.negGestN / ov.gestCsatN * 100).toFixed(1).replace('.', ',') : '—';
+  const negExecPct = ov.execCsatN ? (ov.negExecN / ov.execCsatN * 100).toFixed(1).replace('.', ',') : '—';
+  document.getElementById('p5-neg-gest').textContent     = _fmt(ov.negGestN);
+  document.getElementById('p5-neg-gest-sub').textContent = negGestPct + '% das avaliações de Gestores';
+  document.getElementById('p5-neg-exec').textContent     = _fmt(ov.negExecN);
+  document.getElementById('p5-neg-exec-sub').textContent = negExecPct + '% das avaliações de Executivos';
+  document.getElementById('p5-csat-exec').textContent     = ov.execCsatPct.replace('.', ',') + '%';
+  document.getElementById('p5-csat-exec-sub').textContent = _fmt(ov.execCsatN) + ' avaliações';
+  document.getElementById('p5-csat-gest').textContent     = ov.gestCsatPct.replace('.', ',') + '%';
+  const diff = (parseFloat(ov.execCsatPct) - parseFloat(ov.gestCsatPct)).toFixed(1);
+  document.getElementById('p5-csat-gest-sub').textContent = _fmt(ov.gestCsatN) + ' avaliações · diferença de ' + diff.replace('.', ',') + 'pp';
+}
+function renderCuratedInsights() {
+  const tm = window.__curatedTexts || {};
+  const el = document.getElementById('curated-insights-container');
+  if (!el) return;
+  el.innerHTML = CURATED_INSIGHTS.map(c => {
+    const key = c.table === 'csat' ? c.id : `${c.id}:${c.field}`;
+    const text = tm[key];
+    if (!text) return '';
+    const src   = c.nota != null ? `★ ${c.nota} — ${c.grupo}` : `Pesquisa Live — ${c.grupo}`;
+    const color = c.nota === 1 ? 'var(--red)' : c.nota === 2 ? 'var(--warn)' : 'var(--green-dim)';
+    return `<div class="quote-card neg-quote" style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span style="font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--green);background:rgba(76,175,50,0.1);padding:3px 8px;border-radius:4px">${c.theme}</span>
+        <span style="font-size:10px;color:${color};flex-shrink:0">${src}</span>
+      </div>
+      <div class="quote-text" style="font-style:italic">"${text.length > 260 ? text.slice(0, 257) + '…' : text}"</div>
+    </div>`;
+  }).join('');
+}
+function renderFornMonthly() {
+  if (!FORN_MONTHLY.length) return;
+  const _rowTk = r => (r.top3 || []).reduce((s, t) => s + (t.n || 0), 0);
+  // Group by fornecedora, sort months within each group by ticket count desc
+  const seen = {};
+  const groups = [];
+  for (const r of FORN_MONTHLY) {
+    if (!seen[r.fornecedora]) { seen[r.fornecedora] = []; groups.push({ name: r.fornecedora, rows: seen[r.fornecedora] }); }
+    seen[r.fornecedora].push(r);
+  }
+  for (const g of groups) g.rows.sort((a, b) => _rowTk(b) - _rowTk(a));
+  // Sort fornecedoras by their total ticket count across all months
+  groups.sort((a, b) => b.rows.reduce((s, r) => s + _rowTk(r), 0) - a.rows.reduce((s, r) => s + _rowTk(r), 0));
+  const _tc = (pct) => pct >= 70 ? 'var(--red)' : pct >= 50 ? 'var(--warn)' : 'var(--green)';
+  const _tipo = (t, sep='') => t
+    ? `<td style="font-size:11px;max-width:160px;white-space:normal;${sep}">${t.tipo}</td><td class="num" style="${sep}">${_fmt(t.n)}</td><td class="num" style="color:${_tc(t.sla_pct)};${sep}">${t.sla_pct}%</td>`
+    : `<td style="${sep}">—</td><td style="${sep}">—</td><td style="${sep}">—</td>`;
+  const rows = [];
+  const SEP = 'border-top:2px solid rgba(76,175,50,0.25)';
+  for (const g of groups) {
+    g.rows.forEach((r, i) => {
+      const t = r.top3 || [];
+      const sep = i === 0 ? SEP : '';
+      const fornCell = i === 0 ? `<td rowspan="${g.rows.length}" style="font-weight:700;color:var(--green-bright);vertical-align:top;padding-top:12px;${SEP}">${g.name}</td>` : '';
+      rows.push(`<tr style="${sep}">${fornCell}<td style="color:var(--text-muted);font-size:11px;white-space:nowrap;${sep}">${r.month}</td>${_tipo(t[0], sep)}${_tipo(t[1], sep)}${_tipo(t[2], sep)}</tr>`);
+    });
+  }
+  document.getElementById('forn-monthly-tbody').innerHTML = rows.join('');
+}
 function renderNotaDist() {
   const colors = ['var(--red)','rgba(224,82,82,0.6)','var(--warn)','rgba(76,175,50,0.6)','var(--green-bright)'];
-  const total = NOTA_DIST.reduce((s,r)=>s+r.n,0), maxN = NOTA_DIST[4].n||1;
-  document.getElementById('nota-bars').innerHTML = NOTA_DIST.map((r,i)=>`<div class="nota-row"><div class="nota-label" style="color:${colors[i]}">★ ${r.nota}</div><div class="bar-track" style="height:12px"><div class="nota-fill" style="width:${Math.round(r.n/maxN*100)}%;background:${colors[i]}"></div></div><div class="nota-count">${_fmt(r.n)} <span style="color:var(--text-muted)">(${total?Math.round(r.n/total*100):0}%)</span></div></div>`).join('');
+  const total = NOTA_DIST.reduce((s,r)=>s+r.n,0);
+  const maxN = Math.max(...NOTA_DIST.map(r=>r.n), 1);
+  const reversed = [...NOTA_DIST].reverse(); // render 5 → 1
+  const revColors = [...colors].reverse();
+  document.getElementById('nota-bars').innerHTML = reversed.map((r,i)=>`<div class="nota-row"><div class="nota-label" style="color:${revColors[i]}">★ ${r.nota}</div><div class="bar-track" style="height:12px"><div class="nota-fill" style="width:${Math.round(r.n/maxN*100)}%;background:${revColors[i]}"></div></div><div class="nota-count">${_fmt(r.n)} <span style="color:var(--text-muted)">(${total?Math.round(r.n/total*100):0}%)</span></div></div>`).join('');
 }
 function renderFeelings() {
-  document.getElementById('feeling-grid').innerHTML = FEELINGS.map(f=>`<div class="feeling-chip ${f.t}"><span class="fc-count">${f.n}</span><span class="fc-label">${f.f}</span></div>`).join('');
+  const _pos=new Set(['Elogio','Encantado','Gratidão','Contentado','Parabéns','Satisfeito']),_neg=new Set(['Crítico','Frustrado','Insatisfeito','Ansioso','Revoltado','Descontente']);
+  const _filt=FEELINGS.filter(f=>f.f!=='Indeterminado');
+  const posN=_filt.filter(f=>_pos.has(f.f)).reduce((s,f)=>s+f.n,0);
+  const negN=_filt.filter(f=>_neg.has(f.f)).reduce((s,f)=>s+f.n,0);
+  const ep=document.getElementById('p5-feel-pos'),en=document.getElementById('p5-feel-neg');
+  if(ep)ep.textContent=_fmt(posN); if(en)en.textContent=_fmt(negN);
+  document.getElementById('feeling-grid').innerHTML = _filt.map(f=>`<div class="feeling-chip ${f.t}"><span class="fc-count">${f.n}</span><span class="fc-label">${f.f}</span></div>`).join('');
 }
 function renderCsatByTab() {
-  document.getElementById('csat-tab-tbody').innerHTML = CSAT_BY_TAB.map((r,i)=>`<tr><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td>${r.c}</td><td class="pct">${r.n}</td><td class="num" style="color:${csatColor(r.pct)}">${r.pct}%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${r.pct<65?'red':r.pct<75?'warn':''}" style="width:${r.pct}%"></div></div></div></td></tr>`).join('');
+  document.getElementById('csat-tab-tbody').innerHTML = CSAT_BY_TAB.map((r,i)=>`<tr><td style="color:var(--text-muted);font-family:'Outfit',sans-serif;font-size:11px">${i+1}</td><td>${r.c}</td><td class="pct">${r.n}</td><td class="num" style="color:${csatColor(r.pct)}">${r.pct}%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${r.pct<65?'red':r.pct<75?'warn':''}" style="width:${r.pct}%"></div></div></div></td></tr>`).join('');
 }
 function renderComments() {
-  document.getElementById('comments-container').innerHTML = COMMENTS.map(c=>`<div class="comment-card"><div class="comment-meta"><span class="comment-nota">★ ${c.nota}</span><span class="comment-grupo">${c.grupo}</span></div><div class="comment-text">"${c.text}"</div><div class="comment-feelings">${c.feelings.map(f=>`<span class="pill pill-red">${f}</span>`).join('')}</div></div>`).join('');
+  document.getElementById('comments-container').innerHTML = COMMENTS.map(c=>`<div class="comment-card"><div class="comment-meta"><span class="comment-nota">★ ${c.nota}</span><span class="comment-grupo">${c.grupo}</span>${c.fornecedora_nome?`<span class="pill" style="background:rgba(76,175,50,0.1);border:1px solid var(--green-border);color:var(--green);font-size:9px;margin-left:6px">${c.fornecedora_nome}</span>`:''}</div><div class="comment-text">"${c.text}"</div><div class="comment-feelings">${c.feelings.map(f=>`<span class="pill pill-red">${f}</span>`).join('')}</div></div>`).join('');
 }
 function renderAgentes() {
   const maxEsc = Math.max(...AGENTES.map(a=>a.esc), 1);
   document.getElementById('agentes-tbody').innerHTML = AGENTES.map((a,i)=>{
     const csatStr = a.csat!==null?`<span style="color:${csatColor(a.csat)}">${a.csat}%</span>`:'<span style="color:var(--text-muted)">—</span>';
     const escHi = a.esc>=35?'red-val':a.esc>=25?'warn-val':'';
-    return `<tr class="${a.csat!==null&&a.csat<65?'hi-red':''}"><td style="color:var(--text-muted);font-family:'Syne',sans-serif;font-size:11px">${i+1}</td><td style="font-weight:500">${a.n}</td><td class="num">${_fmt(a.at)}</td><td class="num" style="color:${tmaColor(a.tma)}">${a.tma||'—'}</td><td>${csatStr}</td><td class="pct">${a.tk}</td><td class="num ${escHi}">${a.esc}%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${a.esc>=35?'red':a.esc>=25?'warn':''}" style="width:${Math.round(a.esc/maxEsc*100)}%"></div></div></div></td></tr>`;
+    return `<tr class="${a.csat!==null&&a.csat<65?'hi-red':''}"><td style="color:var(--text-muted);font-family:'Outfit',sans-serif;font-size:11px">${i+1}</td><td style="font-weight:500">${a.n}</td><td class="num">${_fmt(a.at)}</td><td class="num" style="color:${tmaColor(a.tma)}">${a.tma||'—'}</td><td>${csatStr}</td><td class="pct">${a.tk}</td><td class="num ${escHi}">${a.esc}%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${a.esc>=35?'red':a.esc>=25?'warn':''}" style="width:${Math.round(a.esc/maxEsc*100)}%"></div></div></div></td></tr>`;
   }).join('');
 }
 function renderAcoes() {
@@ -1169,19 +1516,36 @@ function renderAcoes() {
   document.getElementById('acoes-tbody').innerHTML = ACOES.map(a=>`<tr><td>${a.a}</td><td class="num">${a.n}</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${a.a.includes('seguro')?'red':''}" style="width:${Math.round(a.n/max*100)}%"></div></div></div></td></tr>`).join('');
 }
 function renderLiveQuotes() {
-  document.getElementById('live-quotes-container').innerHTML = NEG_QUOTES.map(q=>`<div class="quote-card neg-quote"><div class="quote-date">${q.d}</div><div class="quote-text">"${q.t}"</div></div>`).join('');
+  const _utils = LIVE_SESSIONS.map(s=>s.util).filter(v=>v!=null);
+  const _clars = LIVE_SESSIONS.map(s=>s.clar).filter(v=>v!=null);
+  const eu=document.getElementById('p7-util-avg'),ec=document.getElementById('p7-clar-avg');
+  if(eu&&_utils.length) eu.textContent=(_avg(_utils).toFixed(1)).replace('.',',')+'/10';
+  if(ec&&_clars.length) ec.textContent=(_avg(_clars).toFixed(1)).replace('.',',')+'/5';
+  document.getElementById('live-quotes-container').innerHTML = NEG_QUOTES.map(q=>`<div class="quote-card neg-quote"><div class="quote-date">${q.d}</div><div class="quote-text">"${q.t}"</div></div>`).join('') || '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">Nenhum comentário crítico encontrado.</div>';
+  document.getElementById('live-sugg-container').innerHTML  = NEG_SUGG.map(q=>`<div class="quote-card"><div class="quote-date">${q.d}</div><div class="quote-text">"${q.t}"</div></div>`).join('') || '<div style="color:var(--text-muted);font-size:12px;padding:8px 0">Nenhuma sugestão encontrada.</div>';
 }
 
 // ── Charts ────────────────────────────────────────────────────────────────────
 Chart.defaults.color = '#636363';
 Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
 Chart.defaults.font.family = "'DM Sans', sans-serif";
-let _wkChart, _liveChart, _monthlyChart;
+let _wkChart, _liveChartUtil, _liveChartClar, _monthlyChart, _repDailyChart;
 
 function initCharts() {
   if (_monthlyChart) _monthlyChart.destroy();
   if (_wkChart) _wkChart.destroy();
-  if (_liveChart) _liveChart.destroy();
+  if (_liveChartUtil) _liveChartUtil.destroy();
+  if (_liveChartClar) _liveChartClar.destroy();
+  if (_repDailyChart) _repDailyChart.destroy();
+  _repDailyChart = new Chart(document.getElementById('repDailyChart'), {
+    type: 'line',
+    data: { labels: REP_DAILY.map(r => r.day), datasets: [
+      { label: '% Reportes/Tickets', data: REP_DAILY.map(r => r.rate), borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.15)', borderWidth: 2, pointRadius: 2, tension: 0.3, fill: true },
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: i => `  ${i.parsed.y}% de reportes` } } },
+      scales: { x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#636363', maxTicksLimit: 10 } }, y: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#636363', callback: v => v + '%' }, beginAtZero: true } } },
+  });
   _monthlyChart = new Chart(document.getElementById('monthlyChart'), {
     type: 'line',
     data: { labels: MONTHLY.labels, datasets: [
@@ -1189,31 +1553,116 @@ function initCharts() {
       { label: 'Executivos & Acima', data: MONTHLY.exec, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', borderWidth: 2, pointRadius: 4, pointBackgroundColor: '#f5a623', tension: 0.35, fill: true },
     ]},
     options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1c1c1c', borderColor: 'rgba(76,175,50,0.3)', borderWidth: 1, titleColor: '#e8e8e8', bodyColor: '#9a9a9a', footerColor: '#e8e8e8', padding: 12, titleFont: { family: "'Syne',sans-serif", size: 11, weight: '700' }, bodyFont: { family: "'DM Sans',sans-serif", size: 12 }, footerFont: { family: "'Syne',sans-serif", size: 12, weight: '700' }, footerMarginTop: 8, callbacks: { title: items => items[0].label, label: item => '  ' + item.dataset.label + ': ' + item.parsed.y.toLocaleString('pt-BR'), footer: items => 'Total: ' + items.reduce((s, i) => s + i.parsed.y, 0).toLocaleString('pt-BR') } } },
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1c1c1c', borderColor: 'rgba(76,175,50,0.3)', borderWidth: 1, titleColor: '#e8e8e8', bodyColor: '#9a9a9a', footerColor: '#e8e8e8', padding: 12, titleFont: { family: "'Outfit',sans-serif", size: 11, weight: '700' }, bodyFont: { family: "'DM Sans',sans-serif", size: 12 }, footerFont: { family: "'Outfit',sans-serif", size: 12, weight: '700' }, footerMarginTop: 8, callbacks: { title: items => items[0].label, label: item => '  ' + item.dataset.label + ': ' + item.parsed.y.toLocaleString('pt-BR'), footer: items => 'Total: ' + items.reduce((s, i) => s + i.parsed.y, 0).toLocaleString('pt-BR') } } },
       scales: { x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 11 }, color: '#636363' } }, y: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#636363' }, beginAtZero: true } } },
   });
   _wkChart = new Chart(document.getElementById('weeklyChart'), {
-    type: 'bar',
-    data: { labels: WEEKS.labels, datasets: [{ label: 'Atendimentos', data: WEEKS.data, backgroundColor: 'rgba(76,175,50,0.35)', borderColor: '#4caf32', borderWidth: 1, borderRadius: 3 }] },
-    options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } } } },
+    type: 'line',
+    data: { labels: WEEKS.labels, datasets: [
+      { label: 'Gestores & Abaixo', data: WEEKS.gest, borderColor: '#4caf32', backgroundColor: 'rgba(76,175,50,0.1)', borderWidth: 2, pointRadius: 2, tension: 0.3, fill: true },
+      { label: 'Executivos & Acima', data: WEEKS.exec, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.07)', borderWidth: 2, pointRadius: 2, tension: 0.3, fill: true },
+    ]},
+    options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 12, color: '#9a9a9a' } } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } }, beginAtZero: true } } },
   });
-  _liveChart = new Chart(document.getElementById('liveChart'), {
+  const _liveOpts = (max) => ({ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#636363' } }, y: { min: 0, max, grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#636363' } } } });
+  _liveChartUtil = new Chart(document.getElementById('liveChartUtil'), {
     type: 'line',
     data: { labels: LIVE_SESSIONS.map(s => s.d.slice(5)), datasets: [
-      { label: 'Utilidade (/10)', data: LIVE_SESSIONS.map(s => s.util), borderColor: '#4caf32', backgroundColor: 'rgba(76,175,50,0.1)', tension: 0.3, pointRadius: 5, pointBackgroundColor: '#4caf32', yAxisID: 'y' },
-      { label: 'Clareza (/5)', data: LIVE_SESSIONS.map(s => s.clar), borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)', tension: 0.3, pointRadius: 5, pointBackgroundColor: '#f5a623', yAxisID: 'y2' },
+      { label: 'Utilidade', data: LIVE_SESSIONS.map(s => s.util), borderColor: '#4caf32', backgroundColor: 'rgba(76,175,50,0.15)', tension: 0.3, pointRadius: 4, pointBackgroundColor: '#4caf32', fill: true },
     ]},
-    options: { responsive: true, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 12 } } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' } }, y: { min: 0, max: 10, position: 'left', grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 10 } } }, y2: { min: 0, max: 5, position: 'right', grid: { display: false }, ticks: { font: { size: 10 } } } } },
+    options: _liveOpts(10),
   });
+  _liveChartClar = new Chart(document.getElementById('liveChartClar'), {
+    type: 'line',
+    data: { labels: LIVE_SESSIONS.map(s => s.d.slice(5)), datasets: [
+      { label: 'Clareza', data: LIVE_SESSIONS.map(s => s.clar), borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.15)', tension: 0.3, pointRadius: 4, pointBackgroundColor: '#f5a623', fill: true },
+    ]},
+    options: _liveOpts(5),
+  });
+}
+
+let _fcSortCol = null, _fcSortDir = 'desc';
+function sortFornCanc(col) {
+  if (_fcSortCol === col) _fcSortDir = _fcSortDir === 'desc' ? 'asc' : 'desc';
+  else { _fcSortCol = col; _fcSortDir = 'desc'; }
+  ['men','canc','pct'].forEach(c => { const el = document.getElementById('fc-'+c); if (el) el.textContent = ('men'===c&&col==='men')||('canc'===c&&col==='canc_n')||('pct'===c&&col==='canc_pct') ? (_fcSortDir==='desc'?'▾':'▴') : ''; });
+  renderFornCancellation();
+}
+function renderFornCancellation() {
+  let rows = [...(FORN_CANC || [])];
+  if (_fcSortCol) rows.sort((a, b) => _fcSortDir === 'desc' ? (b[_fcSortCol] ?? -1) - (a[_fcSortCol] ?? -1) : (a[_fcSortCol] ?? -1) - (b[_fcSortCol] ?? -1));
+  const max = Math.max(...rows.map(r => r.canc_n), 1);
+  document.getElementById('forn-canc-tbody').innerHTML = rows.map(r =>
+    `<tr><td style="font-weight:600;color:var(--white)">${r.n}</td><td class="num">${_fmt(r.men)}</td><td class="num" style="color:var(--red)">${_fmt(r.canc_n)}</td><td class="num" style="color:${r.canc_pct>=5?'var(--red)':r.canc_pct>=2?'var(--warn)':'var(--text-dim)'}">${r.canc_pct}%</td><td><div class="bar-wrap"><div class="bar-track"><div class="bar-fill red" style="width:${Math.round(r.canc_n/max*100)}%"></div></div></div></td></tr>`
+  ).join('') || '<tr><td colspan="5" style="color:var(--text-muted);padding:12px">Sem dados</td></tr>';
+}
+
+function renderFornSentimentos() {
+  const el = document.getElementById('forn-sent-grid');
+  if (!el || !FORN_SENT.length) return;
+  const POS = new Set(['Elogio','Encantado','Gratidão','Contentado','Parabéns','Satisfeito']);
+  const NEG = new Set(['Crítico','Frustrado','Insatisfeito','Ansioso','Revoltado','Descontente']);
+  const byForn = {};
+  for (const r of FORN_SENT) {
+    if (!byForn[r.forn]) byForn[r.forn] = { pos: [], neg: [], total: 0 };
+    byForn[r.forn].total += r.n;
+    if (POS.has(r.feeling)) byForn[r.forn].pos.push({ f: r.feeling, n: r.n });
+    else if (NEG.has(r.feeling)) byForn[r.forn].neg.push({ f: r.feeling, n: r.n });
+  }
+  const sorted = Object.entries(byForn).sort((a,b) => b[1].total - a[1].total);
+  el.innerHTML = sorted.map(([forn, d]) => {
+    const topPos = d.pos.sort((a,b)=>b.n-a.n)[0];
+    const topNeg = d.neg.sort((a,b)=>b.n-a.n)[0];
+    const netScore = d.pos.reduce((s,r)=>s+r.n,0) - d.neg.reduce((s,r)=>s+r.n,0);
+    const netColor = netScore > 0 ? 'var(--green)' : netScore < 0 ? 'var(--red)' : 'var(--text-muted)';
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+      <div style="font-weight:700;font-size:13px;color:var(--white);margin-bottom:8px">${forn}</div>
+      ${topPos?`<div style="font-size:11px;color:var(--green);margin-bottom:3px">▲ ${topPos.f} (${topPos.n})</div>`:''}
+      ${topNeg?`<div style="font-size:11px;color:var(--red);margin-bottom:3px">▼ ${topNeg.f} (${topNeg.n})</div>`:''}
+      <div style="font-size:10px;color:${netColor};margin-top:4px;font-weight:700">Net: ${netScore>0?'+':''}${netScore}</div>
+    </div>`;
+  }).join('');
+}
+
+async function addDataNeed() {
+  const inp = document.getElementById('data-need-input');
+  const text = (inp?.value || '').trim();
+  if (!text) return;
+  inp.disabled = true;
+  const { error } = await _SB.from('data_needs').insert({ descricao: text });
+  inp.disabled = false;
+  if (!error) { inp.value = ''; renderDataNeeds(); }
+  else alert('Erro ao salvar: ' + error.message);
+}
+
+async function deleteDataNeed(id) {
+  await _SB.from('data_needs').delete().eq('id', id);
+  renderDataNeeds();
+}
+
+async function renderDataNeeds() {
+  const el = document.getElementById('data-needs-list');
+  if (!el) return;
+  const { data } = await _SB.from('data_needs').select('id,descricao,criado_em').order('criado_em');
+  const rows = data || window.__dataNeedsData || [];
+  if (!rows.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:13px">Nenhuma necessidade registrada.</p>'; return; }
+  el.innerHTML = rows.map((r,i) =>
+    `<div style="display:flex;gap:12px;align-items:flex-start;padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:10px">
+      <div style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;color:var(--text-muted);flex-shrink:0;min-width:28px">${i+1}</div>
+      <div style="flex:1;font-size:13px;color:var(--text-dim);line-height:1.6">${r.descricao}</div>
+      <button onclick="deleteDataNeed('${r.id}')"
+        style="flex-shrink:0;padding:4px 10px;border-radius:6px;border:1px solid rgba(201,96,96,0.3);background:transparent;color:var(--red);font-family:inherit;font-size:11px;cursor:pointer;transition:background .15s"
+        onmouseover="this.style.background='rgba(201,96,96,0.1)'" onmouseout="this.style.background='transparent'">Remover</button>
+    </div>`
+  ).join('');
 }
 
 function renderAll(m) {
   renderCapa(m.capa); renderP1(m);
-  renderTabulacoes(); renderTopTma();
-  renderFilas(); renderStatusDist(); renderTicketTipos(); renderOpenAging(); renderCustTickets(); renderReporteTypes(); renderReporteRate();
-  renderFornecedoras();
-  renderNotaDist(); renderFeelings(); renderCsatByTab(); renderComments();
-  renderAgentes();
+  renderTabulacoes(); renderTopTma(); renderReturning();
+  renderFilas(); renderStatusDist(); renderTicketTipos(); renderOpenAging(); renderCustTickets(); renderReporteTypes(); renderReporteRate(); renderCancelledAnalysis();
+  renderFornecedoras(); renderFornCancellation(); renderCuratedInsights(); renderFornMonthly();
+  renderNotaDist(); renderFeelings(); renderFornSentimentos(); renderCsatByTab(); renderComments(); renderP5Cards(m.overview);
   renderAcoes(); renderLiveQuotes();
   initCharts();
 }
@@ -1223,7 +1672,7 @@ function goTo(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const pages = ['p0','p1','p2','p3','p4','p5','p6','p7'];
+  const pages = ['p0','p1','p2','p3','p4','p5','p7','p8'];
   document.querySelectorAll('.nav-btn')[pages.indexOf(id)].classList.add('active');
   window.scrollTo(0, 0);
 }
@@ -1243,7 +1692,7 @@ async function _init() {
   try {
     const m = await _loadData();
     _prog(95, 'Renderizando...');
-    renderAll(m);
+    renderAll(m); renderDataNeeds();
     _prog(100, 'Pronto!');
     await new Promise(r => setTimeout(r, 250));
   } catch (err) {
@@ -1255,7 +1704,51 @@ async function _init() {
 }
 document.addEventListener('DOMContentLoaded', _init);
 
+// ── Global fixed tooltip engine ────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  const gtt = document.getElementById('_gtt');
+  if (!gtt) return;
+  let _cur = null;
+
+  function _pos(e) {
+    const W = gtt.offsetWidth || 280, H = gtt.offsetHeight || 60;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    let x = e.clientX + 14, y = e.clientY - H - 10;
+    if (x + W > vw - 8) x = e.clientX - W - 14;
+    if (y < 8) y = e.clientY + 20;
+    gtt.style.left = x + 'px';
+    gtt.style.top  = y + 'px';
+  }
+
+  document.addEventListener('mouseover', function(e) {
+    const htt = e.target.closest('.has-kpi-tt');
+    if (!htt) return;
+    const tt = htt.querySelector('.kpi-tt');
+    if (!tt) return;
+    if (_cur === htt) return;
+    _cur = htt;
+    gtt.innerHTML = tt.innerHTML;
+    gtt.style.display = 'block';
+    _pos(e);
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!_cur) return;
+    if (!_cur.contains(e.target)) { gtt.style.display = 'none'; _cur = null; return; }
+    _pos(e);
+  });
+
+  document.addEventListener('mouseout', function(e) {
+    if (!e.relatedTarget || !e.relatedTarget.closest || !e.relatedTarget.closest('.has-kpi-tt')) {
+      gtt.style.display = 'none'; _cur = null;
+    }
+  });
+});
+
 </script>
+
+<!-- Global fixed tooltip — escapes all overflow containers -->
+<div id="_gtt" style="display:none;position:fixed;z-index:9990;max-width:300px;background:#1c1c1c;border:1px solid rgba(76,175,50,0.3);border-radius:8px;padding:13px 15px;font-family:'DM Sans',sans-serif;font-size:12.5px;color:var(--text-dim);line-height:1.55;box-shadow:0 8px 32px rgba(0,0,0,0.55);pointer-events:none"></div>
 
 <div id="_load-overlay" style="position:fixed;inset:0;z-index:9999;background:var(--black);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px">
   <img src="../assets/footericon.png" alt="iGreen Energy" style="height:40px">
