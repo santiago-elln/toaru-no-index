@@ -139,11 +139,97 @@
   </div>
 </main>
 
+<!-- EDIT MODAL -->
+<div class="edit-overlay" id="editOverlay" onclick="if(event.target===this)closeEditModal()">
+  <div class="edit-modal">
+    <div class="edit-modal-hdr">
+      <span class="edit-modal-title">Editar página</span>
+      <button class="edit-modal-close" onclick="closeEditModal()">&#x2715;</button>
+    </div>
+    <div class="edit-modal-body">
+      <div id="editAlert"></div>
+
+      <div class="form-group">
+        <label>Arquivo HTML</label>
+        <div class="edit-file-zone" onclick="document.getElementById('editFileInput').click()">
+          <input type="file" id="editFileInput" accept=".html,text/html" onchange="editFileSelected(event)">
+          <span style="font-size:22px;flex-shrink:0">📄</span>
+          <div>
+            <div id="editFileName" style="font-size:13px;color:var(--text-dim)">Clique para substituir o arquivo HTML</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Opcional — mantém o arquivo atual se não selecionado</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="editTitle">Título <span style="color:var(--red)">*</span></label>
+        <input type="text" id="editTitle">
+      </div>
+
+      <div class="form-group">
+        <label for="editDesc">Descrição</label>
+        <textarea id="editDesc"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <label for="editCategory">Categoria</label>
+          <select id="editCategory">
+            <option value="">— Selecione —</option>
+            <option>Relatório</option>
+            <option>Ticket</option>
+            <option>Ata</option>
+            <option>Processo</option>
+            <option>Outro</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label for="editTags">Tags</label>
+          <input type="text" id="editTags" placeholder="suporte, N2, melhoria">
+          <div class="field-hint">Separadas por vírgula</div>
+        </div>
+      </div>
+
+      <div class="form-row" style="margin-top:16px">
+        <div class="form-group" style="margin-bottom:0">
+          <label for="editAuthorName">Autor</label>
+          <input type="text" id="editAuthorName">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label for="editAuthorEmail">E-mail do autor</label>
+          <input type="email" id="editAuthorEmail">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:16px">
+        <label for="editSlug">Slug (URL)</label>
+        <input type="text" id="editSlug">
+        <div class="field-hint" id="editSlugPreview"></div>
+        <div class="field-hint" style="color:rgba(224,82,82,0.6);margin-top:3px">Alterar o slug requer o upload de um novo arquivo HTML.</div>
+      </div>
+
+      <div class="form-group" style="flex-direction:row;align-items:center;gap:10px;margin-bottom:0">
+        <input type="checkbox" id="editAnalystOnly" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0">
+        <label for="editAnalystOnly" style="margin:0;font-size:13px;color:var(--text-dim);cursor:pointer">Acesso Restrito a Colaboradores</label>
+      </div>
+
+      <div class="progress-wrap" id="editProgressWrap" style="margin-top:18px">
+        <div class="progress-bar" id="editProgressBar"></div>
+      </div>
+    </div>
+    <div class="edit-modal-footer">
+      <button class="btn btn-save" id="editSaveBtn" onclick="saveEdit()">Salvar alterações</button>
+      <button class="btn btn-cancel" onclick="closeEditModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  const SUPABASE_URL = '__SUPABASE_URL__'
-  const SUPABASE_KEY = '__SUPABASE_KEY__'
-  const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  const SUPABASE_URL     = '__SUPABASE_URL__'
+  const SUPABASE_KEY     = '__SUPABASE_KEY__'
+  const SUPABASE_SVC_KEY = '__SUPABASE_SERVICE_KEY__'
   const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname)
+  const client = supabase.createClient(SUPABASE_URL, IS_LOCAL ? SUPABASE_SVC_KEY : SUPABASE_KEY)
 
   let selectedFile        = null
   let allAdminPages       = []
@@ -424,6 +510,7 @@
               onchange="updateSidebar('${p.id}', this.checked)">
           </div>
         </div>
+        <button class="btn-edit" onclick="openEditModal('${p.id}')">Editar</button>
         <button class="btn-danger" onclick="deletePage('${p.id}','${p.storage_path}',this)">Excluir</button>
       `
       return `
@@ -520,6 +607,145 @@
       item.style.marginTop = '0'
     })
     setTimeout(() => item.remove(), 350)
+  }
+
+  // ── EDIT MODAL ───────────────────────────────────────
+  let editingPageId    = null
+  let editSelectedFile = null
+
+  function openEditModal(id) {
+    const p = allAdminPages.find(p => p.id === id)
+    if (!p) return
+
+    editingPageId    = id
+    editSelectedFile = null
+
+    document.getElementById('editTitle').value        = p.title        ?? ''
+    document.getElementById('editDesc').value          = p.description  ?? ''
+    document.getElementById('editCategory').value      = p.category     ?? ''
+    document.getElementById('editTags').value          = (p.tags ?? []).join(', ')
+    document.getElementById('editAuthorName').value    = p.author_name  ?? ''
+    document.getElementById('editAuthorEmail').value   = p.author_email ?? ''
+    document.getElementById('editSlug').value          = p.slug         ?? ''
+    document.getElementById('editAnalystOnly').checked = !!p.analyst_only
+    const nameEl = document.getElementById('editFileName')
+    nameEl.textContent = 'Clique para substituir o arquivo HTML'
+    nameEl.style.color = 'var(--text-dim)'
+    document.getElementById('editFileInput').value = ''
+    document.getElementById('editSlugPreview').textContent = `→ page.html?slug=${p.slug}`
+    document.getElementById('editAlert').innerHTML = ''
+    document.getElementById('editProgressWrap').style.display = 'none'
+
+    document.getElementById('editOverlay').classList.add('open')
+    document.body.style.overflow = 'hidden'
+  }
+
+  function closeEditModal() {
+    document.getElementById('editOverlay').classList.remove('open')
+    document.body.style.overflow = ''
+    editingPageId    = null
+    editSelectedFile = null
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeEditModal()
+  })
+
+  function editFileSelected(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    editSelectedFile = file
+    const nameEl = document.getElementById('editFileName')
+    nameEl.textContent = `✓ ${file.name}`
+    nameEl.style.color = 'var(--green)'
+  }
+
+  document.getElementById('editSlug').addEventListener('input', () => {
+    const slug = document.getElementById('editSlug').value.trim()
+    document.getElementById('editSlugPreview').textContent = slug ? `→ page.html?slug=${slug}` : ''
+  })
+
+  async function saveEdit() {
+    const p = allAdminPages.find(p => p.id === editingPageId)
+    if (!p) return
+
+    const title       = document.getElementById('editTitle').value.trim()
+    const desc        = document.getElementById('editDesc').value.trim()
+    const category    = document.getElementById('editCategory').value
+    const tags        = document.getElementById('editTags').value
+      .split(',').map(t => t.trim()).filter(Boolean)
+    const authorName  = document.getElementById('editAuthorName').value.trim()
+    const authorEmail = document.getElementById('editAuthorEmail').value.trim()
+    const slug        = document.getElementById('editSlug').value.trim()
+    const analystOnly = document.getElementById('editAnalystOnly').checked
+
+    if (!title) return setAlert('editAlert', 'O título é obrigatório.', 'error')
+    if (!slug)  return setAlert('editAlert', 'O slug é obrigatório.', 'error')
+
+    const slugChanged = slug !== p.slug
+    if (slugChanged && !editSelectedFile)
+      return setAlert('editAlert', 'Alterar o slug requer o upload de um novo arquivo HTML.', 'error')
+
+    setAlert('editAlert', '')
+    const btn = document.getElementById('editSaveBtn')
+    btn.disabled = true; btn.textContent = 'Salvando…'
+
+    const pw = document.getElementById('editProgressWrap')
+    const pb = document.getElementById('editProgressBar')
+    pw.style.display = 'block'; pb.style.width = '10%'
+
+    let storagePath = p.storage_path
+
+    if (editSelectedFile) {
+      const newPath = `${slug}.html`
+      const { error: storErr } = await client.storage
+        .from('pages')
+        .upload(newPath, editSelectedFile, { upsert: true, contentType: 'text/html; charset=utf-8' })
+
+      if (storErr) {
+        setAlert('editAlert', `Erro no upload: ${storErr.message}`, 'error')
+        btn.disabled = false; btn.textContent = 'Salvar alterações'
+        pw.style.display = 'none'; return
+      }
+
+      if (slugChanged && p.storage_path && p.storage_path !== newPath)
+        await client.storage.from('pages').remove([p.storage_path])
+
+      storagePath = newPath
+    }
+
+    pb.style.width = '80%'
+
+    const { error: dbErr } = await client.from('pages').update({
+      slug, title,
+      description:  desc        || null,
+      category:     category    || null,
+      tags,
+      author_name:  authorName  || null,
+      author_email: authorEmail || null,
+      storage_path: storagePath,
+      file_size:    editSelectedFile ? editSelectedFile.size : p.file_size,
+      analyst_only: analystOnly,
+    }).eq('id', editingPageId)
+
+    pb.style.width = '100%'
+
+    if (dbErr) {
+      setAlert('editAlert', `Erro ao salvar: ${dbErr.message}`, 'error')
+      btn.disabled = false; btn.textContent = 'Salvar alterações'
+    } else {
+      allAdminPages = allAdminPages.map(pg => pg.id === editingPageId
+        ? { ...pg, slug, title, description: desc || null, category: category || null,
+            tags, author_name: authorName || null, author_email: authorEmail || null,
+            storage_path: storagePath,
+            file_size: editSelectedFile ? editSelectedFile.size : pg.file_size,
+            analyst_only: analystOnly }
+        : pg)
+      renderPagesList()
+      closeEditModal()
+    }
+
+    setTimeout(() => { pw.style.display = 'none'; pb.style.width = '0%' }, 900)
   }
 
   // ── UTILS ────────────────────────────────────────────
