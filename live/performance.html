@@ -749,13 +749,13 @@
           </div>
           <div class="chart-sidebar">
             <div class="chart-legend">
-              <div class="legend-item"><span class="legend-dot sig"></span>Ag. Assinatura</div>
-              <div class="legend-item"><span class="legend-dot docs"></span>Devolutivas</div>
+              <div class="legend-item"><span class="legend-dot sig"></span>Respostas de cliente</div>
+              <!-- <div class="legend-item"><span class="legend-dot docs"></span>Devolutivas</div> -->
               <div class="legend-item"><span class="legend-dot mass"></span>Datas de disparo</div>
             </div>
             <div class="chart-totals">
               <div class="chart-total-label">Total recebido</div>
-              <div class="chart-total-row">Assin.: <span id="totalSig">—</span></div>
+              <div class="chart-total-row">Ag. Assin.: <span id="totalSig">—</span></div>
               <div class="chart-total-row">Devol.: <span id="totalDocs">—</span></div>
             </div>
           </div>
@@ -1153,11 +1153,10 @@
     }
 
     const CELL = 10, GAP = 2, PAD_T = 2, PAD_B = 12
-    const colorFn = colorGroup === 'sig'
-      ? a => `rgba(76,175,50,${a})`
-      : a => `rgba(155,155,155,${a})`
+    const colorFn = a => `rgba(76,175,50,${a})`
 
-    const sorted = rows.map(r => r.date).sort()
+    const MIN_DATE = '2026-03-01'
+    const sorted = rows.map(r => r.date).filter(d => d >= MIN_DATE).sort()
     const n = sorted.length
 
     let maxCount = 1
@@ -1188,18 +1187,20 @@
       const x = i * (CELL + GAP)
       const info = map[dateStr]
 
-      let fill, stroke = 'none', strokeW = 0
-      if (info.isMassDate) {
-        fill = 'rgba(192,57,43,0.4)'
-        stroke = 'rgba(192,57,43,0.7)'
-        strokeW = 0.75
-      } else if (!info.count) {
-        fill = 'rgba(255,255,255,0.04)'
-      } else {
-        fill = colorFn((0.12 + (info.count / maxCount) * 0.78).toFixed(2))
-      }
+      const fill = info.count
+        ? colorFn((0.12 + (info.count / maxCount) * 0.78).toFixed(2))
+        : 'rgba(255,255,255,0.04)'
 
-      out += `<rect x="${x}" y="${PAD_T}" width="${CELL}" height="${CELL}" rx="2" ry="2" fill="${fill}" stroke="${stroke}" stroke-width="${strokeW}"><title>${dateStr}: ${info.count} respostas${info.isMassDate ? ' (disparo)' : ''}</title></rect>`
+      out += `<rect x="${x}" y="${PAD_T}" width="${CELL}" height="${CELL}" rx="2" ry="2" fill="${fill}"><title>${dateStr}: ${info.count} respostas${info.isMassDate ? ' (disparo)' : ''}</title></rect>`
+    }
+
+    // Disparo overlay lines — drawn after cells so they sit on top
+    for (let i = 0; i < n; i++) {
+      const dateStr = sorted[i]
+      const info = map[dateStr]
+      if (!info.isMassDate) continue
+      const cx = i * (CELL + GAP) + CELL / 2
+      out += `<line x1="${cx}" y1="${PAD_T - 1}" x2="${cx}" y2="${PAD_T + CELL + 1}" stroke="rgba(220,60,40,0.85)" stroke-width="1.5"><title>${dateStr}: disparo</title></line>`
     }
 
     svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`)
@@ -1260,10 +1261,10 @@
 
     // Dots — replies behind, responses in front
     for (const p of points.filter(p => p.type === 'reply')) {
-      out += `<circle cx="${xScale(p.date).toFixed(1)}" cy="${yScale(p.hour).toFixed(1)}" r="3.5" fill="rgba(192,57,43,0.65)"/>`
+      out += `<circle cx="${xScale(p.date).toFixed(1)}" cy="${yScale(p.hour).toFixed(1)}" r="2" fill="rgba(192,57,43,0.4)"/>`
     }
     for (const p of points.filter(p => p.type === 'response')) {
-      out += `<circle cx="${xScale(p.date).toFixed(1)}" cy="${yScale(p.hour).toFixed(1)}" r="3.5" fill="rgba(76,175,50,0.7)"/>`
+      out += `<circle cx="${xScale(p.date).toFixed(1)}" cy="${yScale(p.hour).toFixed(1)}" r="2" fill="rgba(76,175,50,0.7)"/>`
     }
 
     if (!points.length) {
