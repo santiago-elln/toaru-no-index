@@ -767,7 +767,7 @@
     <div class="filter-context-wrap">
 
       <!-- Mirror toggle -->
-      <div class="mirror-row" style="display:none">
+      <div class="mirror-row">
         <label class="mirror-label" for="mirrorToggle">
           <input type="checkbox" id="mirrorToggle" checked>
           <span class="mirror-ui"></span>
@@ -777,7 +777,7 @@
       </div>
 
       <!-- Filter panels (2-col splits into 1-col when mirrored) -->
-      <div class="filter-panels-row" id="filterPanelsRow" style="display:none">
+      <div class="filter-panels-row" id="filterPanelsRow">
 
         <!-- Sig panel (doubles as shared panel when mirrored) -->
         <div class="filter-panel" id="panelSig">
@@ -790,7 +790,7 @@
               <input type="checkbox" class="pill-input" id="sig-lebes" data-panel="sig" checked>
               <label class="pill-label" for="sig-lebes">Licença Lebes</label>
               <input type="checkbox" class="pill-input" id="sig-acionistas" data-panel="sig" checked>
-              <label class="pill-label" for="sig-acionistas">Acionistas</label>
+              <label class="pill-label" for="sig-acionistas">Outros</label>
             </div>
           </div>
 
@@ -806,7 +806,7 @@
 
         <!-- Docs panel (hidden when mirrored) -->
         <div class="filter-panel" id="panelDocs" style="display:none">
-          <span class="filter-panel-side">Documentos</span>
+          <span class="filter-panel-side">Devolutivas</span>
           <span class="filter-divider"></span>
 
           <div class="filter-group">
@@ -815,7 +815,7 @@
               <input type="checkbox" class="pill-input" id="docs-lebes" data-panel="docs" checked>
               <label class="pill-label" for="docs-lebes">Licença Lebes</label>
               <input type="checkbox" class="pill-input" id="docs-acionistas" data-panel="docs" checked>
-              <label class="pill-label" for="docs-acionistas">Acionistas</label>
+              <label class="pill-label" for="docs-acionistas">Outros</label>
             </div>
           </div>
 
@@ -837,7 +837,7 @@
         <div class="context-card">
           <div class="context-card-title">Contexto — Aguardando Assinatura</div>
 
-          <div class="ctx-progress-wrap">
+          <!-- <div class="ctx-progress-wrap">
             <div class="ctx-progress-header">
               <span class="ctx-progress-label">Exploração da base</span>
               <span class="ctx-progress-pct" id="sig-pct">—</span>
@@ -846,7 +846,7 @@
               <div class="ctx-progress-fill" id="sig-fill"></div>
             </div>
             <span class="ctx-progress-sub" id="sig-reach">— / — clientes contactados</span>
-          </div>
+          </div> -->
 
           <div class="ctx-stats">
             <div class="ctx-stat">
@@ -879,7 +879,7 @@
         <div class="context-card">
           <div class="context-card-title">Contexto — Devolutivas</div>
 
-          <div class="ctx-progress-wrap">
+          <!-- <div class="ctx-progress-wrap">
             <div class="ctx-progress-header">
               <span class="ctx-progress-label">Exploração da base</span>
               <span class="ctx-progress-pct" id="docs-pct">—</span>
@@ -888,7 +888,7 @@
               <div class="ctx-progress-fill" id="docs-fill"></div>
             </div>
             <span class="ctx-progress-sub" id="docs-reach">— / — clientes contactados</span>
-          </div>
+          </div> -->
 
           <div class="ctx-stats">
             <div class="ctx-stat">
