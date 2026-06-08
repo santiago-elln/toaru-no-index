@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Oportunidades de Melhoria — Fornecedoras</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/calendar.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <style>
@@ -66,6 +67,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--text);
 .page-title{font-family:'Outfit',sans-serif;font-size:clamp(22px,3vw,34px);font-weight:700;color:var(--white);letter-spacing:-.01em;line-height:1.15}
 .page-badge{background:rgba(76,175,50,0.1);border:1px solid var(--border-green);border-radius:4px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--green);letter-spacing:.05em;align-self:flex-start;white-space:nowrap}
 .page-badge.red{background:rgba(224,82,82,0.08);border-color:rgba(224,82,82,0.3);color:var(--red)}
+
+/* P3 DATE FILTER — trigger button + popup calendar (mirrors index.html) */
+.p3-date-filter{display:flex;align-items:center;margin-bottom:24px}
+.date-trigger{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .18s}
+.date-trigger:hover{border-color:var(--green-border);color:var(--text)}
+.date-trigger.active{background:rgba(76,175,50,0.15);border-color:var(--green-border);color:var(--green)}
+.date-trigger svg{flex-shrink:0}
+.date-trigger-clear{display:none;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(76,175,50,0.3);color:var(--green);font-size:10px;line-height:1;cursor:pointer;border:none;padding:0;font-family:inherit}
+.date-trigger.active .date-trigger-clear{display:flex}
 
 /* SECTION TITLE */
 .section-title{font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--green);margin-bottom:14px;margin-top:28px;display:flex;align-items:center;gap:8px}
@@ -231,7 +241,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
   <div class="topbar-sep"></div>
   <span class="topbar-cat">Suporte</span>
   <div class="topbar-sep"></div>
-  <span class="topbar-title">Gestão à Vista</span>
+  <span class="topbar-title">Resultados MAIO</span>
 </div>
 <div class="nav-pages">
   <button class="nav-btn active" onclick="goTo('p0')"><span class="nav-num">00</span> Capa</button>
@@ -518,6 +528,17 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
       <!-- <div class="page-badge red" id="p3-badge-sla">—% SLA Estourado</div> -->
     </div>
 
+    <div class="p3-date-filter">
+      <button class="date-trigger" id="p3CalendarToggle" aria-haspopup="dialog" aria-expanded="false">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span id="p3RangeDisplay">Qualquer data</span>
+        <button class="date-trigger-clear" id="p3DateClear" title="Limpar filtro de data">✕</button>
+      </button>
+    </div>
+
     <div class="cards-row cards-3">
       <div class="card card-red"><div class="card-label">Total de Tickets</div><div id="p3-total" class="card-value">—</div><div id="p3-total-sub" class="card-sub">—</div></div>
       <div class="card card-red"><div class="card-label">SLA Estourado</div><div id="p3-sla" class="card-value">—</div><div id="p3-sla-sub" class="card-sub">—</div></div>
@@ -604,7 +625,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
 
     <div class="split" style="margin-top:24px">
       <div>
-        <div class="section-title">Taxa Diária de Reportes — Maio 2026<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">% de tickets abertos no dia marcados como incorretos. Identifica picos de erro operacional.</div></span></div>
+        <div class="section-title">Taxa Diária de Reportes — Maio 2026<span id="repDailyAvgBadge" class="pill pill-warn" style="margin-left:8px;vertical-align:middle">—</span><span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">% de tickets abertos no dia marcados como incorretos. Identifica picos de erro operacional.</div></span></div>
         <div class="chart-box" style="height:200px">
           <canvas id="repDailyChart"></canvas>
         </div>
@@ -912,9 +933,11 @@ const CURATED_INSIGHTS = [
 ];
 let WEEKS, TABULACOES, TOP_TMA, TOP_TMA_GEST, TOP_TMA_EXEC, RET_EXEC, RET_GEST, TICKET_TIPOS, GLOBAL_FILAS,
     STATUS_DIST, OPEN_AGING, CUST_TICKETS, REPORTE_TYPES, REPORTE_RATE, REP_DAILY, CANCELLED,
-    TK_TOTAL, TK_SLA_BREACH_N, TK_MONTHLY,
+    TK_TOTAL, TK_SLA_BREACH_N, TK_MONTHLY, TK_AVG_DU,
     FORNECEDORAS, FORN_MONTHLY, FORN_CANC, FORN_SENT, NOTA_DIST, FEELINGS, CSAT_BY_TAB, COMMENTS,
     AGENTES, LIVE_SESSIONS, ACOES, NEG_QUOTES, NEG_SUGG, MONTHLY;
+
+let _p3Start = null, _p3End = null, _tktDuRaw = [];
 
 async function _fetchAll(table, cols) {
   const out = []; let offset = 0;
@@ -969,6 +992,7 @@ async function _loadData() {
     { data: rFornSent },
     { data: rDataNeeds },
     { data: pesquisas = [] },
+    rTktDu,
   ] = await Promise.all([
     _SB.rpc('dash_visao_geral'),
     _SB.rpc('dash_capa_full', { p_start: PS, p_end: PE }),
@@ -986,6 +1010,7 @@ async function _loadData() {
     _SB.rpc('dash_forn_sentimentos'),
     _SB.from('data_needs').select('id,descricao,criado_em').order('criado_em'),
     _SB.rpc('dash_pesquisas_live'),
+    _fetchAll('tickets', 'tempo_total_du,criado_em'),
   ]);
   // Fetch curated insight texts by UUID (two tables)
   _prog(78, 'Carregando depoimentos...');
@@ -1000,13 +1025,38 @@ async function _loadData() {
   (liveTexts || []).forEach(r => { _textMap[r.id + ':valor_aberto'] = r.valor_aberto; _textMap[r.id + ':duvidas'] = r.duvidas; });
   window.__curatedTexts = _textMap;
   _prog(80, 'Calculando métricas...');
-  const m = _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas });
+  const m = _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas, rTktDu });
   window.__dataNeedsData = rDataNeeds || [];
   window.__dashCache = m;
   return m;
 }
 
-function _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas }) {
+// Sets all P3 (Tickets & Ops) globals from the three RPC payloads + raw ticket DU rows.
+// Shared by the initial _compute() load and _loadP3() (date-filtered reload).
+function _applyTicketsData(tk, rRepDaily, rCancelled, duRows) {
+  const FILA_KEYS = ['triagem','suporte_ao_licenciado','relacionamentos','operacoes','contratos','fornecedora','aguardando_licenciado'];
+  const FILA_LBLS = ['Triagem','Suporte ao Licenciado','Relacionamentos','Operações','Contratos','Fornecedora','Aguardando Licenciado'];
+  GLOBAL_FILAS   = FILA_KEYS.map((f, i) => ({ l: FILA_LBLS[i], mean: tk.filas?.[f]?.mean || 0, max: tk.filas?.[f]?.max || 0, pct: tk.filas?.[f]?.pct || 0, dominant: f === 'relacionamentos' }));
+  STATUS_DIST    = tk.status_dist   || [];
+  TICKET_TIPOS   = tk.tipo_breakdown || [];
+  OPEN_AGING     = (tk.open_aging   || []).map(r => ({ t: r.t, n: r.n, avg: r.avg_days, max: r.max_days }));
+  CUST_TICKETS   = (tk.cust_tickets || []).map(r => ({ r: r.rnk, tk: r.tk, at: r.at }));
+  REPORTE_TYPES    = tk.reporte_types || [];
+  REPORTE_RATE     = tk.reporte_rate  || [];
+  TK_TOTAL         = tk.total         || 0;
+  TK_SLA_BREACH_N  = tk.sla_breach_n  || 0;
+  TK_MONTHLY       = tk.monthly_counts || [];
+  const _duFrom = _p3Start ? _p3Start + 'T00:00:00' : null;
+  const _duTo   = _p3End   ? _p3End   + 'T23:59:59.999' : null;
+  const _duVals = (duRows || [])
+    .filter(r => r.tempo_total_du != null && (!_duFrom || r.criado_em >= _duFrom) && (!_duTo || r.criado_em <= _duTo))
+    .map(r => r.tempo_total_du);
+  TK_AVG_DU = _duVals.length ? _avg(_duVals) : null;
+  REP_DAILY = rRepDaily || [];
+  CANCELLED = rCancelled || {};
+}
+
+function _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas, rTktDu }) {
   // ── Capa ────────────────────────────────────────────────────────────────────
   const rc = rCapa || {};
   const capaCsatN = (rc.csat_gest_n || 0) + (rc.csat_exec_n || 0);
@@ -1064,21 +1114,8 @@ function _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet,
   RET_GEST = (rRet || {}).top10_gest || [];
 
   // ── Tickets (P3) ────────────────────────────────────────────────────────────
-  const tk = rTkts || {};
-  const FILA_KEYS = ['triagem','suporte_ao_licenciado','relacionamentos','operacoes','contratos','fornecedora','aguardando_licenciado'];
-  const FILA_LBLS = ['Triagem','Suporte ao Licenciado','Relacionamentos','Operações','Contratos','Fornecedora','Aguardando Licenciado'];
-  GLOBAL_FILAS   = FILA_KEYS.map((f, i) => ({ l: FILA_LBLS[i], mean: tk.filas?.[f]?.mean || 0, max: tk.filas?.[f]?.max || 0, pct: tk.filas?.[f]?.pct || 0, dominant: f === 'relacionamentos' }));
-  STATUS_DIST    = tk.status_dist   || [];
-  TICKET_TIPOS   = tk.tipo_breakdown || [];
-  OPEN_AGING     = (tk.open_aging   || []).map(r => ({ t: r.t, n: r.n, avg: r.avg_days, max: r.max_days }));
-  CUST_TICKETS   = (tk.cust_tickets || []).map(r => ({ r: r.rnk, tk: r.tk, at: r.at }));
-  REPORTE_TYPES    = tk.reporte_types || [];
-  REPORTE_RATE     = tk.reporte_rate  || [];
-  TK_TOTAL         = tk.total         || 0;
-  TK_SLA_BREACH_N  = tk.sla_breach_n  || 0;
-  TK_MONTHLY       = tk.monthly_counts || [];
-  REP_DAILY      = rRepDaily || [];
-  CANCELLED      = rCancelled || {};
+  _tktDuRaw = rTktDu || [];
+  _applyTicketsData(rTkts || {}, rRepDaily, rCancelled, _tktDuRaw);
 
   // ── Fornecedoras (P4) ───────────────────────────────────────────────────────
   FORNECEDORAS = (rForn || []).map(r => ({ ...r, gest_men: r.gest_men || 0, exec_men: r.exec_men || 0 }));
@@ -1352,7 +1389,7 @@ function renderReporteRate() {
   const slaPct = totalTk ? (TK_SLA_BREACH_N / totalTk * 100).toFixed(1).replace('.', ',') : '—';
   document.getElementById('p3-sla').textContent       = slaPct + '%';
   const bdg = document.getElementById('p3-badge-sla'); if (bdg) bdg.textContent = slaPct + '% SLA Estourado';
-  document.getElementById('p3-sla-sub').textContent   = _fmt(TK_SLA_BREACH_N) + ' de ' + _fmt(totalTk) + ' tickets';
+  document.getElementById('p3-sla-sub').textContent   = TK_AVG_DU != null ? TK_AVG_DU.toFixed(1).replace('.', ',') + ' DU em média (tempo total)' : '—';
   const openSt = new Set(['Em Análise','Enviado p/ Fornecedora','Aguard. resposta fornecedora','Respondido','Andamento Interno','Contato com cliente','Aguard. setor interno','Cliente Aguard. Atendimento','Em revisão','iniciado']);
   const openN = STATUS_DIST.filter(r => openSt.has(r.s)).reduce((s, r) => s + r.n, 0);
   document.getElementById('p3-open').textContent      = _fmt(openN);
@@ -1364,6 +1401,237 @@ function renderCancelledAnalysis() {
   document.getElementById('canc-without').textContent = _fmt(c.without_report || 0);
   document.getElementById('canc-no-rep-tbody').innerHTML = (c.no_report_by_tipo || []).map(r => `<tr><td>${r.t}</td><td class="num">${_fmt(r.n)}</td></tr>`).join('');
 }
+
+// ── P3 date-range filter — refetches the three RPCs feeding "Tickets & Ops"
+// scoped to [_p3Start, _p3End] (ISO date strings, or null = unbounded) and
+// re-renders the affected views in place ─────────────────────────────────────
+async function _loadP3() {
+  const ps = _p3Start ? _p3Start + 'T00:00:00Z'     : null;
+  const pe = _p3End   ? _p3End   + 'T23:59:59.999Z' : null;
+  const [{ data: rTkts }, { data: rRepDaily }, { data: rCancelled }] = await Promise.all([
+    _SB.rpc('dash_tickets_full',       { p_start: ps, p_end: pe }),
+    _SB.rpc('dash_reporte_daily_may',  { p_start: ps, p_end: pe }),
+    _SB.rpc('dash_cancelled_analysis', { p_start: ps, p_end: pe }),
+  ]);
+  _applyTicketsData(rTkts || {}, rRepDaily, rCancelled, _tktDuRaw);
+  renderFilas(); renderStatusDist(); renderTicketTipos(); renderOpenAging(); renderCustTickets();
+  renderReporteTypes(); renderReporteRate(); renderCancelledAnalysis();
+  _renderRepDailyChart();
+}
+
+// ── P3 date-range calendar — same trigger + popup component as index.html ───
+(function () {
+  const WEEKDAYS = ['D','S','T','Q','Q','S','S'];
+  const MONTHS   = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  let leftYear, leftMonth;
+  let startDate = null, endDate = null;
+  let pendingStart = null, pendingEnd = null;
+  let hoverDate = null, selecting = false;
+  let modal = null;
+
+  const pad     = n => String(n).padStart(2,'0');
+  const toStr   = (y,m,d) => `${y}-${pad(m+1)}-${pad(d)}`;
+  const cmp     = (a,b) => a < b ? -1 : a > b ? 1 : 0;
+  const fromStr = s => { const [y,m,d] = s.split('-').map(Number); return {y,m:m-1,d}; };
+  const daysInMonth = (y,m) => new Date(y,m+1,0).getDate();
+  const dayOfWeek   = (y,m,d) => new Date(y,m,d).getDay();
+
+  function formatRange(from, to) {
+    if (!from) return 'Qualquer data';
+    const f = fromStr(from), t = to ? fromStr(to) : f;
+    if (!to || from === to) return `${f.d} de ${MONTHS[f.m]} de ${f.y}`;
+    if (f.y === t.y && f.m === t.m) return `${f.d}–${t.d} de ${MONTHS[f.m]} de ${f.y}`;
+    if (f.y === t.y) return `${f.d} ${MONTHS[f.m].slice(0,3)} – ${t.d} ${MONTHS[t.m].slice(0,3)} ${f.y}`;
+    return `${f.d}/${pad(f.m+1)}/${f.y} – ${t.d}/${pad(t.m+1)}/${t.y}`;
+  }
+
+  function buildMonthHTML(year, month) {
+    const today  = new Date();
+    const todayS = toStr(today.getFullYear(), today.getMonth(), today.getDate());
+    const sel0 = pendingStart || startDate;
+    const sel1 = (selecting ? hoverDate : null) || pendingEnd || endDate;
+    const [rangeA, rangeB] = sel0 && sel1
+      ? (cmp(sel0,sel1) <= 0 ? [sel0,sel1] : [sel1,sel0]) : [sel0, null];
+
+    const firstDOW = dayOfWeek(year, month, 1);
+    const days     = daysInMonth(year, month);
+
+    let h = `<div class="cal-month-header">
+      <div class="cal-month-title">${MONTHS[month]} ${year}</div>
+    </div>`;
+    h += '<div class="cal-weekdays">'
+      + WEEKDAYS.map(w => `<span class="cal-weekday">${w}</span>`).join('')
+      + '</div><div class="cal-days">';
+
+    for (let i = 0; i < firstDOW; i++) h += '<div class="cal-day empty"></div>';
+
+    for (let d = 1; d <= days; d++) {
+      const ds      = toStr(year, month, d);
+      const isStart = ds === rangeA;
+      const isEnd   = rangeB && ds === rangeB;
+      const inRange = rangeA && rangeB && cmp(ds,rangeA) > 0 && cmp(ds,rangeB) < 0;
+      const isToday = ds === todayS;
+      let cls = 'cal-day';
+      if (isStart) cls += ' range-start';
+      if (isEnd)   cls += ' range-end';
+      if (inRange) cls += ' in-range';
+      if (isToday) cls += ' today';
+      h += `<div class="${cls}" data-date="${ds}"><span class="day-num">${d}</span></div>`;
+    }
+    return h + '</div>';
+  }
+
+  function render() {
+    const ry = leftMonth === 11 ? leftYear + 1 : leftYear;
+    const rm = leftMonth === 11 ? 0 : leftMonth + 1;
+    document.getElementById('p3CalLeft').innerHTML  = buildMonthHTML(leftYear, leftMonth);
+    document.getElementById('p3CalRight').innerHTML = buildMonthHTML(ry, rm);
+    document.getElementById('p3CalPrev').onclick = () => {
+      leftMonth === 0 ? (leftMonth = 11, leftYear--) : leftMonth--;
+      render();
+    };
+    document.getElementById('p3CalNext').onclick = () => {
+      leftMonth === 11 ? (leftMonth = 0, leftYear++) : leftMonth++;
+      render();
+    };
+  }
+
+  function createModal() {
+    const overlay = document.createElement('div');
+    overlay.id = 'p3CalModal'; overlay.className = 'cal-modal-overlay';
+    overlay.setAttribute('role','dialog'); overlay.setAttribute('aria-modal','true');
+    overlay.innerHTML = `
+      <div class="cal-modal-content" id="p3CalModalContent">
+        <div class="cal-modal-header">
+          <span class="cal-modal-title">Selecionar período</span>
+          <button class="cal-modal-close" id="p3CalModalClose" aria-label="Fechar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="cal-nav-row">
+          <button class="cal-nav" id="p3CalPrev">&#8249;</button>
+          <div class="calendar-months">
+            <div class="cal-month" id="p3CalLeft"></div>
+            <div class="cal-month" id="p3CalRight"></div>
+          </div>
+          <button class="cal-nav" id="p3CalNext">&#8250;</button>
+        </div>
+        <div class="calendar-actions">
+          <button class="btn-cal-cancel" id="p3CalCancel">Cancelar</button>
+          <button class="btn-cal-apply"  id="p3CalApply">Aplicar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  function positionModal() {
+    const trigger = document.getElementById('p3CalendarToggle');
+    const content = document.getElementById('p3CalModalContent');
+    const rect    = trigger.getBoundingClientRect();
+    const cardW   = content.offsetWidth  || 480;
+    const cardH   = content.offsetHeight || 420;
+    let top  = rect.bottom + 8;
+    let left = rect.left;
+    if (left + cardW > window.innerWidth  - 16) left = window.innerWidth  - cardW - 16;
+    if (left < 16) left = 16;
+    if (top  + cardH > window.innerHeight - 16) top  = rect.top - cardH - 8;
+    if (top  < 8) top = 8;
+    content.style.top  = top  + 'px';
+    content.style.left = left + 'px';
+  }
+
+  function syncCancelBtn() {
+    const btn = document.getElementById('p3CalCancel');
+    if (!btn) return;
+    if (startDate && endDate) { btn.textContent = 'Limpar filtro'; btn.classList.add('visible'); }
+    else btn.classList.remove('visible');
+  }
+
+  function openModal() {
+    pendingStart = startDate; pendingEnd = endDate;
+    selecting = false; hoverDate = null;
+    if (!modal) {
+      modal = createModal();
+      const months = modal.querySelector('.calendar-months');
+
+      months.addEventListener('click', e => {
+        const cell = e.target.closest('[data-date]'); if (!cell) return;
+        const ds = cell.dataset.date;
+        if (!selecting) { pendingStart = ds; pendingEnd = null; hoverDate = null; selecting = true; }
+        else {
+          const [a,b] = cmp(pendingStart,ds) <= 0 ? [pendingStart,ds] : [ds,pendingStart];
+          pendingStart = a; pendingEnd = b; hoverDate = null; selecting = false;
+        }
+        render();
+      });
+      months.addEventListener('mouseover', e => {
+        if (!selecting) return;
+        const cell = e.target.closest('[data-date]'); if (!cell) return;
+        const ds = cell.dataset.date; if (ds === hoverDate) return;
+        hoverDate = ds; render();
+      });
+      months.addEventListener('mouseleave', () => { if (!selecting) return; hoverDate = null; render(); });
+
+      document.getElementById('p3CalApply').addEventListener('click', () => {
+        if (!pendingStart || !pendingEnd) return;
+        startDate = pendingStart; endDate = pendingEnd;
+        _p3Start = startDate; _p3End = endDate;
+        document.getElementById('p3RangeDisplay').textContent = formatRange(startDate, endDate);
+        document.getElementById('p3CalendarToggle').classList.add('active');
+        closeModal(); _loadP3();
+      });
+      document.getElementById('p3CalCancel').addEventListener('click', () => {
+        startDate = null; endDate = null;
+        pendingStart = null; pendingEnd = null;
+        _p3Start = null; _p3End = null;
+        document.getElementById('p3RangeDisplay').textContent = 'Qualquer data';
+        document.getElementById('p3CalendarToggle').classList.remove('active');
+        closeModal(); _loadP3();
+      });
+      document.getElementById('p3CalModalClose').addEventListener('click', closeModal);
+      modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+      });
+    }
+
+    const now = new Date();
+    leftYear  = startDate ? fromStr(startDate).y : now.getFullYear();
+    leftMonth = startDate ? fromStr(startDate).m : now.getMonth();
+    if (leftMonth === 11) leftMonth = 10;
+    positionModal();
+    modal.classList.add('open');
+    document.getElementById('p3CalendarToggle').setAttribute('aria-expanded','true');
+    syncCancelBtn();
+    render();
+  }
+
+  function closeModal() {
+    if (!modal) return;
+    modal.classList.remove('open');
+    document.getElementById('p3CalendarToggle').setAttribute('aria-expanded','false');
+    selecting = false; hoverDate = null;
+  }
+
+  document.getElementById('p3CalendarToggle').addEventListener('click', e => {
+    if (e.target.id === 'p3DateClear') return;
+    openModal();
+  });
+
+  document.getElementById('p3DateClear').addEventListener('click', e => {
+    e.stopPropagation();
+    startDate = null; endDate = null;
+    _p3Start = null; _p3End = null;
+    document.getElementById('p3RangeDisplay').textContent = 'Qualquer data';
+    document.getElementById('p3CalendarToggle').classList.remove('active');
+    _loadP3();
+  });
+})();
 let _fornSortCol = null, _fornSortDir = 'desc';
 const _fornTipoCache = {};
 
@@ -1531,12 +1799,11 @@ Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
 Chart.defaults.font.family = "'DM Sans', sans-serif";
 let _wkChart, _liveChartUtil, _liveChartClar, _monthlyChart, _repDailyChart;
 
-function initCharts() {
-  if (_monthlyChart) _monthlyChart.destroy();
-  if (_wkChart) _wkChart.destroy();
-  if (_liveChartUtil) _liveChartUtil.destroy();
-  if (_liveChartClar) _liveChartClar.destroy();
+function _renderRepDailyChart() {
   if (_repDailyChart) _repDailyChart.destroy();
+  const _repDailyAvg = REP_DAILY.length ? _avg(REP_DAILY.map(r => r.rate)) : null;
+  const _repDailyAvgBdg = document.getElementById('repDailyAvgBadge');
+  if (_repDailyAvgBdg) _repDailyAvgBdg.textContent = _repDailyAvg != null ? 'Média: ' + _repDailyAvg.toFixed(1).replace('.', ',') + '%' : '—';
   _repDailyChart = new Chart(document.getElementById('repDailyChart'), {
     type: 'line',
     data: { labels: REP_DAILY.map(r => r.day), datasets: [
@@ -1546,6 +1813,13 @@ function initCharts() {
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: i => `  ${i.parsed.y}% de reportes` } } },
       scales: { x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#636363', maxTicksLimit: 10 } }, y: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#636363', callback: v => v + '%' }, beginAtZero: true } } },
   });
+}
+function initCharts() {
+  if (_monthlyChart) _monthlyChart.destroy();
+  if (_wkChart) _wkChart.destroy();
+  if (_liveChartUtil) _liveChartUtil.destroy();
+  if (_liveChartClar) _liveChartClar.destroy();
+  _renderRepDailyChart();
   _monthlyChart = new Chart(document.getElementById('monthlyChart'), {
     type: 'line',
     data: { labels: MONTHLY.labels, datasets: [

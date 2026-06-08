@@ -88,9 +88,9 @@ const DASHBOARD_METADATA = {
     analyst_only:    false,
     show_in_sidebar: false,
   },
-  'gestao-a-vista': {
-    slug:            'gestao-a-vista',
-    title:           'Gestão à Vista',
+  'resultados-maio': {
+    slug:            'resultados-maio',
+    title:           'Resultados MAIO',
     description:     'Levantamento de dores do licenciado, com foco no relacionamento com Fornecedoras, com inclusão de tabulações, pesquisa e CSAT.',
     analyst_only:    true,
     show_in_sidebar: false,
