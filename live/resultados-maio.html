@@ -70,6 +70,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--text);
 
 /* P3 DATE FILTER — trigger button + popup calendar (mirrors index.html) */
 .p3-date-filter{display:flex;align-items:center;margin-bottom:24px}
+.p2-date-filter{display:flex;align-items:center;margin-bottom:20px}
 .date-trigger{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .18s}
 .date-trigger:hover{border-color:var(--green-border);color:var(--text)}
 .date-trigger.active{background:rgba(76,175,50,0.15);border-color:var(--green-border);color:var(--green)}
@@ -263,7 +264,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
       <div class="cover-tag"><img src="../assets/favicon.png" alt="iGreen Energy" style="height:30px;vertical-align:middle;margin-right:2px"> — Conexão Green</div>
       <h1 class="cover-title">Suporte ao <br><em>Licenciado</em></h1>
       <p class="cover-sub">Levantamento de dores do licenciado<br>Dados históricos de atendimentos, tickets, CSAT e pesquisas de live</p>
-      <div class="cover-period-label">Resumo de Maio 2026<br>Intervalo de dados: 1º de MAR a 31 de MAI</div>
+      <div class="cover-period-label">Resumo de 1 a 22 de Junho 2026<br>Intervalo de dados: 1º a 22 de JUN</div>
       <div class="cover-stats">
 
         <div class="cover-stat has-kpi-tt">
@@ -309,7 +310,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
     </div>
     <div class="cover-right">
       <div class="cover-chart-box">
-        <div class="cover-chart-title">Atendimentos por dia — Maio 2026<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Série temporal de atendimentos no período de referência, agrupados a cada 3 dias.</div></span></div>
+        <div class="cover-chart-title">Atendimentos por dia — 1 a 22 de Junho 2026<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Série temporal de atendimentos no período de referência, agrupados a cada 3 dias.</div></span></div>
         <canvas id="monthlyChart"></canvas>
         <div class="cover-chart-legend">
           <span class="cover-legend-dot" style="background:#4caf32"></span>Gestores &amp; Abaixo
@@ -434,8 +435,21 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
         <div class="page-eyebrow">02 — Demandas</div>
         <h2 class="page-title">O Que os Licenciados Precisam</h2>
       </div>
-      <div class="page-badge">28.434 tabulações · 21.328 tags</div>
+      <div class="page-badge" id="p2-badge">— tabulações · — tags</div>
     </div>
+
+    <div class="p2-date-filter">
+      <button class="date-trigger" id="p2CalendarToggle" aria-haspopup="dialog" aria-expanded="false">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span id="p2RangeDisplay">Qualquer data</span>
+        <button class="date-trigger-clear" id="p2DateClear" title="Limpar filtro de data">✕</button>
+      </button>
+      <span id="p2DateNote" style="margin-left:12px;font-size:11px;color:var(--text-muted)"></span>
+    </div>
+
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap">
       <span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);flex-shrink:0">Filtrar grupo</span>
       <button class="p1-filter-btn active" onclick="setP2Filter('all',this)">Todos</button>
@@ -448,14 +462,14 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
         <div class="insight-icon warn">🔁</div>
         <div>
           <div class="insight-title">Devolutivas</div>
-          <div class="insight-desc"><strong style="color:var(--warn)">3.264 atendimentos</strong> envolvem tratamento ou questões de devolutiva. TMA médio: <strong style="color:var(--text)">155 min</strong>. Um em cada 8,7 atendimentos é deste tipo.</div>
+          <div class="insight-desc"><strong style="color:var(--warn)" id="p2-dev-n">—</strong> envolvem tratamento ou questões de devolutiva. TMA médio: <strong style="color:var(--text)" id="p2-dev-tma">—</strong>. <span id="p2-dev-ratio"></span></div>
         </div>
       </div>
       <div class="insight-card">
         <div class="insight-icon red">🚪</div>
         <div>
           <div class="insight-title">Risco de Churn</div>
-          <div class="insight-desc"><strong style="color:var(--red)">2.717 atendimentos</strong> com tabulação de cancelamento ou solicitação de saída — equivale a <strong style="color:var(--text)">5% do total</strong>. TMA médio dos cancelamentos solicitados: 381 min.</div>
+          <div class="insight-desc"><strong style="color:var(--red)" id="p2-canc-n">—</strong> com tabulação de cancelamento ou solicitação de saída — equivale a <strong style="color:var(--text)" id="p2-canc-pct">—</strong> do total. TMA médio dos cancelamentos: <span id="p2-canc-tma">—</span>.</div>
         </div>
       </div>
     </div>
@@ -909,8 +923,8 @@ const _SB = createClient(
   '__SUPABASE_URL__',
   '__SUPABASE_KEY__'
 );
-const _P_START = new Date('2026-05-01T00:00:00Z');
-const _P_END   = new Date('2026-06-01T00:00:00Z');
+const _P_START = new Date('2026-06-01T00:00:00Z');
+const _P_END   = new Date('2026-06-23T00:00:00Z');   // exclusivo → inclui 1 a 22 de junho
 const _SEG_TAGS = new Set(['CONSULTOR SENIOR','LICENCIADO PRO','LICENCIADO PLUS',
   'CONSULTOR INICIANTE','GOLD','VISIONARIO','EXECUTIVO','EXECUTIVO SENIOR',
   'LICENCIADO ELITE','LICENCIADO OURO','PARTNER','BRONZE','SILVER']);
@@ -938,6 +952,7 @@ let WEEKS, TABULACOES, TOP_TMA, TOP_TMA_GEST, TOP_TMA_EXEC, RET_EXEC, RET_GEST, 
     AGENTES, LIVE_SESSIONS, ACOES, NEG_QUOTES, NEG_SUGG, MONTHLY;
 
 let _p3Start = null, _p3End = null, _tktDuRaw = [];
+let _P2 = null, _P2BASE = null, _p2Start = null, _p2End = null, _p2Loading = false;
 
 async function _fetchAll(table, cols) {
   const out = []; let offset = 0;
@@ -992,6 +1007,7 @@ async function _loadData() {
     { data: rFornSent },
     { data: rDataNeeds },
     { data: pesquisas = [] },
+    { data: rTabSummary },
     rTktDu,
   ] = await Promise.all([
     _SB.rpc('dash_visao_geral'),
@@ -1010,6 +1026,7 @@ async function _loadData() {
     _SB.rpc('dash_forn_sentimentos'),
     _SB.from('data_needs').select('id,descricao,criado_em').order('criado_em'),
     _SB.rpc('dash_pesquisas_live'),
+    _SB.rpc('dash_tabulacoes_summary'),   // todas as tabulações (p/ total ao vivo do selo da P2)
     _fetchAll('tickets', 'tempo_total_du,criado_em'),
   ]);
   // Fetch curated insight texts by UUID (two tables)
@@ -1025,7 +1042,7 @@ async function _loadData() {
   (liveTexts || []).forEach(r => { _textMap[r.id + ':valor_aberto'] = r.valor_aberto; _textMap[r.id + ':duvidas'] = r.duvidas; });
   window.__curatedTexts = _textMap;
   _prog(80, 'Calculando métricas...');
-  const m = _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas, rTktDu });
+  const m = _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas, rTktDu, rTabSummary });
   window.__dataNeedsData = rDataNeeds || [];
   window.__dashCache = m;
   return m;
@@ -1056,7 +1073,7 @@ function _applyTicketsData(tk, rRepDaily, rCancelled, duRows) {
   CANCELLED = rCancelled || {};
 }
 
-function _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas, rTktDu }) {
+function _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas, rTktDu, rTabSummary }) {
   // ── Capa ────────────────────────────────────────────────────────────────────
   const rc = rCapa || {};
   const capaCsatN = (rc.csat_gest_n || 0) + (rc.csat_exec_n || 0);
@@ -1104,12 +1121,15 @@ function _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet,
 
   // ── Tabulacoes (P2) ─────────────────────────────────────────────────────────
   const rt = rTabs || {};
-  TABULACOES = (rt.top25 || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tk: r.tickets || 0, top_forn: r.top_forn || [], top_men: r.top_men || [] }));
-  TOP_TMA      = (rt.top20_tma     || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tma_gest: r.avg_tma_gest, tma_exec: r.avg_tma_exec }));
-  TOP_TMA_GEST = (rt.top10_tma_gest || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tma_gest: r.avg_tma_gest, tma_exec: r.avg_tma_exec }));
-  TOP_TMA_EXEC = (rt.top10_tma_exec || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tma_gest: r.avg_tma_gest, tma_exec: r.avg_tma_exec }));
+  _applyTabsRt(rt);
   const devStat    = rt.devolutiva    || { n: 0, tma: null };
   const cancelStat = rt.cancelamento  || { n: 0, tma: null };
+  // Totais ao vivo (selo da P2) — somados dos breakdowns completos por código
+  const tabTotal = (rTabSummary || []).reduce((s, r) => s + (r.total || 0), 0);
+  const tagTotal = (rTags || []).reduce((s, r) => s + (r.cnt || 0), 0);
+  // Linha de base "todas as datas" (RPC) — usada para restaurar ao limpar o filtro de período
+  _P2BASE = { rt, devStat, cancelStat, tabTotal, tagTotal, total: overview.total };
+  _P2 = _P2BASE;
   RET_EXEC = (rRet || {}).top10_exec || [];
   RET_GEST = (rRet || {}).top10_gest || [];
 
@@ -1185,7 +1205,7 @@ function _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet,
   const top5Tags = filteredTags.slice(0, 5).map(r => [r.valor, r.cnt]);
   const top5Tabs = TABULACOES.slice(0, 5);
 
-  return { capa, overview, top5Tabs, top5Tags, devStat, cancelStat };
+  return { capa, overview, top5Tabs, top5Tags, devStat, cancelStat, tabTotal, tagTotal };
 }
 
 // ── Render helpers ─────────────────────────────────────────────────────────────────────
@@ -1251,6 +1271,23 @@ function renderP1Tables(grupo) {
     const cnt = grupo === 'gest' ? r.gest_men : grupo === 'exec' ? r.exec_men : r.men;
     return `<tr><td style="font-weight:500">${r.n}</td><td class="num">${_fmt(cnt)}</td><td class="num" style="color:var(--text-dim)">${_fmt(r.tk)}</td></tr>`;
   }).join('');
+}
+
+// P2 — selo de totais + cartões de insight (Devolutivas / Churn).
+// Lê de _P2 (linha de base RPC "todas as datas", ou recálculo client-side por período).
+function renderP2Insights() {
+  const s = _P2 || {};
+  const total = s.total || 0;
+  const d = s.devStat || { n: 0, tma: null }, c = s.cancelStat || { n: 0, tma: null };
+  const badge = document.getElementById('p2-badge');
+  if (badge) badge.textContent = `${_fmt(s.tabTotal || 0)} tabulações · ${_fmt(s.tagTotal || 0)} tags`;
+  document.getElementById('p2-dev-n').textContent   = `${_fmt(d.n)} atendimentos`;
+  document.getElementById('p2-dev-tma').textContent = d.tma != null ? `${_fmt(d.tma)} min` : '—';
+  document.getElementById('p2-dev-ratio').textContent = (d.n && total)
+    ? `Um em cada ${(total / d.n).toFixed(1).replace('.', ',')} atendimentos é deste tipo.` : '';
+  document.getElementById('p2-canc-n').textContent   = `${_fmt(c.n)} atendimentos`;
+  document.getElementById('p2-canc-pct').textContent = `${(total ? c.n / total * 100 : 0).toFixed(1).replace('.', ',')}%`;
+  document.getElementById('p2-canc-tma').textContent = c.tma != null ? `${_fmt(c.tma)} min` : '—';
 }
 
 let _p2Filter = 'all';
@@ -1632,6 +1669,316 @@ async function _loadP3() {
     _loadP3();
   });
 })();
+
+// ════════════════════════════════════════════════════════════════════════════
+// P2 — Filtro de período por data (atendimento.criado_em)
+//
+// Os RPCs de tabulações não aceitam intervalo de datas, então, ao selecionar um
+// período, recalculamos a P2 no cliente consultando tabulacoes + atendimentos
+// diretamente (ver _fetchTabsRange). Isso exige RLS liberando SELECT nessas
+// tabelas para authenticated com user_roles.role <> 'employee' (SQL no README/
+// instruções). Sem período selecionado, mantém-se a linha de base dos RPCs.
+//
+// A metodologia client-side (contagens por linha; TMA = média de criado_em do
+// atendimento; devolutiva/cancelamento por padrão de texto) é transparente e
+// consistente, podendo divergir levemente das métricas curadas dos RPCs.
+// ════════════════════════════════════════════════════════════════════════════
+
+// Popula os globais das tabelas da P2 a partir de um payload no formato do RPC.
+function _applyTabsRt(rt) {
+  TABULACOES   = (rt.top25 || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tk: r.tickets || 0, top_forn: r.top_forn || [], top_men: r.top_men || [] }));
+  TOP_TMA      = (rt.top20_tma     || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tma_gest: r.avg_tma_gest, tma_exec: r.avg_tma_exec }));
+  TOP_TMA_GEST = (rt.top10_tma_gest || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tma_gest: r.avg_tma_gest, tma_exec: r.avg_tma_exec }));
+  TOP_TMA_EXEC = (rt.top10_tma_exec || []).map(r => ({ c: r.codigo, t: r.total, g: r.grupo, tma: r.avg_tma, tma_gest: r.avg_tma_gest, tma_exec: r.avg_tma_exec }));
+}
+
+// Agrega linhas tabulacoes+atendimento no MESMO formato dos RPCs.
+function _aggregateTabsRows(rows) {
+  const grp = gc => /GESTOR/.test((gc || '').toUpperCase()) ? 'Gestores' : 'Executivos';
+  const agg = new Map();
+  for (const r of rows) {
+    const a = r.atendimentos || {}, g = grp(a.grupo_cliente), tma = a.tma_minutos;
+    let d = agg.get(r.codigo);
+    if (!d) { d = { total: 0, gest: 0, exec: 0, ts: 0, tc: 0, gts: 0, gtc: 0, ets: 0, etc: 0 }; agg.set(r.codigo, d); }
+    d.total++; (g === 'Gestores') ? d.gest++ : d.exec++;
+    if (tma != null) { d.ts += tma; d.tc++; if (g === 'Gestores') { d.gts += tma; d.gtc++; } else { d.ets += tma; d.etc++; } }
+  }
+  const avg = (s, c) => c ? Math.round(s / c) : null;
+  const codes = [...agg.entries()].map(([codigo, d]) => ({
+    codigo, total: d.total, grupo: d.gest >= d.exec ? 'Gestores' : 'Executivos',
+    avg_tma: avg(d.ts, d.tc), avg_tma_gest: avg(d.gts, d.gtc), avg_tma_exec: avg(d.ets, d.etc),
+  }));
+  const topBy = key => [...codes].filter(r => r[key] != null).sort((a, b) => b[key] - a[key]).slice(0, 10);
+  const sub = re => {
+    let n = 0, s = 0, c = 0;
+    for (const [codigo, d] of agg) if (re.test(codigo)) { n += d.total; s += d.ts; c += d.tc; }
+    return { n, tma: c ? Math.round(s / c) : null };
+  };
+  return {
+    top25: [...codes].sort((a, b) => b.total - a.total).slice(0, 25).map(r => ({ ...r, tickets: 0, top_forn: [], top_men: [] })),
+    top20_tma: topBy('avg_tma'),
+    top10_tma_gest: topBy('avg_tma_gest'),
+    top10_tma_exec: topBy('avg_tma_exec'),
+    devolutiva:   sub(/devolutiv/i),
+    cancelamento: sub(/cancel|sa[ií]da/i),
+    tabTotal: rows.length,
+  };
+}
+
+// Busca tabulacoes (com o atendimento embutido) no intervalo, paginando.
+async function _fetchTabsRange(startStr, endStr) {
+  const fromISO = startStr + 'T00:00:00Z', toISO = endStr + 'T23:59:59.999Z';
+  const out = []; let off = 0;
+  for (;;) {
+    const { data, error } = await _SB.from('tabulacoes')
+      .select('codigo,atendimentos!inner(grupo_cliente,tma_minutos,criado_em)')
+      .gte('atendimentos.criado_em', fromISO).lte('atendimentos.criado_em', toISO)
+      .range(off, off + 999);
+    if (error) throw error;
+    if (!data || !data.length) break;
+    out.push(...data);
+    if (data.length < 1000) break;
+    off += 1000;
+  }
+  return out;
+}
+
+// Total de atendimentos no intervalo (denominador das razões dos cartões).
+async function _countAtendRange(startStr, endStr) {
+  const { count } = await _SB.from('atendimentos').select('*', { count: 'exact', head: true })
+    .gte('criado_em', startStr + 'T00:00:00Z').lte('criado_em', endStr + 'T23:59:59.999Z');
+  return count || 0;
+}
+
+async function _loadP2() {
+  const note = document.getElementById('p2DateNote');
+  if (!_p2Start || !_p2End) {                       // sem período → restaura linha de base RPC
+    if (_P2BASE) { _applyTabsRt(_P2BASE.rt); _P2 = _P2BASE; }
+    if (note) note.textContent = '';
+    renderP2Insights(); renderTabulacoes(); renderTopTma();
+    return;
+  }
+  if (_p2Loading) return;
+  _p2Loading = true;
+  document.getElementById('tab-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">Carregando período…</td></tr>';
+  if (note) note.textContent = 'Recalculado para o período selecionado';
+  try {
+    const [rows, total] = await Promise.all([
+      _fetchTabsRange(_p2Start, _p2End),
+      _countAtendRange(_p2Start, _p2End),
+    ]);
+    const rt = _aggregateTabsRows(rows);
+    _applyTabsRt(rt);
+    _P2 = { devStat: rt.devolutiva, cancelStat: rt.cancelamento, tabTotal: rt.tabTotal, tagTotal: 0, total };
+    renderP2Insights(); renderTabulacoes(); renderTopTma();
+    if (!rows.length && note) note.textContent = 'Sem dados no período (ou acesso direto às tabelas ainda não liberado via RLS).';
+  } catch (err) {
+    console.error('P2 date filter error:', err);
+    if (note) note.textContent = 'Erro ao carregar o período — verifique o console.';
+    document.getElementById('tab-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--red);padding:24px">Erro ao carregar período</td></tr>';
+  } finally {
+    _p2Loading = false;
+  }
+}
+
+// ── Fábrica de calendário de período reutilizável ───────────────────────────
+// Generaliza o seletor da P3: `prefix` define os ids do DOM; dispara
+// onApply(startStr,endStr) ao aplicar e onClear() ao limpar.
+function setupRangeCalendar({ prefix, onApply, onClear }) {
+  const WEEKDAYS = ['D','S','T','Q','Q','S','S'];
+  const MONTHS   = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  let leftYear, leftMonth;
+  let startDate = null, endDate = null;
+  let pendingStart = null, pendingEnd = null;
+  let hoverDate = null, selecting = false;
+  let modal = null;
+  const $ = suffix => document.getElementById(prefix + suffix);
+  const pad     = n => String(n).padStart(2,'0');
+  const toStr   = (y,m,d) => `${y}-${pad(m+1)}-${pad(d)}`;
+  const cmp     = (a,b) => a < b ? -1 : a > b ? 1 : 0;
+  const fromStr = s => { const [y,m,d] = s.split('-').map(Number); return {y,m:m-1,d}; };
+  const daysInMonth = (y,m) => new Date(y,m+1,0).getDate();
+  const dayOfWeek   = (y,m,d) => new Date(y,m,d).getDay();
+
+  function formatRange(from, to) {
+    if (!from) return 'Qualquer data';
+    const f = fromStr(from), t = to ? fromStr(to) : f;
+    if (!to || from === to) return `${f.d} de ${MONTHS[f.m]} de ${f.y}`;
+    if (f.y === t.y && f.m === t.m) return `${f.d}–${t.d} de ${MONTHS[f.m]} de ${f.y}`;
+    if (f.y === t.y) return `${f.d} ${MONTHS[f.m].slice(0,3)} – ${t.d} ${MONTHS[t.m].slice(0,3)} ${f.y}`;
+    return `${f.d}/${pad(f.m+1)}/${f.y} – ${t.d}/${pad(t.m+1)}/${t.y}`;
+  }
+
+  function buildMonthHTML(year, month) {
+    const today  = new Date();
+    const todayS = toStr(today.getFullYear(), today.getMonth(), today.getDate());
+    const sel0 = pendingStart || startDate;
+    const sel1 = (selecting ? hoverDate : null) || pendingEnd || endDate;
+    const [rangeA, rangeB] = sel0 && sel1
+      ? (cmp(sel0,sel1) <= 0 ? [sel0,sel1] : [sel1,sel0]) : [sel0, null];
+    const firstDOW = dayOfWeek(year, month, 1);
+    const days     = daysInMonth(year, month);
+    let h = `<div class="cal-month-header"><div class="cal-month-title">${MONTHS[month]} ${year}</div></div>`;
+    h += '<div class="cal-weekdays">' + WEEKDAYS.map(w => `<span class="cal-weekday">${w}</span>`).join('') + '</div><div class="cal-days">';
+    for (let i = 0; i < firstDOW; i++) h += '<div class="cal-day empty"></div>';
+    for (let d = 1; d <= days; d++) {
+      const ds      = toStr(year, month, d);
+      const isStart = ds === rangeA;
+      const isEnd   = rangeB && ds === rangeB;
+      const inRange = rangeA && rangeB && cmp(ds,rangeA) > 0 && cmp(ds,rangeB) < 0;
+      const isToday = ds === todayS;
+      let cls = 'cal-day';
+      if (isStart) cls += ' range-start';
+      if (isEnd)   cls += ' range-end';
+      if (inRange) cls += ' in-range';
+      if (isToday) cls += ' today';
+      h += `<div class="${cls}" data-date="${ds}"><span class="day-num">${d}</span></div>`;
+    }
+    return h + '</div>';
+  }
+
+  function render() {
+    const ry = leftMonth === 11 ? leftYear + 1 : leftYear;
+    const rm = leftMonth === 11 ? 0 : leftMonth + 1;
+    $('CalLeft').innerHTML  = buildMonthHTML(leftYear, leftMonth);
+    $('CalRight').innerHTML = buildMonthHTML(ry, rm);
+    $('CalPrev').onclick = () => { leftMonth === 0 ? (leftMonth = 11, leftYear--) : leftMonth--; render(); };
+    $('CalNext').onclick = () => { leftMonth === 11 ? (leftMonth = 0, leftYear++) : leftMonth++; render(); };
+  }
+
+  function createModal() {
+    const overlay = document.createElement('div');
+    overlay.id = prefix + 'CalModal'; overlay.className = 'cal-modal-overlay';
+    overlay.setAttribute('role','dialog'); overlay.setAttribute('aria-modal','true');
+    overlay.innerHTML = `
+      <div class="cal-modal-content" id="${prefix}CalModalContent">
+        <div class="cal-modal-header">
+          <span class="cal-modal-title">Selecionar período</span>
+          <button class="cal-modal-close" id="${prefix}CalModalClose" aria-label="Fechar">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="cal-nav-row">
+          <button class="cal-nav" id="${prefix}CalPrev">&#8249;</button>
+          <div class="calendar-months">
+            <div class="cal-month" id="${prefix}CalLeft"></div>
+            <div class="cal-month" id="${prefix}CalRight"></div>
+          </div>
+          <button class="cal-nav" id="${prefix}CalNext">&#8250;</button>
+        </div>
+        <div class="calendar-actions">
+          <button class="btn-cal-cancel" id="${prefix}CalCancel">Cancelar</button>
+          <button class="btn-cal-apply"  id="${prefix}CalApply">Aplicar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  function positionModal() {
+    const trigger = $('CalendarToggle');
+    const content = $('CalModalContent');
+    const rect    = trigger.getBoundingClientRect();
+    const cardW   = content.offsetWidth  || 480;
+    const cardH   = content.offsetHeight || 420;
+    let top  = rect.bottom + 8, left = rect.left;
+    if (left + cardW > window.innerWidth  - 16) left = window.innerWidth  - cardW - 16;
+    if (left < 16) left = 16;
+    if (top  + cardH > window.innerHeight - 16) top  = rect.top - cardH - 8;
+    if (top  < 8) top = 8;
+    content.style.top  = top  + 'px';
+    content.style.left = left + 'px';
+  }
+
+  function syncCancelBtn() {
+    const btn = $('CalCancel');
+    if (!btn) return;
+    if (startDate && endDate) { btn.textContent = 'Limpar filtro'; btn.classList.add('visible'); }
+    else btn.classList.remove('visible');
+  }
+
+  function closeModal() {
+    if (!modal) return;
+    modal.classList.remove('open');
+    $('CalendarToggle').setAttribute('aria-expanded','false');
+    selecting = false; hoverDate = null;
+  }
+
+  function openModal() {
+    pendingStart = startDate; pendingEnd = endDate;
+    selecting = false; hoverDate = null;
+    if (!modal) {
+      modal = createModal();
+      const months = modal.querySelector('.calendar-months');
+      months.addEventListener('click', e => {
+        const cell = e.target.closest('[data-date]'); if (!cell) return;
+        const ds = cell.dataset.date;
+        if (!selecting) { pendingStart = ds; pendingEnd = null; hoverDate = null; selecting = true; }
+        else {
+          const [a,b] = cmp(pendingStart,ds) <= 0 ? [pendingStart,ds] : [ds,pendingStart];
+          pendingStart = a; pendingEnd = b; hoverDate = null; selecting = false;
+        }
+        render();
+      });
+      months.addEventListener('mouseover', e => {
+        if (!selecting) return;
+        const cell = e.target.closest('[data-date]'); if (!cell) return;
+        const ds = cell.dataset.date; if (ds === hoverDate) return;
+        hoverDate = ds; render();
+      });
+      months.addEventListener('mouseleave', () => { if (!selecting) return; hoverDate = null; render(); });
+      $('CalApply').addEventListener('click', () => {
+        if (!pendingStart || !pendingEnd) return;
+        startDate = pendingStart; endDate = pendingEnd;
+        $('RangeDisplay').textContent = formatRange(startDate, endDate);
+        $('CalendarToggle').classList.add('active');
+        closeModal(); onApply(startDate, endDate);
+      });
+      $('CalCancel').addEventListener('click', () => {
+        startDate = null; endDate = null; pendingStart = null; pendingEnd = null;
+        $('RangeDisplay').textContent = 'Qualquer data';
+        $('CalendarToggle').classList.remove('active');
+        closeModal(); onClear();
+      });
+      $('CalModalClose').addEventListener('click', closeModal);
+      modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+      });
+    }
+    const now = new Date();
+    leftYear  = startDate ? fromStr(startDate).y : now.getFullYear();
+    leftMonth = startDate ? fromStr(startDate).m : now.getMonth();
+    if (leftMonth === 11) leftMonth = 10;
+    positionModal();
+    modal.classList.add('open');
+    $('CalendarToggle').setAttribute('aria-expanded','true');
+    syncCancelBtn();
+    render();
+  }
+
+  $('CalendarToggle').addEventListener('click', e => {
+    if (e.target.id === prefix + 'DateClear') return;
+    openModal();
+  });
+  $('DateClear').addEventListener('click', e => {
+    e.stopPropagation();
+    startDate = null; endDate = null;
+    $('RangeDisplay').textContent = 'Qualquer data';
+    $('CalendarToggle').classList.remove('active');
+    onClear();
+  });
+}
+
+setupRangeCalendar({
+  prefix: 'p2',
+  onApply: (s, e) => { _p2Start = s; _p2End = e; _loadP2(); },
+  onClear: ()     => { _p2Start = null; _p2End = null; _loadP2(); },
+});
+
 let _fornSortCol = null, _fornSortDir = 'desc';
 const _fornTipoCache = {};
 
@@ -1933,7 +2280,7 @@ async function renderDataNeeds() {
 
 function renderAll(m) {
   renderCapa(m.capa); renderP1(m);
-  renderTabulacoes(); renderTopTma(); renderReturning();
+  renderP2Insights(); renderTabulacoes(); renderTopTma(); renderReturning();
   renderFilas(); renderStatusDist(); renderTicketTipos(); renderOpenAging(); renderCustTickets(); renderReporteTypes(); renderReporteRate(); renderCancelledAnalysis();
   renderFornecedoras(); renderFornCancellation(); renderCuratedInsights(); renderFornMonthly();
   renderNotaDist(); renderFeelings(); renderFornSentimentos(); renderCsatByTab(); renderComments(); renderP5Cards(m.overview);
