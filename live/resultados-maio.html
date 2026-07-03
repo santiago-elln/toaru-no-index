@@ -251,7 +251,6 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
   <button class="nav-btn" onclick="goTo('p3')"><span class="nav-num">03</span> Tickets & Ops</button>
   <button class="nav-btn" onclick="goTo('p4')"><span class="nav-num">04</span> Fornecedoras</button>
   <button class="nav-btn" onclick="goTo('p5')"><span class="nav-num">05</span> CSAT & Sentimentos</button>
-  <button class="nav-btn" onclick="goTo('p7')"><span class="nav-num">07</span> Pesquisas Live</button>
   <button class="nav-btn" onclick="goTo('p8')"><span class="nav-num">08</span> Dados a Coletar</button>
 </div>
 
@@ -264,7 +263,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
       <div class="cover-tag"><img src="../assets/favicon.png" alt="iGreen Energy" style="height:30px;vertical-align:middle;margin-right:2px"> — Conexão Green</div>
       <h1 class="cover-title">Suporte ao <br><em>Licenciado</em></h1>
       <p class="cover-sub">Levantamento de dores do licenciado<br>Dados históricos de atendimentos, tickets, CSAT e pesquisas de live</p>
-      <div class="cover-period-label">Resumo de 1 a 22 de Junho 2026<br>Intervalo de dados: 1º a 22 de JUN</div>
+      <div class="cover-period-label" id="capa-period-label">Resumo de Junho 2026<br>Intervalo de dados: 1º a 22 de JUN</div>
       <div class="cover-stats">
 
         <div class="cover-stat has-kpi-tt">
@@ -310,7 +309,13 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
     </div>
     <div class="cover-right">
       <div class="cover-chart-box">
-        <div class="cover-chart-title">Atendimentos por dia — 1 a 22 de Junho 2026<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Série temporal de atendimentos no período de referência, agrupados a cada 3 dias.</div></span></div>
+        <div class="cover-chart-title" id="capa-chart-title">Atendimentos por dia — Junho 2026<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Série temporal de atendimentos no período de referência, agrupados a cada 3 dias.</div></span></div>
+        <div id="capa-month-sel" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+          <button class="p1-filter-btn" data-m="MAR" onclick="toggleCapaMonth('MAR',this)">Mar</button>
+          <button class="p1-filter-btn" data-m="ABR" onclick="toggleCapaMonth('ABR',this)">Abr</button>
+          <button class="p1-filter-btn" data-m="MAI" onclick="toggleCapaMonth('MAI',this)">Mai</button>
+          <button class="p1-filter-btn active" data-m="JUN" onclick="toggleCapaMonth('JUN',this)">Jun</button>
+        </div>
         <canvas id="monthlyChart"></canvas>
         <div class="cover-chart-legend">
           <span class="cover-legend-dot" style="background:#4caf32"></span>Gestores &amp; Abaixo
@@ -330,7 +335,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
         <div class="page-eyebrow">01 — Visão Geral</div>
         <h2 class="page-title">Panorama do Trimestre</h2>
       </div>
-      <div class="page-badge">Mar — Jun 2026</div>
+      <div class="page-badge">Abr — Jul 2026</div>
     </div>
 
     <div class="cards-row cards-2">
@@ -677,7 +682,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
 
     <div class="alert-banner">
       <div class="alert-icon">⚠</div>
-      <div class="alert-text"><strong>THOPEN</strong> concentra 500 tickets aguardando resposta, 80% de SLA estourado e é a 2ª maior fonte de tickets (2.477). Licenciados mencionam THOPEN explicitamente nas Pesquisas Live como motivo de insatisfação.<br><strong>GV</strong> tem o menor CSAT entre fornecedoras com dados (58%).</div>
+      <div class="alert-text"><strong>THOPEN</strong> segue como a fornecedora mais problemática: 3ª mais mencionada nos atendimentos (2.069 menções), com <strong>246 cancelamentos tabulados</strong> (11,9% das menções) e forte presença de sentimentos negativos — <strong>Frustrado</strong> e <strong>Crítico</strong> estão entre os mais citados nas avaliações de licenciados que a mencionam.</div>
     </div>
 
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
@@ -755,7 +760,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
         <div class="page-eyebrow">05 — CSAT & Sentimentos</div>
         <h2 class="page-title">Como os Licenciados se Sentem</h2>
       </div>
-      <div class="page-badge">21.450 avaliações coletadas</div>
+      <div class="page-badge" id="p5-badge">— avaliações coletadas</div>
     </div>
 
     <div class="split">
@@ -811,8 +816,6 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
     <div class="section-title">Sentimentos por Fornecedora<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Sentimentos das avaliações CSAT de atendimentos que mencionaram cada fornecedora.</div></span></div>
     <div id="forn-sent-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:24px"></div>
 
-    <div class="section-title">Comentários com Nota 1 ou 2<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Amostra de avaliações negativas com comentário qualitativo de pelo menos 10 caracteres.</div></span></div>
-    <div id="comments-container"></div>
   </div>
 </div>
 
@@ -924,7 +927,7 @@ const _SB = createClient(
   '__SUPABASE_KEY__'
 );
 const _P_START = new Date('2026-06-01T00:00:00Z');
-const _P_END   = new Date('2026-06-23T00:00:00Z');   // exclusivo → inclui 1 a 22 de junho
+const _P_END   = new Date('2026-07-01T00:00:00Z');   // padrão: junho completo (dados até 22/jun)
 const _SEG_TAGS = new Set(['CONSULTOR SENIOR','LICENCIADO PRO','LICENCIADO PLUS',
   'CONSULTOR INICIANTE','GOLD','VISIONARIO','EXECUTIVO','EXECUTIVO SENIOR',
   'LICENCIADO ELITE','LICENCIADO OURO','PARTNER','BRONZE','SILVER']);
@@ -1073,9 +1076,9 @@ function _applyTicketsData(tk, rRepDaily, rCancelled, duRows) {
   CANCELLED = rCancelled || {};
 }
 
-function _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas, rTktDu, rTabSummary }) {
-  // ── Capa ────────────────────────────────────────────────────────────────────
-  const rc = rCapa || {};
+// Builds the Capa view-model from a dash_capa_full payload (or a merged one).
+// Also sets the module-level MONTHLY used by the daily chart.
+function _buildCapa(rc) {
   const capaCsatN = (rc.csat_gest_n || 0) + (rc.csat_exec_n || 0);
   const capaCsatAvg = capaCsatN
     ? ((rc.csat_gest_avg || 0) * (rc.csat_gest_n || 0) + (rc.csat_exec_avg || 0) * (rc.csat_exec_n || 0)) / capaCsatN
@@ -1100,6 +1103,69 @@ function _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet,
     },
   };
   MONTHLY = capa.chart;
+  return capa;
+}
+
+// ── Capa — seletor de meses (multi-seleção; recarrega dash_capa_full por mês) ──
+const _CAPA_MONTHS = [
+  { k:'MAR', lbl:'Março', s:'2026-03-01T00:00:00Z', e:'2026-04-01T00:00:00Z' },
+  { k:'ABR', lbl:'Abril', s:'2026-04-01T00:00:00Z', e:'2026-05-01T00:00:00Z' },
+  { k:'MAI', lbl:'Maio',  s:'2026-05-01T00:00:00Z', e:'2026-06-01T00:00:00Z' },
+  { k:'JUN', lbl:'Junho', s:'2026-06-01T00:00:00Z', e:'2026-07-01T00:00:00Z' },
+];
+let _capaSel = new Set(['JUN']);
+const _capaCache = {};
+function _capaMonthLabel() {
+  const sel = _CAPA_MONTHS.filter(m => _capaSel.has(m.k));
+  if (!sel.length) return '—';
+  if (sel.length === 1) return sel[0].lbl + ' 2026';
+  return sel[0].lbl.slice(0, 3) + '–' + sel[sel.length - 1].lbl.slice(0, 3) + ' 2026';
+}
+function _mergeCapa(list) {
+  const m = { total:0, gest:0, exec:0, esc_n:0, sla_breach_n:0, csat_gest_n:0, csat_exec_n:0, chart:[] };
+  let ggs = 0, ges = 0, rn = 0, rtc = 0, ravgw = 0;
+  for (const rc of list) {
+    m.total += rc.total||0; m.gest += rc.gest||0; m.exec += rc.exec||0;
+    m.esc_n += rc.esc_n||0; m.sla_breach_n += rc.sla_breach_n||0;
+    m.csat_gest_n += rc.csat_gest_n||0; m.csat_exec_n += rc.csat_exec_n||0;
+    ggs += (rc.csat_gest_avg||0)*(rc.csat_gest_n||0);
+    ges += (rc.csat_exec_avg||0)*(rc.csat_exec_n||0);
+    const r = rc.recur||{}; rn += r.recur_n||0; rtc += r.total_custs||0; ravgw += (r.recur_avg||0)*(r.total_custs||0);
+    m.chart.push(...(rc.chart||[]));
+  }
+  m.csat_gest_avg = m.csat_gest_n ? ggs/m.csat_gest_n : 0;
+  m.csat_exec_avg = m.csat_exec_n ? ges/m.csat_exec_n : 0;
+  m.recur = { recur_n: rn, total_custs: rtc, recur_avg: rtc ? +(ravgw/rtc).toFixed(1) : null };
+  return m;
+}
+async function _fetchCapaMonth(m) {
+  if (_capaCache[m.k]) return _capaCache[m.k];
+  const { data } = await _SB.rpc('dash_capa_full', { p_start: m.s, p_end: m.e });
+  _capaCache[m.k] = data || {};
+  return _capaCache[m.k];
+}
+async function _reloadCapa() {
+  const sel = _CAPA_MONTHS.filter(m => _capaSel.has(m.k));
+  if (!sel.length) return;
+  const parts = await Promise.all(sel.map(_fetchCapaMonth));
+  renderCapa(_buildCapa(_mergeCapa(parts)));
+  _renderMonthlyChart();
+  const lbl = _capaMonthLabel();
+  const ct = document.getElementById('capa-chart-title');
+  if (ct && ct.firstChild) ct.firstChild.textContent = 'Atendimentos por dia — ' + lbl + ' ';
+  const pl = document.getElementById('capa-period-label');
+  if (pl) pl.innerHTML = 'Resumo de ' + lbl + '<br>Intervalo de dados: 1º a 22 de JUN';
+}
+function toggleCapaMonth(k, btn) {
+  if (_capaSel.has(k)) { if (_capaSel.size === 1) return; _capaSel.delete(k); }
+  else _capaSel.add(k);
+  document.querySelectorAll('#capa-month-sel .p1-filter-btn').forEach(b => b.classList.toggle('active', _capaSel.has(b.dataset.m)));
+  _reloadCapa();
+}
+
+function _compute({ rVG, rCapa, rTabs, rTkts, rCsat, rForn, rTags, rWeeks, rRet, rRepDaily, rCancelled, rFornMonthly, rFornCanc, rFornSent, pesquisas, rTktDu, rTabSummary }) {
+  // ── Capa ────────────────────────────────────────────────────────────────────
+  const capa = _buildCapa(rCapa || {});
 
   // ── Visão Geral (P1) ────────────────────────────────────────────────────────
   const rv = rVG || {};
@@ -2035,6 +2101,8 @@ async function onFornTipoFilter(tipo) {
   _renderFornTable(rows);
 }
 function renderP5Cards(ov) {
+  const _pb = document.getElementById('p5-badge');
+  if (_pb) _pb.textContent = _fmt(ov.csatN) + ' avaliações coletadas';
   const negGestPct = ov.gestCsatN ? (ov.negGestN / ov.gestCsatN * 100).toFixed(1).replace('.', ',') : '—';
   const negExecPct = ov.execCsatN ? (ov.negExecN / ov.execCsatN * 100).toFixed(1).replace('.', ',') : '—';
   document.getElementById('p5-neg-gest').textContent     = _fmt(ov.negGestN);
@@ -2161,12 +2229,8 @@ function _renderRepDailyChart() {
       scales: { x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#636363', maxTicksLimit: 10 } }, y: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#636363', callback: v => v + '%' }, beginAtZero: true } } },
   });
 }
-function initCharts() {
+function _renderMonthlyChart() {
   if (_monthlyChart) _monthlyChart.destroy();
-  if (_wkChart) _wkChart.destroy();
-  if (_liveChartUtil) _liveChartUtil.destroy();
-  if (_liveChartClar) _liveChartClar.destroy();
-  _renderRepDailyChart();
   _monthlyChart = new Chart(document.getElementById('monthlyChart'), {
     type: 'line',
     data: { labels: MONTHLY.labels, datasets: [
@@ -2177,6 +2241,13 @@ function initCharts() {
       plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1c1c1c', borderColor: 'rgba(76,175,50,0.3)', borderWidth: 1, titleColor: '#e8e8e8', bodyColor: '#9a9a9a', footerColor: '#e8e8e8', padding: 12, titleFont: { family: "'Outfit',sans-serif", size: 11, weight: '700' }, bodyFont: { family: "'DM Sans',sans-serif", size: 12 }, footerFont: { family: "'Outfit',sans-serif", size: 12, weight: '700' }, footerMarginTop: 8, callbacks: { title: items => items[0].label, label: item => '  ' + item.dataset.label + ': ' + item.parsed.y.toLocaleString('pt-BR'), footer: items => 'Total: ' + items.reduce((s, i) => s + i.parsed.y, 0).toLocaleString('pt-BR') } } },
       scales: { x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 11 }, color: '#636363' } }, y: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 }, color: '#636363' }, beginAtZero: true } } },
   });
+}
+function initCharts() {
+  if (_wkChart) _wkChart.destroy();
+  if (_liveChartUtil) _liveChartUtil.destroy();
+  if (_liveChartClar) _liveChartClar.destroy();
+  _renderRepDailyChart();
+  _renderMonthlyChart();
   _wkChart = new Chart(document.getElementById('weeklyChart'), {
     type: 'line',
     data: { labels: WEEKS.labels, datasets: [
@@ -2283,7 +2354,7 @@ function renderAll(m) {
   renderP2Insights(); renderTabulacoes(); renderTopTma(); renderReturning();
   renderFilas(); renderStatusDist(); renderTicketTipos(); renderOpenAging(); renderCustTickets(); renderReporteTypes(); renderReporteRate(); renderCancelledAnalysis();
   renderFornecedoras(); renderFornCancellation(); renderCuratedInsights(); renderFornMonthly();
-  renderNotaDist(); renderFeelings(); renderFornSentimentos(); renderCsatByTab(); renderComments(); renderP5Cards(m.overview);
+  renderNotaDist(); renderFeelings(); renderFornSentimentos(); renderCsatByTab(); renderP5Cards(m.overview);
   renderAcoes(); renderLiveQuotes();
   initCharts();
 }
@@ -2293,7 +2364,7 @@ function goTo(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const pages = ['p0','p1','p2','p3','p4','p5','p7','p8'];
+  const pages = ['p0','p1','p2','p3','p4','p5','p8'];
   document.querySelectorAll('.nav-btn')[pages.indexOf(id)].classList.add('active');
   window.scrollTo(0, 0);
 }
