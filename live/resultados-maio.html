@@ -644,7 +644,7 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
 
     <div class="split" style="margin-top:24px">
       <div>
-        <div class="section-title">Taxa Diária de Reportes — Maio 2026<span id="repDailyAvgBadge" class="pill pill-warn" style="margin-left:8px;vertical-align:middle">—</span><span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">% de tickets abertos no dia marcados como incorretos. Identifica picos de erro operacional.</div></span></div>
+        <div class="section-title" id="repDailyTitle">Taxa Diária de Reportes<span id="repDailyAvgBadge" class="pill pill-warn" style="margin-left:8px;vertical-align:middle">—</span><span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">% de tickets abertos no dia marcados como incorretos. Identifica picos de erro operacional.</div></span></div>
         <div class="chart-box" style="height:200px">
           <canvas id="repDailyChart"></canvas>
         </div>
@@ -765,20 +765,23 @@ tr.hi-red{background:rgba(224,82,82,0.04)}
 
     <div class="split">
       <div>
-        <div class="cards-row cards-2">
-          <div class="card card-red" style="text-align:left;padding:16px 20px">
-            <div class="card-label">Notas 1 e 2 — Gestores &amp; Abaixo</div>
-            <div id="p5-neg-gest" class="card-value">—</div>
-            <div id="p5-neg-gest-sub" class="card-sub">avaliações negativas</div>
+        <!-- Hidden: the rebase has no per-response nota (1–5), so these panels are all zero. -->
+        <div style="display:none">
+          <div class="cards-row cards-2">
+            <div class="card card-red" style="text-align:left;padding:16px 20px">
+              <div class="card-label">Notas 1 e 2 — Gestores &amp; Abaixo</div>
+              <div id="p5-neg-gest" class="card-value">—</div>
+              <div id="p5-neg-gest-sub" class="card-sub">avaliações negativas</div>
+            </div>
+            <div class="card card-red" style="text-align:left;padding:16px 20px">
+              <div class="card-label">Notas 1 e 2 — Executivos &amp; Acima</div>
+              <div id="p5-neg-exec" class="card-value">—</div>
+              <div id="p5-neg-exec-sub" class="card-sub">avaliações negativas</div>
+            </div>
           </div>
-          <div class="card card-red" style="text-align:left;padding:16px 20px">
-            <div class="card-label">Notas 1 e 2 — Executivos &amp; Acima</div>
-            <div id="p5-neg-exec" class="card-value">—</div>
-            <div id="p5-neg-exec-sub" class="card-sub">avaliações negativas</div>
-          </div>
+          <div class="section-title">Distribuição das Notas<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Contagem de avaliações CSAT de 5 (melhor) a 1 (pior), com % do total.</div></span></div>
+          <div id="nota-bars"></div>
         </div>
-        <div class="section-title">Distribuição das Notas<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Contagem de avaliações CSAT de 5 (melhor) a 1 (pior), com % do total.</div></span></div>
-        <div id="nota-bars"></div>
         <div class="section-title">CSAT por Grupo de Licenciado<span class="has-kpi-tt tt-icon">ⓘ<div class="kpi-tt">Média de satisfação por perfil. Executivos tendem a avaliar melhor por menor volume de problemas.</div></span></div>
         <div class="cards-row cards-2">
           <div class="card card-green" style="text-align:left;padding:16px 20px">
@@ -2219,6 +2222,9 @@ function _renderRepDailyChart() {
   const _repDailyAvg = REP_DAILY.length ? _avg(REP_DAILY.map(r => r.rate)) : null;
   const _repDailyAvgBdg = document.getElementById('repDailyAvgBadge');
   if (_repDailyAvgBdg) _repDailyAvgBdg.textContent = _repDailyAvg != null ? 'Média: ' + _repDailyAvg.toFixed(1).replace('.', ',') + '%' : '—';
+  const _rdTitle = document.getElementById('repDailyTitle');
+  if (_rdTitle && _rdTitle.firstChild) _rdTitle.firstChild.textContent =
+    'Taxa Diária de Reportes' + (REP_DAILY.length ? ' — ' + REP_DAILY[0].day + '–' + REP_DAILY[REP_DAILY.length - 1].day : '');
   _repDailyChart = new Chart(document.getElementById('repDailyChart'), {
     type: 'line',
     data: { labels: REP_DAILY.map(r => r.day), datasets: [
