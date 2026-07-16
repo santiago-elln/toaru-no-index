@@ -67,8 +67,8 @@
     document.getElementById('viewer').src = decodeURIComponent(embedUrl)
   }
 
-  // Verifica sessão antes de carregar — reaproveita o mesmo SSO Microsoft
-  // já ativo no restante da aplicação.
+  // Verifica sessão antes de carregar — reaproveita a mesma sessão de login
+  // (e-mail + senha) já ativa no restante da aplicação.
   client.auth.onAuthStateChange((event, session) => {
     if (event === 'INITIAL_SESSION') {
       if (session || IS_LOCAL) loadDashboard()

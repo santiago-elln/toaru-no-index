@@ -39,17 +39,16 @@
   <div class="login-wrap" id="loginSection">
     <div class="login-card">
       <div class="login-title">Acesso Admin</div>
-      <div class="login-sub">Entre com sua conta corporativa iGreen para gerenciar documentos.</div>
+      <div class="login-sub">Entre com seu e-mail e senha corporativos para gerenciar documentos.</div>
       <div id="loginAlert"></div>
-      <button class="btn-microsoft" id="loginBtn" onclick="loginWithMicrosoft()">
-        <svg width="20" height="20" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
-          <rect x="1"  y="1"  width="9" height="9" fill="#f25022"/>
-          <rect x="11" y="1"  width="9" height="9" fill="#7fba00"/>
-          <rect x="1"  y="11" width="9" height="9" fill="#00a4ef"/>
-          <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-        </svg>
-        Entrar com Microsoft
-      </button>
+      <form id="loginForm" onsubmit="return loginWithPassword(event)" style="width:100%;display:flex;flex-direction:column;gap:10px">
+        <input type="email" id="email" placeholder="E-mail corporativo" autocomplete="username" required
+          style="width:100%;padding:11px 13px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#e8e8e8;font-family:inherit;font-size:14px">
+        <input type="password" id="password" placeholder="Senha" autocomplete="current-password" required
+          style="width:100%;padding:11px 13px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#e8e8e8;font-family:inherit;font-size:14px">
+        <button type="submit" id="loginBtn"
+          style="width:100%;padding:11px 20px;border-radius:8px;border:none;background:#4caf32;color:#0a0a0a;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer">Entrar</button>
+      </form>
     </div>
   </div>
 
@@ -260,22 +259,22 @@
     })
   }
 
-  async function loginWithMicrosoft() {
+  async function loginWithPassword(e) {
+    if (e) e.preventDefault()
     const btn = document.getElementById('loginBtn')
+    const email = document.getElementById('email').value.trim()
+    const password = document.getElementById('password').value
     btn.disabled = true
     setAlert('loginAlert', '')
 
-    const redirectTo = location.href.replace(/\/[^/]*(\?.*)?$/, '/') + 'admin.html'
-
-    const { error } = await client.auth.signInWithOAuth({
-      provider: 'azure',
-      options: { scopes: 'email profile openid', redirectTo }
-    })
+    const { error } = await client.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setAlert('loginAlert', error.message, 'error')
+      setAlert('loginAlert', 'E-mail ou senha inválidos.', 'error')
       btn.disabled = false
     }
+    // On success, onAuthStateChange runs the editor-role check and reveals admin.
+    return false
   }
 
   async function logout() {

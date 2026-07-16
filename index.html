@@ -19,16 +19,15 @@
     <div class="modal-dot"></div>
     <div class="modal-brand">A Certain Index</div>
     <h2 class="modal-title" id="modalTitle">Acesso restrito</h2>
-    <p class="modal-sub">Este portal é exclusivo para colaboradores iGreen Energy. Entre com sua conta corporativa Microsoft.</p>
-    <button class="btn-microsoft" id="modalLoginBtn" onclick="loginWithMicrosoft()">
-      <svg width="20" height="20" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
-        <rect x="1"  y="1"  width="9" height="9" fill="#f25022"/>
-        <rect x="11" y="1"  width="9" height="9" fill="#7fba00"/>
-        <rect x="1"  y="11" width="9" height="9" fill="#00a4ef"/>
-        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-      </svg>
-      Entrar com Microsoft
-    </button>
+    <p class="modal-sub">Este portal é exclusivo para colaboradores iGreen Energy. Entre com seu e-mail e senha corporativos.</p>
+    <form id="modalLoginForm" onsubmit="return loginWithPassword(event)" style="width:100%;display:flex;flex-direction:column;gap:10px">
+      <input type="email" id="modalEmail" placeholder="E-mail corporativo" autocomplete="username" required
+        style="width:100%;padding:11px 13px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#e8e8e8;font-family:inherit;font-size:14px">
+      <input type="password" id="modalPassword" placeholder="Senha" autocomplete="current-password" required
+        style="width:100%;padding:11px 13px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#e8e8e8;font-family:inherit;font-size:14px">
+      <button type="submit" id="modalLoginBtn"
+        style="width:100%;padding:11px 20px;border-radius:8px;border:none;background:#4caf32;color:#0a0a0a;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer">Entrar</button>
+    </form>
     <div class="modal-alert" id="modalAlert"></div>
     <p class="modal-note">Apenas contas <strong>@igreenenergy.com.br</strong> são aceitas.</p>
   </div>
@@ -402,25 +401,24 @@
   function showModal() { document.getElementById('loginModal').classList.add('visible') }
   function hideModal() { document.getElementById('loginModal').classList.remove('visible') }
 
-  async function loginWithMicrosoft() {
+  async function loginWithPassword(e) {
+    if (e) e.preventDefault()
     const btn = document.getElementById('modalLoginBtn')
+    const email = document.getElementById('modalEmail').value.trim()
+    const password = document.getElementById('modalPassword').value
     btn.disabled = true
     document.getElementById('modalAlert').style.display = 'none'
 
-    const { error } = await client.auth.signInWithOAuth({
-      provider: 'azure',
-      options: {
-        scopes: 'email profile openid',
-        redirectTo: location.href.split('?')[0].split('#')[0],
-      }
-    })
+    const { error } = await client.auth.signInWithPassword({ email, password })
 
     if (error) {
       const el = document.getElementById('modalAlert')
-      el.textContent = error.message
+      el.textContent = 'E-mail ou senha inválidos.'
       el.style.display = 'block'
       btn.disabled = false
     }
+    // On success, onAuthStateChange('SIGNED_IN') hides the modal and loads.
+    return false
   }
 
   // Guard prevents SIGNED_IN from double-firing when INITIAL_SESSION already

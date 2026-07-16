@@ -78,6 +78,50 @@ h1 {
   width: 20px; height: 20px; flex-shrink: 0;
 }
 
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #e8e8e8;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.login-input::placeholder { color: #636363; }
+
+.login-input:focus {
+  outline: none;
+  border-color: rgba(76,175,50,0.55);
+  background: rgba(255,255,255,0.06);
+}
+
+.btn-login {
+  width: 100%;
+  padding: 12px 20px;
+  margin-top: 4px;
+  border-radius: 8px;
+  border: none;
+  background: #4caf32;
+  color: #0a0a0a;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.btn-login:hover:not(:disabled) { background: #5cc23f; }
+.btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
+
 .alert {
   margin-top: 16px; width: 100%;
   padding: 10px 14px; border-radius: 8px;

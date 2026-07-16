@@ -16,18 +16,13 @@
   <div class="brand">A Certain Index</div>
 
   <h1>Acesso restrito</h1>
-  <p class="subtitle">Este portal é exclusivo para colaboradores iGreen Energy. Entre com sua conta corporativa Microsoft.</p>
+  <p class="subtitle">Este portal é exclusivo para colaboradores iGreen Energy. Entre com seu e-mail e senha corporativos.</p>
 
-  <button class="btn-microsoft" id="loginBtn" onclick="loginWithMicrosoft()">
-    <!-- Microsoft logo SVG -->
-    <svg class="ms-logo" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1"  y="1"  width="9" height="9" fill="#f25022"/>
-      <rect x="11" y="1"  width="9" height="9" fill="#7fba00"/>
-      <rect x="1"  y="11" width="9" height="9" fill="#00a4ef"/>
-      <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-    </svg>
-    Entrar com Microsoft
-  </button>
+  <form class="login-form" id="loginForm" onsubmit="return loginWithPassword(event)">
+    <input class="login-input" type="email"    id="email"    placeholder="E-mail corporativo" autocomplete="username"         required>
+    <input class="login-input" type="password" id="password" placeholder="Senha"              autocomplete="current-password" required>
+    <button class="btn-login" id="loginBtn" type="submit">Entrar</button>
+  </form>
 
   <div id="alertMsg" style="display:none" class="alert"></div>
 
@@ -61,30 +56,24 @@
     location.replace(safe)
   }
 
-  async function loginWithMicrosoft() {
+  async function loginWithPassword(e) {
+    if (e) e.preventDefault()
     const btn = document.getElementById('loginBtn')
+    const email = document.getElementById('email').value.trim()
+    const password = document.getElementById('password').value
     btn.disabled = true
-    btn.childNodes[2].textContent = ' Redirecionando…'
+    btn.textContent = 'Entrando…'
     hideAlert()
 
-    // Monta a URL de retorno apontando para esta mesma página
-    // para que o onAuthStateChange capture a sessão e redirecione
-    const redirectTo = location.href.replace(/\/[^/]*(\?.*)?$/, '/') + 'login.html'
-      + (nextUrl !== 'index.html' ? `?next=${encodeURIComponent(nextUrl)}` : '')
-
-    const { error } = await client.auth.signInWithOAuth({
-      provider: 'azure',
-      options: {
-        scopes: 'email profile openid',
-        redirectTo,
-      }
-    })
+    const { error } = await client.auth.signInWithPassword({ email, password })
 
     if (error) {
-      showAlert(error.message)
+      showAlert('E-mail ou senha inválidos.')
       btn.disabled = false
-      btn.childNodes[2].textContent = ' Entrar com Microsoft'
+      btn.textContent = 'Entrar'
     }
+    // On success, onAuthStateChange('SIGNED_IN') redirects.
+    return false
   }
 
   function showAlert(msg) {
